@@ -13,7 +13,7 @@ This file accumulates your best interview stories over time. Each evaluation (Bl
 
 ## Stories
 
-<!-- Stories will be added here as you evaluate offers -->
+<!-- Stories will be added here as you evaluate openings -->
 <!-- Format:
 ### [Theme] Story Title
 **Source:** Report #NNN — Company — Role

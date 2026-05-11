@@ -1,7 +1,7 @@
 {
   "name": "career-ops",
   "metadata": {
-    "description": "AI job search command center — evaluate offers, generate CVs, scan portals, track applications"
+    "description": "AI job search command center — evaluate openings, generate CVs, scan portals, track applications"
   },
   "owner": {
     "name": "santifer",
@@ -11,7 +11,7 @@
     {
       "name": "career-ops",
       "source": "./",
-      "description": "AI job search pipeline — evaluate offers, generate CVs, scan portals, track applications",
+      "description": "AI job search pipeline — evaluate openings, generate CVs, scan portals, track applications",
       "category": "productivity"
     }
   ]

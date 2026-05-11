@@ -1,10 +1,10 @@
 # Batch Processing
 
-Process multiple job offers in parallel via headless workers. Each worker runs the full evaluation pipeline (A-F report + PDF + tracker line) autonomously. See the **Headless / Batch Mode** table in `AGENTS.md` for the correct command per CLI.
+Process multiple job openings in parallel via headless workers. Each worker runs the full evaluation pipeline (A-F report + PDF + tracker line) autonomously. See the **Headless / Batch Mode** table in `AGENTS.md` for the correct command per CLI.
 
 ## Quick Start
 
-1. **Add offers** to `batch-input.tsv` (tab-separated: `id`, `url`, `source`, `notes`):
+1. **Add openings** to `batch-input.tsv` (tab-separated: `id`, `url`, `source`, `notes`):
 
    ```tsv
    id	url	source	notes
@@ -31,10 +31,10 @@ Process multiple job offers in parallel via headless workers. Each worker runs t
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--parallel N` | `1` | Number of concurrent headless workers |
-| `--dry-run` | off | Preview pending offers without processing |
-| `--retry-failed` | off | Only retry offers marked as `failed` in state |
-| `--start-from N` | `0` | Skip offers with ID below N |
-| `--max-retries N` | `2` | Max retry attempts per offer before giving up |
+| `--dry-run` | off | Preview pending openings without processing |
+| `--retry-failed` | off | Only retry openings marked as `failed` in state |
+| `--start-from N` | `0` | Skip openings with ID below N |
+| `--max-retries N` | `2` | Max retry attempts per opening before giving up |
 
 ## Directory Layout
 
@@ -42,23 +42,23 @@ Process multiple job offers in parallel via headless workers. Each worker runs t
 batch/
   batch-runner.sh          # Orchestrator script
   batch-prompt.md          # Prompt template sent to each worker
-  batch-input.tsv          # Input offers (you create this)
+  batch-input.tsv          # Input openings (you create this)
   batch-state.tsv          # Processing state (auto-managed, resumable)
-  logs/                    # Per-offer worker logs ({report_num}-{id}.log)
+  logs/                    # Per-opening worker logs ({report_num}-{id}.log)
   tracker-additions/       # TSV lines produced by workers
     merged/                # TSVs already merged into applications.md
 ```
 
 ## How It Works
 
-1. **batch-runner.sh** reads `batch-input.tsv` and `batch-state.tsv` to determine which offers need processing.
-2. For each pending offer, it assigns a report number and launches a headless worker with `batch-prompt.md` as the system prompt (placeholders like `{{URL}}`, `{{REPORT_NUM}}` are resolved).
-3. Each worker evaluates the offer, writes a report to `reports/`, generates a PDF to `output/`, and writes a tracker TSV to `tracker-additions/`.
+1. **batch-runner.sh** reads `batch-input.tsv` and `batch-state.tsv` to determine which openings need processing.
+2. For each pending opening, it assigns a report number and launches a headless worker with `batch-prompt.md` as the system prompt (placeholders like `{{URL}}`, `{{REPORT_NUM}}` are resolved).
+3. Each worker evaluates the opening, writes a report to `reports/`, generates a PDF to `output/`, and writes a tracker TSV to `tracker-additions/`.
 4. After all workers finish, batch-runner calls `merge-tracker.mjs` to merge TSVs into `data/applications.md` and runs `verify-pipeline.mjs` to check integrity.
 
 ## Tracker Merge
 
-Workers write one TSV per offer to `batch/tracker-additions/`. The merge script (`npm run merge`) handles:
+Workers write one TSV per opening to `batch/tracker-additions/`. The merge script (`npm run merge`) handles:
 
 - Deduplication by company + role fuzzy match and report number
 - Column order conversion (TSV has status before score; applications.md has score before status)
@@ -69,7 +69,7 @@ Run `npm run merge` manually if you need to merge outside of a batch run.
 
 ## Resumability
 
-`batch-state.tsv` tracks the status of every offer (`pending`, `processing`, `completed`, `failed`). If the batch is interrupted, re-running `batch-runner.sh` picks up where it left off -- completed offers are skipped automatically.
+`batch-state.tsv` tracks the status of every opening (`pending`, `processing`, `completed`, `failed`). If the batch is interrupted, re-running `batch-runner.sh` picks up where it left off -- completed openings are skipped automatically.
 
 A PID-based lock file (`batch-runner.pid`) prevents concurrent batch runs. If a previous run crashed, the stale lock is detected and removed automatically.
 
@@ -77,4 +77,4 @@ A PID-based lock file (`batch-runner.pid`) prevents concurrent batch runs. If a 
 
 - Your CLI in PATH (see **Headless / Batch Mode** table in `AGENTS.md`)
 - Node.js >= 18, Playwright chromium installed (`npm run doctor` to verify)
-- `batch-input.tsv` with at least one offer
+- `batch-input.tsv` with at least one opening

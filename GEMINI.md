@@ -6,7 +6,7 @@
 
 ## What is career-ops
 
-AI-powered job search automation: pipeline tracking, offer evaluation, CV generation, portal scanning, batch processing. Originally built on Claude Code, now fully supported on Gemini CLI and OpenCode.
+AI-powered job search automation: pipeline tracking, opening evaluation, CV generation, portal scanning, batch processing. Originally built on Claude Code, now fully supported on Gemini CLI and OpenCode.
 
 ## Data Contract (CRITICAL)
 
@@ -41,8 +41,8 @@ When using [Gemini CLI](https://github.com/google-gemini/gemini-cli), the follow
 |---------|------------------------|-------------|
 | `/career-ops` | `/career-ops` | Show menu or evaluate JD |
 | `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox |
-| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job offer (A-G scoring) |
-| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple offers |
+| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job opening (A-G scoring) |
+| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple openings |
 | `/career-ops-contact` | `/career-ops contacto` | LinkedIn outreach |
 | `/career-ops-deep` | `/career-ops deep` | Deep company research |
 | `/career-ops-pdf` | `/career-ops pdf` | Generate ATS-optimized CV |
@@ -50,7 +50,7 @@ When using [Gemini CLI](https://github.com/google-gemini/gemini-cli), the follow
 | `/career-ops-project` | `/career-ops project` | Evaluate portfolio project |
 | `/career-ops-tracker` | `/career-ops tracker` | Application status overview |
 | `/career-ops-apply` | `/career-ops apply` | Live application assistant |
-| `/career-ops-scan` | `/career-ops scan` | Scan portals for new offers |
+| `/career-ops-scan` | `/career-ops scan` | Scan portals for new openings |
 | `/career-ops-batch` | `/career-ops batch` | Batch processing |
 | `/career-ops-patterns` | `/career-ops patterns` | Analyze rejection patterns |
 | `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker |
@@ -75,8 +75,8 @@ If `modes/_profile.md` is missing, copy from `modes/_profile.template.md` silent
 | If the user... | Mode to load |
 |----------------|-------------|
 | Pastes JD or URL | auto-pipeline → read `modes/_shared.md` + `modes/auto-pipeline.md` |
-| Asks to evaluate offer | read `modes/_shared.md` + `modes/oferta.md` |
-| Asks to compare offers | read `modes/_shared.md` + `modes/ofertas.md` |
+| Asks to evaluate opening | read `modes/_shared.md` + `modes/oferta.md` |
+| Asks to compare openings | read `modes/_shared.md` + `modes/ofertas.md` |
 | Wants LinkedIn outreach | read `modes/_shared.md` + `modes/contacto.md` |
 | Asks for company research | read `modes/deep.md` |
 | Preps for interview | read `modes/interview-prep.md` |
@@ -85,9 +85,9 @@ If `modes/_profile.md` is missing, copy from `modes/_profile.template.md` silent
 | Evaluates portfolio project | read `modes/project.md` |
 | Asks about application status | read `modes/tracker.md` |
 | Fills out application form | read `modes/_shared.md` + `modes/apply.md` |
-| Searches for new offers | read `modes/_shared.md` + `modes/scan.md` |
+| Searches for new openings | read `modes/_shared.md` + `modes/scan.md` |
 | Processes pending URLs | read `modes/_shared.md` + `modes/pipeline.md` |
-| Batch processes offers | read `modes/_shared.md` + `modes/batch.md` |
+| Batch processes openings | read `modes/_shared.md` + `modes/batch.md` |
 | Asks about rejection patterns | read `modes/patterns.md` |
 | Asks about follow-ups | read `modes/followup.md` |
 

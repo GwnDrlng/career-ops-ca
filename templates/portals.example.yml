@@ -1,5 +1,5 @@
 # Portal Scanner Configuration
-# Used by /career-ops scan to discover new offers automatically.
+# Used by /career-ops scan to discover new openings automatically.
 #
 # Strategy (3 levels):
 #   1. Playwright → careers_url of each company (real-time, reliable)
@@ -27,7 +27,25 @@
 title_filter:
   positive:
     # [CUSTOMIZE] Add keywords matching YOUR target roles
-    # -- AI/ML roles --
+    # -- Product Management roles --
+    - "Product Manager"
+    - "Technical PM"
+    - "Senior PM"
+    - "Staff PM"
+    - "Director of Product"
+    - "Head of Product"
+    - "VP Product"
+    - "Chief Product Officer"
+    - "Group PM"
+    - "PM"
+    # -- AI/ML Product roles --
+    - "AI Product Manager"
+    - "AI PM"
+    - "ML Product"
+    - "Data Product Manager"
+    - "Platform PM"
+    - "Growth PM"
+    # -- AI/ML Engineering (secondary) --
     - "AI"
     - "ML"
     - "LLM"
@@ -38,37 +56,24 @@ title_filter:
     - "NLP"
     - "LLMOps"
     - "MLOps"
-    - "Voice AI"
-    - "Conversational AI"
-    - "Speech"
-    # -- German AI/ML keywords (DACH market) --
-    - "KI"
-    - "Künstliche Intelligenz"
-    - "KI Engineer"
-    - "KI Trainer"
-    - "Dozent"
-    - "Weiterbildung"
-    # -- Engineering roles --
-    - "Platform Engineer"
+    # -- Solutions / Engineering (adjacent) --
     - "Solutions Architect"
     - "Solutions Engineer"
     - "Forward Deployed"
-    - "Deployed Engineer"
     - "Customer Engineer"
-    - "Integration Engineer"
-    # -- Product roles --
-    - "Product Manager"
-    - "Technical PM"
-    # -- Automation roles --
+    # -- Automation (tertiary) --
     - "Automation"
-    - "Hyperautomation"
     - "Low-Code"
     - "No-Code"
     - "GTM Engineer"
     - "RevOps"
-    - "Business Systems"
-    - "Internal Tools"
-    - "Transformation"
+    # -- German AI/ML keywords (DACH market) --
+    - "KI"
+    - "Künstliche Intelligenz"
+    # -- French Canadian keywords --
+    - "Gestionnaire de produit"
+    - "Directeur de produit"
+    - "Chef de produit"
   negative:
     # [CUSTOMIZE] Add keywords for roles you want to exclude
     - "Junior"
@@ -219,7 +224,7 @@ search_queries:
   # -- Spanish market specialized (high-value for Madrid/Barcelona-based candidates) --
 
   - name: Manfred — Tech Senior España
-    query: 'site:getmanfred.com/en/job-offers "Solutions Architect" OR "DevRel" OR "Forward Deployed" OR "AI Engineer" OR "Founding"'
+    query: 'site:getmanfred.com/en/job-openings "Solutions Architect" OR "DevRel" OR "Forward Deployed" OR "AI Engineer" OR "Founding"'
     enabled: true
 
   - name: Manfred — Remote AI/Senior
@@ -240,6 +245,40 @@ search_queries:
 
   - name: Welcome to the Jungle — Spain tech
     query: 'site:welcometothejungle.com Spain OR Madrid OR Barcelona "AI Engineer" OR "Solutions Architect" OR "DevRel" OR "Forward Deployed"'
+    enabled: true
+
+  # -- Canadian PM & AI roles (Canada-focused boards) --
+
+  - name: LinkedIn — Product Manager Canada
+    query: 'site:linkedin.com/jobs "Product Manager" "AI" OR "ML" OR "data" Canada OR Toronto OR Vancouver OR Montreal OR Ottawa remote'
+    enabled: true
+
+  - name: LinkedIn — Technical PM Canada
+    query: 'site:linkedin.com/jobs "Technical Product Manager" OR "Senior Product Manager" Canada OR Toronto OR Vancouver OR Waterloo'
+    enabled: true
+
+  - name: Indeed — Senior PM Canada
+    query: 'site:indeed.ca "Senior Product Manager" OR "Director Product" "AI" OR "SaaS" remote Canada'
+    enabled: true
+
+  - name: Job Bank GC — PM roles
+    query: 'site:jobbank.gc.ca "Product Manager" OR "Gestionnaire de produit" Toronto OR Vancouver OR Ottawa OR remote'
+    enabled: true
+
+  - name: Built In Toronto — AI PM
+    query: 'site:builtintoronto.com "Product Manager" "AI" OR "machine learning" OR "data"'
+    enabled: true
+
+  - name: BetaKit Jobs — Canadian tech
+    query: 'site:betakit.com/jobs "Product" OR "PM" "AI" OR "SaaS" Toronto OR Vancouver OR remote'
+    enabled: true
+
+  - name: TrueUp — Remote PM
+    query: 'site:trueup.io "Product Manager" OR "Senior PM" remote "AI" OR "platform"'
+    enabled: true
+
+  - name: Adzuna Canada — AI Senior PM
+    query: 'site:adzuna.ca "Product Manager" "AI" OR "Senior PM" Toronto OR Vancouver OR Montreal OR remote'
     enabled: true
 
   # -- DevRel-specific boards --
@@ -563,7 +602,7 @@ tracked_companies:
     notes: "FDE roles. Mostly US/London."
     enabled: true
 
-  # -- Canada / Vancouver tech & AI --
+  # -- Canada / Canadian tech & AI --
 
   - name: Later
     careers_url: https://job-boards.greenhouse.io/later
@@ -603,6 +642,76 @@ tracked_companies:
     scan_method: websearch
     scan_query: 'site:apply.workable.com/semios'
     notes: "Vancouver. Agtech and crop intelligence platform."
+    enabled: true
+
+  - name: Cohere
+    careers_url: https://jobs.ashbyhq.com/cohere
+    notes: "Toronto + remote. AI/LLM provider. Enterprise AI platform."
+    enabled: true
+
+  - name: Shopify
+    careers_url: https://www.shopify.com/careers
+    scan_method: websearch
+    scan_query: 'site:shopify.com/careers "Product Manager" OR "Senior PM" OR "Staff PM"'
+    notes: "Ottawa/Toronto/Remote. E-commerce giant. Large PM org."
+    enabled: true
+
+  - name: Wealthsimple
+    careers_url: https://jobs.lever.co/wealthsimple
+    notes: "Toronto. Fintech. Strong PM culture, remote-friendly."
+    enabled: true
+
+  - name: Wattpad
+    careers_url: https://job-boards.greenhouse.io/wattpad
+    api: https://boards-api.greenhouse.io/v1/boards/wattpad/jobs
+    notes: "Toronto. Storytelling platform, ML-driven recommendations."
+    enabled: true
+
+  - name: Coveo
+    careers_url: https://www.coveo.com/en/careers
+    scan_method: websearch
+    scan_query: 'site:coveo.com/careers "Product" OR "AI" OR "ML" Quebec OR remote'
+    notes: "Quebec City/Montreal. AI-powered search & recommendations."
+    enabled: true
+
+  - name: Element AI (ServiceNow)
+    careers_url: https://www.servicenow.com/careers.html
+    scan_method: websearch
+    scan_query: 'site:servicenow.com/careers "Product Manager" AI OR ML Canada OR Montreal'
+    notes: "Montreal (Element AI acquired by ServiceNow). Enterprise AI platform."
+    enabled: true
+
+  - name: Thinkific
+    careers_url: https://job-boards.greenhouse.io/thinkific
+    api: https://boards-api.greenhouse.io/v1/boards/thinkific/jobs
+    notes: "Vancouver. E-learning SaaS platform."
+    enabled: true
+
+  - name: Clio
+    careers_url: https://job-boards.greenhouse.io/clioglobal
+    api: https://boards-api.greenhouse.io/v1/boards/clioglobal/jobs
+    notes: "Vancouver. Legal practice management SaaS unicorn."
+    enabled: true
+
+  - name: Visier
+    careers_url: https://jobs.lever.co/visier
+    notes: "Vancouver. People analytics and workforce intelligence."
+    enabled: true
+
+  - name: Blue J Legal
+    careers_url: https://jobs.ashbyhq.com/bluejlegal
+    notes: "Toronto. AI-powered tax and legal research platform."
+    enabled: true
+
+  - name: 1Password
+    careers_url: https://jobs.ashbyhq.com/1password
+    notes: "Ottawa/Remote. Password and security management SaaS."
+    enabled: true
+
+  - name: FreshBooks
+    careers_url: https://job-boards.greenhouse.io/freshbooks
+    api: https://boards-api.greenhouse.io/v1/boards/freshbooks/jobs
+    notes: "Toronto. Cloud accounting SaaS."
     enabled: true
 
   # -- European tech (EMEA-friendly) --

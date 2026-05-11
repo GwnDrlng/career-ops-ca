@@ -64,7 +64,7 @@ Propositalmente não traduzido, porque é vocabulário padrão de tech:
 
 - `cv.md`, `pipeline`, `tracker`, `report`, `score`, `archetype`, `proof point`
 - Nomes de tools (`Playwright`, `WebSearch`, `WebFetch`, `Read`, `Write`, `Edit`, `Bash`)
-- Valores de status no tracker (`Evaluated`, `Applied`, `Interview`, `Offer`, `Rejected`)
+- Valores de status no tracker (`Evaluated`, `Applied`, `Interview`, `Opening`, `Rejected`)
 - Code snippets, caminhos de arquivo, comandos
 
 Os modos usam português tech brasileiro, como se fala em times de engenharia reais em São Paulo, Florianópolis ou Belo Horizonte: texto corrido em português, termos técnicos em inglês onde são de uso comum. Nada de traduzir "pipeline" para "tubulação" ou "cv.md" para "curriculo.md".

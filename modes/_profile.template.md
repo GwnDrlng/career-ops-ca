@@ -65,7 +65,7 @@ Frame profile as **"Technical builder with real-world proof"** that adapts frami
      password: demo-2026
      when_to_share: "LLMOps, AI Platform roles" -->
 
-If you have a live demo/dashboard (check profile.yml), offer access in applications for relevant roles.
+If you have a live demo/dashboard (check profile.yml), opening access in applications for relevant roles.
 
 ## Your Comp Targets
 

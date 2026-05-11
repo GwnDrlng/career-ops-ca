@@ -388,7 +388,7 @@ function analyze() {
   if (geoBlocker && geoBlocker.percentage >= 20) {
     recommendations.push({
       action: `Tighten location filters in portals.yml -- ${geoBlocker.percentage}% of applications hit a geo-restriction blocker`,
-      reasoning: `${geoBlocker.frequency} of ${enriched.length} offers are location-restricted (US/Canada-only). These are wasted evaluation effort.`,
+      reasoning: `${geoBlocker.frequency} of ${enriched.length} openings are location-restricted (US/Canada-only). These are wasted evaluation effort.`,
       impact: 'high',
     });
   }

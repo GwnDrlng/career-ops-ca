@@ -13,7 +13,7 @@ Key sections:
 
 ## Target Roles (modes/_profile.md)
 
-The archetype table in `_profile.md` determines how offers are scored and CVs are framed. Edit the table to match YOUR career targets:
+The archetype table in `_profile.md` determines how openings are scored and CVs are framed. Edit the table to match YOUR career targets:
 
 ```markdown
 | Archetype | Thematic axes | What they buy |

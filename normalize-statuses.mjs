@@ -3,7 +3,7 @@
  * normalize-statuses.mjs — Clean non-canonical states in applications.md
  *
  * Maps all non-canonical statuses to canonical ones per states.yml:
- *   Evaluada, Aplicado, Respondido, Entrevista, Oferta, Rechazado, Descartado, NO APLICAR
+ *   Evaluated, Applied, Responded, Interview, Opening, Rejected, Discarded, SKIP
  *
  * Also strips markdown bold (**) and dates from the status field,
  * moving DUPLICADO info to the notes column.
@@ -36,21 +36,37 @@ function normalizeStatus(raw) {
     return { status: 'Discarded', moveToNotes: raw.trim() };
   }
 
-  // CERRADA / Cancelada / Descartada → Discarded
+  // CERRADA / Cancelada / Descartada / Descartado / Écartée / Écarté → Discarded
   if (/^cerrada$/i.test(s)) return { status: 'Discarded' };
   if (/^cancelada/i.test(s)) return { status: 'Discarded' };
   if (/^descartada$/i.test(s)) return { status: 'Discarded' };
   if (/^descartado$/i.test(s)) return { status: 'Discarded' };
+  if (/^écartée?$/i.test(s)) return { status: 'Discarded' };
 
-  // Rechazada / Rechazado → Rejected
+  // Rechazada / Rechazado / Refusée / Refusé → Rejected
   if (/^rechazada?$/i.test(s)) return { status: 'Rejected' };
   if (/^rechazado\s+\d{4}/i.test(s)) return { status: 'Rejected' };
+  if (/^refusée?$/i.test(s)) return { status: 'Rejected' };
 
-  // Aplicado with date → Applied (strip date)
+  // Aplicado / Postulé with date → Applied (strip date)
   if (/^aplicado\s+\d{4}/i.test(s)) return { status: 'Applied' };
+  if (/^postulé?\s+\d{4}/i.test(s)) return { status: 'Applied' };
 
-  // CONDICIONAL / HOLD / EVALUAR / Verificar → Evaluated
-  if (/^(condicional|hold|evaluar|verificar)$/i.test(s)) return { status: 'Evaluated' };
+  // CONDICIONAL / HOLD / EVALUAR / Verificar / Évalué → Evaluated
+  if (/^(condicional|hold|evaluar|verificar|évalué)$/i.test(s)) return { status: 'Evaluated' };
+
+  // Postulé (without date) / Répondu → Applied / Responded
+  if (/^postulé?$/i.test(s)) return { status: 'Applied' };
+  if (/^répondu$/i.test(s)) return { status: 'Responded' };
+
+  // Entrevue → Interview
+  if (/^entrevue$/i.test(s)) return { status: 'Interview' };
+
+  // Offre → Offer
+  if (/^offre$/i.test(s)) return { status: 'Offer' };
+
+  // Ignoré → SKIP
+  if (/^ignoré$/i.test(s)) return { status: 'SKIP' };
 
   // MONITOR → SKIP
   if (/^monitor$/i.test(s)) return { status: 'SKIP' };
@@ -67,7 +83,7 @@ function normalizeStatus(raw) {
   // Already canonical (English, per states.yml) — just fix casing/bold
   const canonical = [
     'Evaluated', 'Applied', 'Responded', 'Interview',
-    'Offer', 'Rejected', 'Discarded', 'SKIP',
+    'Opening', 'Rejected', 'Discarded', 'SKIP',
   ];
   for (const c of canonical) {
     if (lower === c.toLowerCase()) return { status: c };
@@ -78,7 +94,7 @@ function normalizeStatus(raw) {
   if (['aplicado', 'enviada', 'aplicada', 'applied', 'sent'].includes(lower)) return { status: 'Applied' };
   if (['respondido'].includes(lower)) return { status: 'Responded' };
   if (['entrevista'].includes(lower)) return { status: 'Interview' };
-  if (['oferta'].includes(lower)) return { status: 'Offer' };
+  if (['oferta'].includes(lower)) return { status: 'Opening' };
   if (['cerrada', 'descartada'].includes(lower)) return { status: 'Discarded' };
   if (['no aplicar', 'no_aplicar', 'skip'].includes(lower)) return { status: 'SKIP' };
 

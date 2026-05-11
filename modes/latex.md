@@ -11,7 +11,7 @@ Export a tailored, ATS-optimized CV as a `.tex` file and compile it to PDF via `
 5. Detect JD language → CV language (EN default)
 6. Detect role archetype → adapt framing
 7. Rewrite Professional Summary injecting JD keywords (same rules as `pdf` mode — NEVER invent skills)
-8. Select top 3-4 most relevant projects for the offer
+8. Select top 3-4 most relevant projects for the opening
 9. Reorder experience bullets by JD relevance
 10. Inject keywords naturally into existing achievements
 11. Generate the `.tex` file using `templates/cv-template.tex`

@@ -29,11 +29,11 @@
 The evaluation uses 6 blocks (A-F) with a global score of 1-5:
 
 | Dimension | What it measures |
-|-----------|-----------------|
-| Match con CV | Skills, experience, proof points alignment |
+|-----------|------------------|
+| CV Match | Skills, experience, proof points alignment |
 | North Star alignment | How well the role fits the user's target archetypes (from _profile.md) |
 | Comp | Salary vs market (5=top quartile, 1=well below) |
-| Cultural signals | Company culture, growth, stability, remote policy |
+| Culture Signals | Company culture, growth, stability, remote policy |
 | Red flags | Blockers, warnings (negative adjustments) |
 | **Global** | Weighted average of above |
 
@@ -73,18 +73,56 @@ Block G assesses whether a posting is likely a real, active opening. It does NOT
 
 ## Archetype Detection
 
-Classify every offer into one of these types (or hybrid of 2):
+Classify every offer into one of these types (or hybrid of 2). The default set is optimized for **Product Management** but includes adjacent AI roles. `modes/_profile.md` may add, remove, or override archetypes based on the candidate's specific targets.
 
 | Archetype | Key signals in JD |
 |-----------|-------------------|
-| AI Platform / LLMOps | "observability", "evals", "pipelines", "monitoring", "reliability" |
-| Agentic / Automation | "agent", "HITL", "orchestration", "workflow", "multi-agent" |
-| Technical AI PM | "PRD", "roadmap", "discovery", "stakeholder", "product manager" |
-| AI Solutions Architect | "architecture", "enterprise", "integration", "design", "systems" |
-| AI Forward Deployed | "client-facing", "deploy", "prototype", "fast delivery", "field" |
-| AI Transformation | "change management", "adoption", "enablement", "transformation" |
+| **Product Manager (Core)** | "product manager", "roadmap", "PRD", "discovery", "stakeholder", "user research", "OKR", "feature prioritization" |
+| **Technical AI PM** | "AI product", "ML platform", "model lifecycle", "ML ops roadmap", "data product manager", "AI/ML", "product strategy" + AI terms |
+| **Growth PM** | "growth", "experimentation", "A/B test", "funnel", "retention", "activation", "metrics-driven" |
+| **Platform / Infrastructure PM** | "platform", "API", "developer experience", "internal tools", "infrastructure product", "developer platform" |
+| **AI Solutions Architect** | "architecture", "enterprise", "integration", "design", "systems", "consulting", "pre-sales" |
+| **AI Transformation Lead** | "change management", "adoption", "enablement", "transformation", "digital transformation", "organizational change" |
 
 After detecting archetype, read `modes/_profile.md` for the user's specific framing and proof points for that archetype.
+
+## Compensation Guide (Canadian Market)
+
+When researching comp for Canadian roles, use these sources:
+
+| Source | URL / Access | Covers |
+|--------|--------------|--------|
+| Levels.fyi Canada | https://www.levels.fyi/t/product-manager/locations/canada | PM salaries at tech companies, CAD |
+| Glassdoor Canada | https://www.glassdoor.ca | Broad company coverage, CAD salary ranges |
+| Robert Half Salary Guide | https://www.roberthalf.com/ca/en/salary-guide | Canadian edition, PM + tech roles |
+| StatCan Job Vacancy Survey | https://www.statcan.gc.ca | Aggregate wage data by NOC code |
+| Indeed Canada | https://ca.indeed.com | Posted salary ranges (use as cross-check) |
+
+**Currency rules:**
+- Always research and report comp in **CAD** for Canadian roles
+- If a US company posts USD figures for a Canadian remote role, convert at current exchange rate and note both
+- Levels.fyi defaults to USD; use `/locations/canada` routes for CAD data
+- Note whether ranges are base salary only or total comp (base + bonus + equity)
+
+**Canadian comp norms:**
+- Base salaries are typically 10-25% lower than US equivalents for the same role
+- Equity grants at Canadian companies are often smaller or RSU-only (no startup equity)
+- Benefits (RRSP matching, provincial health, extended health) are a significant part of total comp
+- Annual bonus targets typically 10-20% at growth-stage, 15-25% at enterprise
+
+## Canadian Employment Law Notes
+
+When evaluating Canadian job postings, be aware of:
+
+- **PIPEDA** (federal privacy law) applies to personal data collection in the hiring process
+- **Quebec Law 25** adds stricter consent and data localization requirements for Quebec-based roles
+- **Non-competes** are generally unenforceable in Canada except for senior executives selling a business (Ontario ESA explicitly bans non-competes for most employees since 2021)
+- **Employment standards** vary by province:
+  - Ontario ESA: 2 weeks vacation minimum, statutory holidays, termination pay
+  - BC ESA: similar minimums, different holiday structure
+  - Quebec: French language requirements (Charter of the French Language), different notice periods
+- **Probation periods** typically 3-6 months, with reduced termination obligations
+- **Benefits expectations**: provincial health coverage (MSP/OHIP/RAMQ) + extended health, dental, RRSP matching (3-5% typical), stock options/RSUs at tech companies
 
 ## Global Rules
 
@@ -97,13 +135,15 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 5. Recommend comp below market rate
 6. Generate a PDF without reading the JD first
 7. Use corporate-speak
-8. Ignore the tracker (every evaluated offer gets registered)
+8. Ignore the tracker (every evaluated opening gets registered)
+9. Apply to more than one role at the same company within a 12-month rolling window, unless a previous application was Rejected or Discarded
 
 ### ALWAYS
 
 0. **Cover letter:** If the form allows it, ALWAYS include one. Same visual design as CV. JD quotes mapped to proof points. 1 page max.
 1. Read cv.md, _profile.md, and article-digest.md (if exists) before evaluating
 1b. **First evaluation of each session:** Run `node cv-sync-check.mjs`. If warnings, notify user.
+1c. **Company conflict check:** Before evaluating any role, read `data/applications.md` and `data/pipeline.md`. Search for rows where Company matches the current company. If any rows exist with status Applied/Responded/Interview/Evaluated within the last 12 months AND status is NOT Rejected/Discarded, surface a conflict notice and ask the user to proceed or skip (see opening.md Step -1)
 2. Detect the role archetype and adapt framing per _profile.md
 3. Cite exact lines from CV when matching
 4. Use WebSearch for comp and company data
@@ -121,14 +161,14 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 |------|-----|
 | WebSearch | Comp research, trends, company culture, LinkedIn contacts, fallback for JDs |
 | WebFetch | Fallback for extracting JDs from static pages |
-| Playwright | Verify offers (browser_navigate + browser_snapshot). **NEVER 2+ agents with Playwright in parallel.** |
+| Playwright | Verify openings (browser_navigate + browser_snapshot). **NEVER 2+ agents with Playwright in parallel.** |
 | Read | cv.md, _profile.md, article-digest.md, cv-template.html |
 | Write | Temporary HTML for PDF, applications.md, reports .md |
 | Edit | Update tracker |
 | Canva MCP | Optional visual CV generation. Duplicate base design, edit text, export PDF. Requires `cv.canva_resume_design_id` in profile.yml. |
 | Bash | `node generate-pdf.mjs` |
 
-### Time-to-offer priority
+### Time-to-opening priority
 - Working demo + metrics > perfection
 - Apply sooner > learn more
 - 80/20 approach, timebox everything

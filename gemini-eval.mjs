@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * gemini-eval.mjs — Gemini-powered Job Offer Evaluator for career-ops
+ * gemini-eval.mjs — Gemini-powered Job Opening Evaluator for career-ops
  *
  * A free-tier alternative to the Claude-based pipeline.
- * Reads evaluation logic from modes/oferta.md + modes/_shared.md,
+ * Reads evaluation logic from modes/opening.md + modes/_shared.md,
  * reads the user's resume from cv.md, and evaluates a Job Description
  * passed as a command-line argument.
  *
@@ -41,7 +41,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 const PATHS = {
   // Primary evaluation logic lives in these two mode files
   shared:   join(ROOT, 'modes', '_shared.md'),
-  oferta:   join(ROOT, 'modes', 'oferta.md'),
+  oferta:   join(ROOT, 'modes', 'opening.md'),
   // Canonical skill path referenced in Issue #344
   evaluate: join(ROOT, '.claude', 'skills', 'career-ops', 'SKILL.md'),
   cv:       join(ROOT, 'cv.md'),
@@ -60,7 +60,7 @@ if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
 ║           career-ops — Gemini Evaluator (free-tier)             ║
 ╚══════════════════════════════════════════════════════════════════╝
 
-  Evaluate a job offer using Google Gemini instead of Claude.
+  Evaluate a job opening using Google Gemini instead of Claude.
 
   USAGE
     node gemini-eval.mjs "<JD text>"
@@ -164,14 +164,14 @@ if (!readdirSync) {
 console.log('\n📂  Loading context files...');
 
 const sharedContext  = readFile(PATHS.shared,   'modes/_shared.md');
-const ofertaLogic    = readFile(PATHS.oferta,   'modes/oferta.md');
+const ofertaLogic    = readFile(PATHS.oferta,   'modes/opening.md');
 const cvContent      = readFile(PATHS.cv,       'cv.md');
 
 // ---------------------------------------------------------------------------
 // Build the system prompt (mirrors the Claude skill router logic)
 // ---------------------------------------------------------------------------
 const systemPrompt = `You are career-ops, an AI-powered job search assistant.
-You evaluate job offers against the user's CV using a structured A-G scoring system.
+You evaluate job openings against the user's CV using a structured A-G scoring system.
 
 Your evaluation methodology is defined below. Follow it exactly.
 

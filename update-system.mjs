@@ -3,7 +3,7 @@
 /**
  * update-system.mjs — Safe auto-updater for career-ops
  *
- * Updates ONLY system layer files (modes, scripts, dashboard, templates).
+ * Updates ONLY system layer files (modes, scripts, web dashboard, templates).
  * NEVER touches user data (cv.md, profile.yml, _profile.md, data/, reports/).
  *
  * Usage:
@@ -31,15 +31,15 @@ const RELEASES_API = 'https://api.github.com/repos/santifer/career-ops/releases/
 const SYSTEM_PATHS = [
   'modes/_shared.md',
   'modes/_profile.template.md',
-  'modes/oferta.md',
+  'modes/opening.md',
   'modes/pdf.md',
   'modes/scan.md',
   'modes/batch.md',
   'modes/apply.md',
   'modes/auto-pipeline.md',
-  'modes/contacto.md',
+  'modes/contact.md',
   'modes/deep.md',
-  'modes/ofertas.md',
+  'modes/openings.md',
   'modes/pipeline.md',
   'modes/project.md',
   'modes/tracker.md',
@@ -71,7 +71,7 @@ const SYSTEM_PATHS = [
   'test-all.mjs',
   'batch/batch-prompt.md',
   'batch/batch-runner.sh',
-  'dashboard/',
+  'web/',
   'templates/',
   'fonts/',
   '.claude/skills/',

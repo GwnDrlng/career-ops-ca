@@ -35,7 +35,7 @@ Interactive mode for when the candidate is filling out an application form in Ch
 2. Search in `reports/` by company name (case-insensitive grep)
 3. If there is a match → load the full report
 4. If there is a Section G → load previous draft answers as a base
-5. If there is NO match → notify and offer to run a quick auto-pipeline
+5. If there is NO match → notify and opening to run a quick auto-pipeline
 
 ## Step 3 — Detect changes in the role
 
@@ -91,6 +91,22 @@ Notes:
 - [Any observations about the role, changes, etc.]
 - [Personalization suggestions the candidate should review]
 ```
+
+## Canadian Application Form Notes
+
+When filling out Canadian job applications, be aware of:
+
+- **Social Insurance Number (SIN)**: NEVER provide a SIN on an application form. It is legally not required until after hiring. If a form asks, leave it blank or write "Will provide upon hire."
+- **Work authorization**: Common Canadian forms ask "Are you legally entitled to work in Canada?" — know your status:
+  - Canadian citizen / PR: Select "Yes" without restriction
+  - Open work permit: Select "Yes" with expiry date
+  - Employer-specific work permit: Select "Yes, with employer-specific permit" — the employer must do an LMIA unless exempt
+  - Study permit with off-campus work: Select "Yes" — work off-campus up to 20 hrs/week during studies, full-time during breaks
+- **Address format**: Canadian addresses use: Unit/Apt, Street Number + Name, City, Province (2-letter code: ON, BC, QC, AB, etc.), Postal Code (A1A 1A1 format)
+- **Phone format**: +1 (XXX) XXX-XXXX. Canadian area codes are interchangeable with US in NANP.
+- **Salary expectations**: Most Canadian provinces do NOT require salary history. Ontario banned salary history questions in 2018. If asked for expected salary, provide a CAD range based on local market data.
+- **Bilingual applications**: For Quebec-based roles, the application form may be in French. Respond in the language of the posting — a French CV may be required for Quebec roles.
+- **Indigenous self-identification**: Some Canadian employers (especially federal/crown corps) have voluntary self-identification for Indigenous status (First Nations, Métis, Inuit). This is optional and used for employment equity.
 
 ## Step 6 — Post-apply (optional)
 

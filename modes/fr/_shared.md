@@ -156,7 +156,7 @@ Dans les offres et negociations francophones, certains termes n'existent pas sur
 - Dimension remote pour du hybride hors de ton pays : Score **3.0** (pas 1.0)
 - Score 1.0 uniquement si l'offre dit explicitement "presence obligatoire 4-5 jours/semaine, aucune exception"
 
-### Priorite time-to-offer
+### Priorite time-to-opening
 - Demo fonctionnelle + metriques > perfection
 - Postuler vite > apprendre davantage
 - Approche 80/20, tout est timebox

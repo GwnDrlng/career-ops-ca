@@ -169,7 +169,7 @@ Em vagas e negociações brasileiras, existem termos e práticas que não aparec
 - Dimensão remoto em híbrido fora do seu estado/país: Score **3.0** (não 1.0)
 - Score 1.0 apenas se a vaga diz explicitamente "deve estar presencial 4-5 dias/semana, sem exceções"
 
-### Prioridade Time-to-Offer
+### Prioridade Time-to-Opening
 - Demo funcional + métricas > perfeição
 - Aplicar mais rápido > aprender mais
 - Abordagem 80/20, tudo com prazo definido

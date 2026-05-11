@@ -1,21 +1,21 @@
-# Modo: pipeline — Inbox de URLs (Second Brain)
+# Mode: pipeline — URL Inbox (Second Brain)
 
-Procesa URLs de ofertas acumuladas en `data/pipeline.md`. El usuario agrega URLs cuando quiera y luego ejecuta `/career-ops pipeline` para procesarlas todas.
+Processes accumulated opening URLs in `data/pipeline.md`. The user adds URLs whenever they want and then runs `/career-ops pipeline` to process them all.
 
 ## Workflow
 
-1. **Leer** `data/pipeline.md` → buscar items `- [ ]` en la sección "Pendientes"
-2. **Para cada URL pendiente**:
+1. **Read** `data/pipeline.md` → look for `- [ ]` items in the "Pending" section
+2. **For each pending URL**:
    a. Calcular siguiente `REPORT_NUM` secuencial (leer `reports/`, tomar el número más alto + 1)
    b. **Extraer JD** usando Playwright (browser_navigate + browser_snapshot) → WebFetch → WebSearch
    c. Si la URL no es accesible → marcar como `- [!]` con nota y continuar
    d. **Ejecutar auto-pipeline completo**: Evaluación A-F → Report .md → PDF (si score >= 3.0) → Tracker
    e. **Mover de "Pendientes" a "Procesadas"**: `- [x] #NNN | URL | Empresa | Rol | Score/5 | PDF ✅/❌`
 3. **Si hay 3+ URLs pendientes**, lanzar agentes en paralelo (Agent tool con `run_in_background`) para maximizar velocidad.
-4. **Al terminar**, mostrar tabla resumen:
+4. **When done**, display summary table:
 
 ```
-| # | Empresa | Rol | Score | PDF | Acción recomendada |
+| # | Company | Role | Score | PDF | Recommended Action |
 ```
 
 ## Formato de pipeline.md
@@ -34,13 +34,13 @@ Procesa URLs de ofertas acumuladas en `data/pipeline.md`. El usuario agrega URLs
 ## Detección inteligente de JD desde URL
 
 1. **Playwright (preferido):** `browser_navigate` + `browser_snapshot`. Funciona con todas las SPAs.
-2. **WebFetch (fallback):** Para páginas estáticas o cuando Playwright no está disponible.
+2. **WebFetch (fallback):** For static pages or when Playwright is not available.
 3. **WebSearch (último recurso):** Buscar en portales secundarios que indexan el JD.
 
 **Casos especiales:**
 - **LinkedIn**: Puede requerir login → marcar `[!]` y pedir al usuario que pegue el texto
 - **PDF**: Si la URL apunta a un PDF, leerlo directamente con Read tool
-- **`local:` prefix**: Leer el archivo local. Ejemplo: `local:jds/linkedin-pm-ai.md` → leer `jds/linkedin-pm-ai.md`
+- **`local:` prefix**: Read the local file. Example: `local:jds/linkedin-pm-ai.md` → read `jds/linkedin-pm-ai.md`
 
 ## Numeración automática
 

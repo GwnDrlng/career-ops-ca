@@ -14,7 +14,7 @@ Analyze all tracked applications to find patterns in outcomes and surface action
 
 ## Minimum Threshold
 
-Before running analysis, check: does `data/applications.md` have at least 5 entries with status beyond "Evaluated" (i.e., Applied, Responded, Interview, Offer, Rejected, Discarded, SKIP)?
+Before running analysis, check: does `data/applications.md` have at least 5 entries with status beyond "Evaluated" (i.e., Applied, Responded, Interview, Opening, Rejected, Discarded, SKIP)?
 
 If not, tell the user:
 > "Not enough data yet -- {N}/5 applications have progressed beyond evaluation. Keep applying and come back when you have more outcomes to analyze."
@@ -34,7 +34,7 @@ Parse the JSON output. It contains:
 | Key | Contents |
 |-----|----------|
 | `metadata` | Total entries, date range, analysis date, counts by outcome |
-| `funnel` | Count per status stage (evaluated, applied, interview, offer, etc.) |
+| `funnel` | Count per status stage (evaluated, applied, interview, opening, etc.) |
 | `scoreComparison` | Avg/min/max score per outcome group (positive, negative, self_filtered, pending) |
 | `archetypeBreakdown` | Per-archetype: total, positive, negative, self_filtered, conversion rate |
 | `blockerAnalysis` | Most frequent hard blockers: geo-restriction, stack-mismatch, seniority, onsite |
@@ -126,7 +126,7 @@ Example:
 >
 > Full report: `reports/pattern-analysis-2026-04-08.md`
 
-## Step 4 — Offer to Apply Recommendations
+## Step 4 — Opening to Apply Recommendations
 
 Ask the user if they want to act on any recommendations:
 
@@ -148,7 +148,7 @@ For reference, outcomes are classified as:
 
 | Status | Outcome |
 |--------|---------|
-| Interview, Offer, Responded, Applied | **Positive** (invested effort or got traction) |
-| Rejected, Discarded | **Negative** (company said no or offer closed) |
+| Interview, Opening, Responded, Applied | **Positive** (invested effort or got traction) |
+| Rejected, Discarded | **Negative** (company said no or opening closed) |
 | SKIP, NO APLICAR | **Self-filtered** (user decided not to apply) |
 | Evaluated | **Pending** (no action taken yet) |

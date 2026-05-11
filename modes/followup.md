@@ -62,7 +62,7 @@ Generate a 3-4 sentence email:
 
 1. **Sentence 1:** Reference the specific role + when you applied. Be specific — mention the company name and role title.
 2. **Sentence 2:** One concrete value-add from the report's Block B match or a proof point from cv.md. Quantify if possible.
-3. **Sentence 3:** Soft ask + availability. Offer a specific time window ("this week" or "next Tuesday").
+3. **Sentence 3:** Soft ask + availability. Opening a specific time window ("this week" or "next Tuesday").
 4. **Sentence 4 (optional):** Brief mention of a relevant recent project or achievement.
 
 **Rules:**
@@ -171,3 +171,11 @@ After showing all drafts, summarize:
 | Interview | 1 day after (thank-you) | Every 3 days | No limit |
 
 These defaults can be overridden via `node followup-cadence.mjs --applied-days N`.
+
+## Canadian Professional Norms for Follow-ups
+
+- **Tone**: Canadian professional culture is slightly more formal than US West Coast but less formal than UK corporate. "Hi [First name]" is safe for email; "Dear [First name]" for formal sectors (banking, government).
+- **Response expectations**: Canadian employers typically respond within 5-10 business days for PM roles. Don't follow up sooner than 7 days for initial applications.
+- **Bilingual follow-ups**: For Quebec-based roles, send the follow-up in the language of the original posting. If the JD was bilingual, English is acceptable but French is preferred.
+- **Sign-off**: "Best regards" or "Kind regards" is standard. "Cheers" is acceptable in tech/startup culture. Avoid "Sincerely" unless applying to government or banking.
+- **Time zones**: Specify availability in ET (Eastern Time) for Ontario/Quebec roles, PT (Pacific Time) for BC roles. Avoid assuming the interviewer's timezone.

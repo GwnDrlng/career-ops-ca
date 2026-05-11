@@ -8,7 +8,7 @@ This folder shows how to:
 
 1. Configure `archetypes:` in `profile.yml` with two `fit: primary` entries instead of one.
 2. Write a `cv.md` that puts measurable wins on both sides in front of the recruiter without diluting either.
-3. Set two compensation ranges. Engineering and teaching pay differently, often by 20-40%, and the evaluator needs to know which range applies to a given offer.
+3. Set two compensation ranges. Engineering and teaching pay differently, often by 20-40%, and the evaluator needs to know which range applies to a given opening.
 4. At evaluation time, decide which track to lead with for the specific JD on the desk.
 
 ---
@@ -30,7 +30,7 @@ The persona is fictional (`Sam Rivera <sam@example.com>`). Do not copy values di
 Use it only if all of these are true:
 
 1. You have measurable, recent (under 3 years old) wins on two different archetypes. Not "I taught a workshop once", but real numbers: hours taught, alumni placed, retention rates, NPS -- and on the engineering side, LOC shipped, systems owned, latency or cost moved.
-2. You will actually take an offer from either side. If you would only really accept one and grudgingly take the other, do single-track and treat the other side as one strong bullet in the summary.
+2. You will actually take an opening from either side. If you would only really accept one and grudgingly take the other, do single-track and treat the other side as one strong bullet in the summary.
 3. The two tracks are at roughly the same seniority. A junior teacher who is also a staff engineer is a single-track engineer who happens to mentor.
 
 Use single-track instead if:
@@ -59,7 +59,7 @@ Lead the Professional Summary with the combination itself -- "senior AI engineer
 Put your engineering range in `compensation.target_range` (it's usually the higher one) and the teaching range in the optional `compensation.alternate_ranges` block. The evaluator picks the right one based on the JD.
 
 ### Evaluation reports
-When career-ops evaluates an offer, it should detect which archetype the JD targets and pick the matching salary range, the matching CV emphasis, and the matching STAR stories. With two `fit: primary` entries this mostly just works, but check the `Archetype:` line in the report header. If it picked wrong, the rest of the report is wrong too.
+When career-ops evaluates an opening, it should detect which archetype the JD targets and pick the matching salary range, the matching CV emphasis, and the matching STAR stories. With two `fit: primary` entries this mostly just works, but check the `Archetype:` line in the report header. If it picked wrong, the rest of the report is wrong too.
 
 ---
 

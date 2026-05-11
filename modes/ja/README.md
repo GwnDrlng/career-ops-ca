@@ -64,7 +64,7 @@ language:
 
 - `cv.md`、`pipeline`、`tracker`、`report`、`score`、`archetype`、`proof point`
 - ツール名（`Playwright`、`WebSearch`、`WebFetch`、`Read`、`Write`、`Edit`、`Bash`）
-- tracker のステータス値（`Evaluated`、`Applied`、`Interview`、`Offer`、`Rejected`）
+- tracker のステータス値（`Evaluated`、`Applied`、`Interview`、`Opening`、`Rejected`）
 - コードスニペット、ファイルパス、コマンド
 
 モードは、東京・大阪・福岡の実際のエンジニアリングチームで使われているような自然な日本語テック表現を使います：地の文は日本語、定着しているテック用語は英語のままです。「pipeline」を「配管」と訳したり、「cv.md」を「履歴書.md」にしたりはしません。

@@ -152,7 +152,7 @@ In deutschen Stellenanzeigen und Vertragsverhandlungen tauchen Begriffe auf, die
 - Remote-Dimension bei Hybrid außerhalb deines Landes: Score **3.0** (nicht 1.0)
 - Score 1.0 nur, wenn die Stellenanzeige explizit sagt "muss 4-5 Tage/Woche vor Ort, keine Ausnahmen"
 
-### Time-to-Offer-Priorität
+### Time-to-Opening-Priorität
 - Funktionierende Demo + Metriken > Perfektion
 - Schneller bewerben > mehr lernen
 - 80/20-Ansatz, alles zeitlich begrenzen

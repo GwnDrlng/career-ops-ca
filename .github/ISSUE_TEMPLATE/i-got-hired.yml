@@ -49,7 +49,7 @@ body:
   - type: input
     id: time_to_hire
     attributes:
-      label: Time from first scan to offer
+      label: Time from first scan to opening
       placeholder: "e.g., 2 weeks, 1 month, 3 months"
   - type: textarea
     id: advice
