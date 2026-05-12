@@ -2,8 +2,10 @@
 	import type { OfferDTO } from '$lib/types';
 	import { scoreCls } from '$lib/utils/score';
 	import { renderMarkdown } from '$lib/utils/markdown';
-	import { updateOfferState, fetchOffer } from '$lib/api';
+	import { updateOfferState, fetchOffer, updateOfferLoc } from '$lib/api';
 	import { offers, view, evalSize, pipeSize } from '$lib/stores';
+
+	function focusOnMount(el: HTMLElement) { el.focus(); }
 
 	interface Props { offer: OfferDTO | null; }
 	let { offer }: Props = $props();
@@ -11,6 +13,8 @@
 	let reportMD = $state<string | null>(null);
 	let loadingReport = $state(false);
 	let generatingPDF = $state(false);
+	let editingLoc = $state(false);
+	let locDraft = $state('');
 
 	$effect(() => {
 		if (!offer) { reportMD = null; return; }
@@ -51,6 +55,34 @@
 	function minimise() {
 		evalSize.set('min');
 		pipeSize.set('normal');
+	}
+
+	let submittingLoc = false;
+
+	async function submitLoc() {
+		if (submittingLoc) return;
+		const val = locDraft.trim();
+		if (!val || !offer) { editingLoc = false; locDraft = ''; return; }
+		submittingLoc = true;
+		const n = offer.n;
+		// Optimistic update: show the typed value immediately
+		offers.update(list => list.map(o => o.n === n ? { ...o, loc: val } : o));
+		editingLoc = false;
+		locDraft = '';
+		try {
+			const updated = await updateOfferLoc(n, val);
+			offers.update(list => list.map(o => o.n === updated.n ? { ...o, loc: updated.loc } : o));
+		} catch {
+			// Revert on failure
+			offers.update(list => list.map(o => o.n === n ? { ...o, loc: '' } : o));
+		} finally {
+			submittingLoc = false;
+		}
+	}
+
+	function startEditLoc() {
+		locDraft = '';
+		editingLoc = true;
 	}
 </script>
 
@@ -97,10 +129,21 @@
 
 		<div class="chiprow" style="padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg-1)">
 			{#if offer.archetype}<span class="chip mono">{offer.archetype}</span>{/if}
-			{#if offer.loc}<span class="chip mono">{offer.loc}</span>{:else}
-				<span class="chip mono bad" title="Location could not be verified. Copy job description from posting to evaluate.">
+			{#if offer.loc}
+				<span class="chip mono">{offer.loc}</span>
+			{:else if editingLoc}
+				<input
+					class="chip mono loc-input"
+					placeholder="e.g. Remote · US"
+					bind:value={locDraft}
+					onkeydown={(e) => { if (e.key === 'Enter') submitLoc(); if (e.key === 'Escape') { editingLoc = false; locDraft = ''; } }}
+					onblur={submitLoc}
+					use:focusOnMount
+				/>
+			{:else}
+				<button class="chip mono bad loc-unverified" title="Click to add location manually" onclick={startEditLoc}>
 					⚠ location unverified
-				</span>
+				</button>
 			{/if}
 			{#if offer.comp}<span class="chip mono">{offer.comp}</span>{/if}
 			{#if offer.legitimacy}

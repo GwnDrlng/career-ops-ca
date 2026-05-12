@@ -228,6 +228,9 @@ a:hover { text-decoration: underline; }
 .chip.warn  { color: var(--gold); }
 .chip.bad   { color: var(--red); }
 .chip.muted { color: var(--fg-3); }
+button.loc-unverified { cursor: pointer; background: none; border-color: var(--red); }
+button.loc-unverified:hover { background: color-mix(in srgb, var(--red) 12%, transparent); }
+input.loc-input { background: var(--bg-1); outline: none; width: 140px; cursor: text; }
 
 /* ────────── pipeline list ────────── */
 .list {

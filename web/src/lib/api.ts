@@ -46,6 +46,16 @@ export async function saveFile(path: string, content: string): Promise<void> {
 	);
 }
 
+export async function updateOfferLoc(n: number, loc: string): Promise<OfferDTO> {
+	return json<OfferDTO>(
+		await fetch(`${BASE}/offers/${n}/loc`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ loc })
+		})
+	);
+}
+
 export async function generatePDF(n: number): Promise<{ ok: boolean }> {
 	return json<{ ok: boolean }>(
 		await fetch(`${BASE}/offers/${n}/pdf`, { method: 'POST' })
