@@ -37,9 +37,9 @@
 
 ---
 
-<p align="center">
-  <img src="docs/demo.gif" alt="Career-Ops Demo" width="800">
-</p>
+https://github.com/user-attachments/assets/71418831-a32d-4cc9-ac22-227cca75d439
+
+
 
 <p align="center"><strong>740+ job listings evaluated · 100+ personalized CVs · 1 dream role landed</strong></p>
 
