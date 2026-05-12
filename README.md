@@ -40,9 +40,6 @@
 https://github.com/user-attachments/assets/71418831-a32d-4cc9-ac22-227cca75d439
 
 
-
-<p align="center"><strong>740+ job listings evaluated · 100+ personalized CVs · 1 dream role landed</strong></p>
-
 <p align="center"><a href="https://discord.gg/8pRpHETxa4"><img src="https://img.shields.io/badge/Join_the_community-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a></p>
 
 > **This is Gwen Darling's personal fork** of [santifer/career-ops](https://github.com/santifer/career-ops), configured for Director / Staff roles in B2B SaaS, AI/ML, cybersecurity, and fintech — Canadian market, remote-first. The system, tooling, and modes are upstream; all profile, CV, targets, and scoring weights are personal.
