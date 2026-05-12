@@ -1,6 +1,6 @@
 # Career-Ops
 
-[English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [한국어](README.ko-KR.md) | [日本語](README.ja.md) | [Русский](README.ru.md) | [简体中文](README.cn.md) | [繁體中文](README.zh-TW.md)
+[English](README.md) | 
 
 <p align="center">
   <a href="https://linkedin.com/in/gwendarling"><img src="docs/hero-banner.jpg" alt="Career-Ops — Multi-Agent Job Search System" width="800"></a>
@@ -45,7 +45,7 @@
 
 <p align="center"><a href="https://discord.gg/8pRpHETxa4"><img src="https://img.shields.io/badge/Join_the_community-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a></p>
 
-> **This is Gwen Darling's personal fork** of [santifer/career-ops](https://github.com/santifer/career-ops), configured for Director/Head of Product roles in B2B SaaS, AI/ML, cybersecurity, and fintech — Canadian market, remote-first. The system, tooling, and modes are upstream; all profile, CV, targets, and scoring weights are personal.
+> **This is Gwen Darling's personal fork** of [santifer/career-ops](https://github.com/santifer/career-ops), configured for Director / Staff roles in B2B SaaS, AI/ML, cybersecurity, and fintech — Canadian market, remote-first. The system, tooling, and modes are upstream; all profile, CV, targets, and scoring weights are personal.
 
 ## What Is This
 
@@ -69,7 +69,7 @@ Built by someone who used it to evaluate 740+ job openings, generate 100+ tailor
 
 | Feature | Description |
 |---------|-------------|
-| **Auto-Pipeline** | Paste a URL, get a full evaluation + PDF + tracker entry |
+| **Auto-Pipeline** | Paste a URL, get a full evaluation + report + tracker entry (PDF generated on explicit request) |
 | **6-Block Evaluation** | Role summary, CV match, level strategy, comp research, personalization, interview prep (STAR+R) |
 | **Interview Story Bank** | Accumulates STAR+Reflection stories across evaluations -- 5-10 master stories that answer any behavioral question |
 | **Negotiation Scripts** | Salary negotiation frameworks, geographic discount pushback, competing opening leverage |
@@ -198,26 +198,27 @@ You paste a job URL or description
 │  (reads cv.md)   │
 └────────┬─────────┘
          │
-    ┌────┼────┐
-    ▼    ▼    ▼
- Report  PDF  Tracker
-  .md   .pdf   .tsv
+    ┌────┴────┐
+    ▼         ▼
+ Report     Tracker
+  .md        .tsv
+
+ PDF generated on explicit request only
+ ("generate PDF" / /career-ops pdf)
 ```
 
 ## Pre-configured Portals
 
 The scanner comes with **45+ companies** ready to scan and **19 search queries** across major job boards. Copy `templates/portals.example.yml` to `portals.yml` and add your own:
 
-**AI Labs:** Anthropic, OpenAI, Mistral, Cohere, LangChain, Pinecone
-**Voice AI:** ElevenLabs, PolyAI, Parloa, Hume AI, Deepgram, Vapi, Bland AI
-**AI Platforms:** Retool, Airtable, Vercel, Temporal, Glean, Arize AI
-**Contact Center:** Ada, LivePerson, Sierra, Decagon, Talkdesk, Genesys
-**Enterprise:** Salesforce, Twilio, Gong, Dialpad
-**LLMOps:** Langfuse, Weights & Biases, Lindy, Cognigy, Speechmatics
-**Automation:** n8n, Zapier, Make.com
-**European:** Factorial, Attio, Tinybird, Clarity AI, Travelperk
+**Cybersecurity / Security SaaS:** Arctic Wolf Networks, Okta, CrowdStrike, SentinelOne, Palo Alto Networks, Zscaler, Cloudflare, Snyk, Wiz, Fortive
+**Enterprise SaaS:** Salesforce, HubSpot, Shopify, Datadog, Twilio, Stripe, Square, Slack, Figma, Notion, Supabase
+**FinTech:** Wise, Guidepoint, Manulife Financial
+**Canadian Tech:** Kinaxis, Benevity, Jobber
+**B2B SaaS Platforms:** Airtable, Retool, Linear
+**AI-First SaaS:** Anthropic, OpenAI
 
-**Job boards searched:** Ashby, Greenhouse, Lever, Wellfound, Workable, RemoteFront
+**Job boards searched:** Ashby, Greenhouse, Lever, LinkedIn Canada, Indeed Canada, YC Work at a Startup, AngelList, Built in Toronto
 
 ## Web Dashboard
 
@@ -240,9 +241,10 @@ career-ops/
 ├── article-digest.md            # Your proof points (optional)
 ├── config/
 │   └── profile.example.yml      # Template for your profile
-├── modes/                       # 14 skill modes
-│   ├── _shared.md               # Shared context (customize this)
-│   ├── oferta.md                # Single evaluation
+├── modes/                       # 17 skill modes
+│   ├── _profile.md              # Your customizations (never overwritten by updates)
+│   ├── _shared.md               # Shared system context (do not put user data here)
+│   ├── opening.md               # Single evaluation
 │   ├── pdf.md                   # PDF generation
 │   ├── scan.md                  # Portal scanner
 │   ├── batch.md                 # Batch processing
