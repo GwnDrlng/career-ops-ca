@@ -10,6 +10,7 @@
 
 	let reportMD = $state<string | null>(null);
 	let loadingReport = $state(false);
+	let generatingPDF = $state(false);
 
 	$effect(() => {
 		if (!offer) { reportMD = null; return; }
@@ -35,13 +36,18 @@
 		offers.update(list => list.map(o => o.n === updated.n ? { ...o, state: updated.state } : o));
 	}
 
-	function toggleExpand() {
-		evalSize.update(s => {
-			const next = s === 'expanded' ? 'normal' : 'expanded';
-			if (next === 'expanded') pipeSize.set('normal');
-			return next;
-		});
+	async function requestPDF() {
+		if (!offer || generatingPDF) return;
+		generatingPDF = true;
+		try {
+			const { generatePDF } = await import('$lib/api');
+			await generatePDF(offer.n);
+			offers.update(list => list.map(o => o.n === offer!.n ? { ...o, has_pdf: true } : o));
+		} finally {
+			generatingPDF = false;
+		}
 	}
+
 	function minimise() {
 		evalSize.set('min');
 		pipeSize.set('normal');
@@ -61,7 +67,6 @@
 			<div class="right">
 				<button class="icon-btn {$view === 'report' ? 'primary' : ''}" onclick={() => view.set('report')} title="Report view">✎</button>
 				<button class="icon-btn {$view === 'files'  ? 'primary' : ''}" onclick={() => view.set('files')}  title="Files view">⟦⟧</button>
-				<button class="icon-btn" onclick={toggleExpand} title="Expand to 2/3">{$evalSize === 'expanded' ? '⤡' : '⤢'}</button>
 				<button class="icon-btn" onclick={minimise} title="Minimise">▶</button>
 			</div>
 		</div>
@@ -83,14 +88,20 @@
 				<button class="icon-btn" title={offer.state === 'applied' ? 'Undo applied' : 'Mark applied'}
 					onclick={() => changeState(offer.state === 'applied' ? 'evaluated' : 'applied')}>✓</button>
 				<button class="icon-btn" title="Skip" onclick={() => changeState('skip')}>⦸</button>
-				<button class="icon-btn" onclick={toggleExpand} title="Expand to 2/3">{$evalSize === 'expanded' ? '⤡' : '⤢'}</button>
+				<button class="icon-btn" title="Generate PDF" onclick={requestPDF} disabled={generatingPDF}>
+					{generatingPDF ? '⏳' : '⎙'}
+				</button>
 				<button class="icon-btn" onclick={minimise} title="Minimise">▶</button>
 			</div>
 		</div>
 
 		<div class="chiprow" style="padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg-1)">
 			{#if offer.archetype}<span class="chip mono">{offer.archetype}</span>{/if}
-			{#if offer.loc}<span class="chip mono">{offer.loc}</span>{/if}
+			{#if offer.loc}<span class="chip mono">{offer.loc}</span>{:else}
+				<span class="chip mono bad" title="Location could not be verified. Copy job description from posting to evaluate.">
+					⚠ location unverified
+				</span>
+			{/if}
 			{#if offer.comp}<span class="chip mono">{offer.comp}</span>{/if}
 			{#if offer.legitimacy}
 				<span class="chip mono {legitimacyCls(offer.legitimacy)}">

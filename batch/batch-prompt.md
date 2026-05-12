@@ -216,46 +216,13 @@ Where `{company-slug}` is the company name in lowercase, no spaces, with hyphens
 (15-20 keywords from JD for ATS)
 ```
 
-### Step 4 — Generate PDF
+### Step 4 — PDF
 
-1. Read `cv.md` + `i18n.ts`
-2. Extract 15-20 keywords from JD
-3. Detect JD language → CV language (EN default)
-4. Detect company location → paper format: US/Canada → `letter`, rest → `a4`
-5. Detect archetype → adapt framing
-6. Rewrite Professional Summary injecting keywords
-7. Select top 3-4 most relevant projects
-8. Reorder experience bullets by JD relevance
-9. Build competency grid (6-8 keyword phrases)
-10. Inject keywords into existing achievements (**NEVER invent**)
-11. Generate full HTML from template (read `templates/cv-template.html`)
-12. Write HTML to `/tmp/cv-candidate-{company-slug}.html`
-13. Run:
-```bash
-node generate-pdf.mjs \
-  /tmp/cv-candidate-{company-slug}.html \
-  output/cv-candidate-{company-slug}-{{DATE}}.pdf \
-  --format={letter|a4}
-```
-14. Report: PDF path, page count, keyword coverage %
+Skip. PDF generation is not run automatically in batch mode.
+Mark PDF as ❌ in the tracker. The user can generate a tailored PDF
+for any role by running `/career-ops pdf` after reviewing the report.
 
-**ATS rules:**
-- Single-column (no sidebars)
-- Standard headers: "Professional Summary", "Work Experience", "Education", "Skills", "Certifications", "Projects"
-- No text in images/SVGs
-- No critical info in PDF headers/footers
-- UTF-8, selectable text
-- Keywords distributed: Summary (top 5), first bullet of each role, Skills section
-
-**Design:**
-- Fonts: Space Grotesk (headings, 600-700) + DM Sans (body, 400-500)
-- Fonts self-hosted: `fonts/`
-- Header: Space Grotesk 24px bold + cyan→purple gradient 2px + contact row
-- Section headers: Space Grotesk 13px uppercase, color cyan `hsl(187,74%,32%)`
-- Body: DM Sans 11px, line-height 1.5
-- Company names: purple `hsl(270,70%,45%)`
-- Margins: 0.6in
-- Background: white
+See `modes/pdf.md` for the full PDF generation pipeline.
 
 **Keyword injection strategy (ethical):**
 - Reformulate real experience with the exact vocabulary of the JD

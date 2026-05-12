@@ -45,3 +45,9 @@ export async function saveFile(path: string, content: string): Promise<void> {
 		})
 	);
 }
+
+export async function generatePDF(n: number): Promise<{ ok: boolean }> {
+	return json<{ ok: boolean }>(
+		await fetch(`${BASE}/offers/${n}/pdf`, { method: 'POST' })
+	);
+}
