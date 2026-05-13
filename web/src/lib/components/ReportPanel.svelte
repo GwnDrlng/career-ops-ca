@@ -119,7 +119,8 @@
 				<button class="icon-btn {$view === 'files'  ? 'primary' : ''}" onclick={() => view.set('files')}  title="Files view">⟦⟧</button>
 				<button class="icon-btn" title={offer.state === 'applied' ? 'Undo applied' : 'Mark applied'}
 					onclick={() => changeState(offer.state === 'applied' ? 'evaluated' : 'applied')}>✓</button>
-				<button class="icon-btn" title="Skip" onclick={() => changeState('skip')}>⦸</button>
+				<button class="icon-btn" title={offer.state === 'skip' ? 'Undo skip' : 'Skip'}
+					onclick={() => changeState(offer.state === 'skip' ? 'evaluated' : 'skip')}>⦸</button>
 				<button class="icon-btn" title="Generate PDF" onclick={requestPDF} disabled={generatingPDF}>
 					{generatingPDF ? '⏳' : '⎙'}
 				</button>
