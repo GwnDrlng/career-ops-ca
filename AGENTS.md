@@ -2,7 +2,7 @@
 
 ## Origin
 
-This system was built and used by [santifer](https://santifer.io) to evaluate 740+ job openings, generate 100+ tailored CVs, and land a Head of Applied AI role. The archetypes, scoring logic, negotiation scripts, and proof point structure all reflect his specific career search in AI/automation roles.
+This system was built and used by [santifer](https://santifer.io) to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. The archetypes, scoring logic, negotiation scripts, and proof point structure all reflect his specific career search in AI/automation roles.
 
 The portfolio that goes with this system is also open source: [cv-santiago](https://github.com/santifer/cv-santiago).
 
@@ -18,7 +18,7 @@ There are two layers. Read `DATA_CONTRACT.md` for the full list.
 
 **System Layer (auto-updatable, DON'T put user data here):**
 - `modes/_shared.md`, `modes/oferta.md`, all other modes
-- `AGENTS.md`, `CLAUDE.md`, `*.mjs` scripts, `web/*`, `templates/*`, `batch/*`
+- `AGENTS.md`, `CLAUDE.md`, `*.mjs` scripts, `dashboard/*`, `templates/*`, `batch/*`
 
 **THE RULE: When the user asks to customize anything (archetypes, narrative, negotiation scripts, proof points, location policy, comp targets), ALWAYS write to `modes/_profile.md` or `config/profile.yml`. NEVER edit `modes/_shared.md` for user-specific content.** This ensures system updates don't overwrite their customizations.
 
@@ -44,7 +44,7 @@ To rollback: `node update-system.mjs rollback`
 
 ## What is career-ops
 
-AI-powered, CLI-agnostic job search automation: pipeline tracking, opening evaluation, CV generation, portal scanning, batch processing. Runs on any AI coding CLI that follows the [open agent skill standard](https://agentskills.io) (Claude Code, Codex, Gemini, OpenCode, Qwen, Copilot, Kimi).
+AI-powered, CLI-agnostic job search automation: pipeline tracking, offer evaluation, CV generation, portal scanning, batch processing. Runs on any AI coding CLI that follows the [open agent skill standard](https://agentskills.io) (Claude Code, Codex, Gemini, OpenCode, Qwen, Copilot, Kimi).
 
 ### Main Files
 
@@ -149,7 +149,7 @@ Once all files exist, confirm:
 > Tip: Having a personal portfolio dramatically improves your job search. If you don't have one yet, the author's portfolio is also open source: github.com/santifer/cv-santiago — feel free to fork it and make it yours."
 
 Then suggest automation:
-> "Want me to scan for new openings automatically? I can set up a recurring scan every few days so you don't miss anything. Just say 'scan every 3 days' and I'll configure it."
+> "Want me to scan for new offers automatically? I can set up a recurring scan every few days so you don't miss anything. Just say 'scan every 3 days' and I'll configure it."
 
 If the user accepts, use the `/loop` or `/schedule` skill (if available) to set up a recurring `/career-ops scan` (or `/career-ops-scan` if using OpenCode). If those aren't available, suggest adding a cron job or remind them to run `/career-ops scan` (or `/career-ops-scan` if using OpenCode) periodically.
 
@@ -170,8 +170,7 @@ This system is designed to be customized by YOU (AI Agent). When the user asks y
 Default modes are in `modes/` (English). Additional language-specific modes are available:
 
 - **German (DACH market):** `modes/de/` — native German translations with DACH-specific vocabulary (13. Monatsgehalt, Probezeit, Kündigungsfrist, AGG, Tarifvertrag, etc.). Includes `_shared.md`, `angebot.md` (evaluation), `bewerben.md` (apply), `pipeline.md`.
-- **French (European Francophone market):** `modes/fr/` — native French translations with France/Belgium/Switzerland/Luxembourg-specific vocabulary (CDI/CDD, convention collective SYNTEC, RTT, mutuelle, prévoyance, 13e mois, intéressement/participation, titres-restaurant, CSE, portage salarial, etc.). Includes `_shared.md`, `offre.md` (evaluation), `postuler.md` (apply), `pipeline.md`.
-- **French (Quebec market):** `modes/fr-ca/` — native Quebec French (français québécois) with Quebec/Canadian-specific vocabulary (emploi permanent, assurance-emploi, régime de retraite/REER, congés payés, avantages sociaux, Loi sur les normes du travail, etc.). Includes `_shared.md`, `offre.md` (evaluation), `postuler.md` (apply), `pipeline.md`.
+- **French (Francophone market):** `modes/fr/` — native French translations with France/Belgium/Switzerland/Luxembourg-specific vocabulary (CDI/CDD, convention collective SYNTEC, RTT, mutuelle, prévoyance, 13e mois, intéressement/participation, titres-restaurant, CSE, portage salarial, etc.). Includes `_shared.md`, `offre.md` (evaluation), `postuler.md` (apply), `pipeline.md`.
 - **Japanese (Japan market):** `modes/ja/` — native Japanese translations with Japan-specific vocabulary (正社員, 業務委託, 賞与, 退職金, みなし残業, 年俸制, 36協定, 通勤手当, 住宅手当, etc.). Includes `_shared.md`, `kyujin.md` (evaluation), `oubo.md` (apply), `pipeline.md`.
 
 **When to use German modes:** If the user is targeting German-language job postings, lives in DACH, or asks for German output. Either:
@@ -179,15 +178,10 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 2. User sets `language.modes_dir: modes/de` in `config/profile.yml` → always use German modes
 3. You detect a German JD → suggest switching to German modes
 
-**When to use European French modes:** If the user is targeting French-language job postings in France/Belgium/Switzerland/Luxembourg, or asks for French (European) output. Either:
-1. User says "use French modes" (and mentions European market) → read from `modes/fr/` instead of `modes/`
-2. User sets `language.modes_dir: modes/fr` in `config/profile.yml` → always use European French modes
-3. You detect a European French JD → suggest switching to European French modes
-
-**When to use Quebec French modes:** If the user is targeting French-language job postings in Quebec or Canada, lives in Quebec, or asks for Quebec French output. Either:
-1. User says "use Quebec French modes" → read from `modes/fr-ca/` instead of `modes/`
-2. User sets `language.modes_dir: modes/fr-ca` in `config/profile.yml` → always use Quebec French modes
-3. You detect a Quebec job posting → suggest switching to Quebec French modes
+**When to use French modes:** If the user is targeting French-language job postings, lives in France/Belgium/Switzerland/Luxembourg/Quebec, or asks for French output. Either:
+1. User says "use French modes" → read from `modes/fr/` instead of `modes/`
+2. User sets `language.modes_dir: modes/fr` in `config/profile.yml` → always use French modes
+3. You detect a French JD → suggest switching to French modes
 
 **When to use Japanese modes:** If the user is targeting Japanese-language job postings, lives in Japan, or asks for Japanese output. Either:
 1. User says "use Japanese modes" → read from `modes/ja/` instead of `modes/`
@@ -201,9 +195,9 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | If the user... | Mode |
 |----------------|------|
 | Pastes JD or URL | auto-pipeline (evaluate + report + PDF + tracker) |
-| Asks to evaluate opening | `opening` |
-| Asks to compare openings | `openings` |
-| Wants LinkedIn outreach | `contact` |
+| Asks to evaluate offer | `oferta` |
+| Asks to compare offers | `ofertas` |
+| Wants LinkedIn outreach | `contacto` |
 | Asks for company research | `deep` |
 | Preps for interview at specific company | `interview-prep` |
 | Wants to generate CV/PDF | `pdf` |
@@ -211,9 +205,9 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | Evaluates portfolio project | `project` |
 | Asks about application status | `tracker` |
 | Fills out application form | `apply` |
-| Searches for new openings | `scan` |
+| Searches for new offers | `scan` |
 | Processes pending URLs | `pipeline` |
-| Batch processes openings | `batch` |
+| Batch processes offers | `batch` |
 | Asks about rejection patterns or wants to improve targeting | `patterns` |
 | Asks about follow-ups or application cadence | `followup` |
 
@@ -236,9 +230,9 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 
 ---
 
-## Opening Verification -- MANDATORY
+## Offer Verification -- MANDATORY
 
-**NEVER trust WebSearch/WebFetch to verify if an opening is still active.** ALWAYS use Playwright:
+**NEVER trust WebSearch/WebFetch to verify if an offer is still active.** ALWAYS use Playwright:
 1. `browser_navigate` to the URL
 2. `browser_snapshot` to read content
 3. Only footer/navbar without JD = closed. Title + description + Apply = active.
@@ -327,9 +321,9 @@ Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slu
 | `Applied` | Application sent |
 | `Responded` | Company responded |
 | `Interview` | In interview process |
-| `Opening` | Opening received |
+| `Offer` | Offer received |
 | `Rejected` | Rejected by company |
-| `Discarded` | Discarded by candidate or opening closed |
+| `Discarded` | Discarded by candidate or offer closed |
 | `SKIP` | Doesn't fit, don't apply |
 
 **RULES:**

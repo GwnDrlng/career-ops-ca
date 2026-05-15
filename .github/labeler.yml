@@ -38,10 +38,10 @@
           - modes/ja/**
           - modes/ru/**
 
-"🌐 web-dashboard":
+"📊 dashboard":
   - changed-files:
       - any-glob-to-any-file:
-          - web/**
+          - dashboard/**
 
 "📦 dependencies":
   - changed-files:

@@ -1,5 +1,5 @@
 # Portal Scanner Configuration
-# Used by /career-ops scan to discover new openings automatically.
+# Used by /career-ops scan to discover new offers automatically.
 #
 # Strategy (3 levels):
 #   1. Playwright → careers_url of each company (real-time, reliable)
@@ -20,6 +20,39 @@
 #   4. Adjust search_queries for your preferred job boards
 #   5. Set enabled: false on companies you don't care about
 
+# -- Location filter (optional) --
+# Filter scanned jobs by location. Applied AFTER title filter, BEFORE dedup.
+# If this entire block is absent, all locations pass (current default behavior).
+#
+# Semantics:
+#   - Empty location string on a job → pass (don't penalize missing data)
+#   - Any `block` keyword present → reject (takes precedence over allow)
+#   - `allow` empty → pass (already cleared block)
+#   - `allow` non-empty → must match at least one keyword
+# All matches are case-insensitive substring.
+#
+# Example below targets US-based remote + a couple of US metros, blocking
+# common foreign hubs. Customize to your geography.
+
+# location_filter:
+#   allow:
+#     - "Remote"
+#     - "United States"
+#     - "USA"
+#     - "Atlanta"
+#     - "New York"
+#   block:
+#     - "India"
+#     - "Bengaluru"
+#     - "United Kingdom"
+#     - "London"
+#     - "Germany"
+#     - "France"
+#     - "Singapore"
+#     - "Japan"
+#     - "Brazil"
+#     - "Australia"
+
 # -- Title filter --
 # The scanner uses these keywords to decide if a title is relevant.
 # At least 1 positive must match AND 0 negatives must match (case-insensitive).
@@ -27,25 +60,7 @@
 title_filter:
   positive:
     # [CUSTOMIZE] Add keywords matching YOUR target roles
-    # -- Product Management roles --
-    - "Product Manager"
-    - "Technical PM"
-    - "Senior PM"
-    - "Staff PM"
-    - "Director of Product"
-    - "Head of Product"
-    - "VP Product"
-    - "Chief Product Officer"
-    - "Group PM"
-    - "PM"
-    # -- AI/ML Product roles --
-    - "AI Product Manager"
-    - "AI PM"
-    - "ML Product"
-    - "Data Product Manager"
-    - "Platform PM"
-    - "Growth PM"
-    # -- AI/ML Engineering (secondary) --
+    # -- AI/ML roles --
     - "AI"
     - "ML"
     - "LLM"
@@ -56,24 +71,37 @@ title_filter:
     - "NLP"
     - "LLMOps"
     - "MLOps"
-    # -- Solutions / Engineering (adjacent) --
+    - "Voice AI"
+    - "Conversational AI"
+    - "Speech"
+    # -- German AI/ML keywords (DACH market) --
+    - "KI"
+    - "Künstliche Intelligenz"
+    - "KI Engineer"
+    - "KI Trainer"
+    - "Dozent"
+    - "Weiterbildung"
+    # -- Engineering roles --
+    - "Platform Engineer"
     - "Solutions Architect"
     - "Solutions Engineer"
     - "Forward Deployed"
+    - "Deployed Engineer"
     - "Customer Engineer"
-    # -- Automation (tertiary) --
+    - "Integration Engineer"
+    # -- Product roles --
+    - "Product Manager"
+    - "Technical PM"
+    # -- Automation roles --
     - "Automation"
+    - "Hyperautomation"
     - "Low-Code"
     - "No-Code"
     - "GTM Engineer"
     - "RevOps"
-    # -- German AI/ML keywords (DACH market) --
-    - "KI"
-    - "Künstliche Intelligenz"
-    # -- French Canadian keywords --
-    - "Gestionnaire de produit"
-    - "Directeur de produit"
-    - "Chef de produit"
+    - "Business Systems"
+    - "Internal Tools"
+    - "Transformation"
   negative:
     # [CUSTOMIZE] Add keywords for roles you want to exclude
     - "Junior"
@@ -224,7 +252,7 @@ search_queries:
   # -- Spanish market specialized (high-value for Madrid/Barcelona-based candidates) --
 
   - name: Manfred — Tech Senior España
-    query: 'site:getmanfred.com/en/job-openings "Solutions Architect" OR "DevRel" OR "Forward Deployed" OR "AI Engineer" OR "Founding"'
+    query: 'site:getmanfred.com/en/job-offers "Solutions Architect" OR "DevRel" OR "Forward Deployed" OR "AI Engineer" OR "Founding"'
     enabled: true
 
   - name: Manfred — Remote AI/Senior
@@ -245,40 +273,6 @@ search_queries:
 
   - name: Welcome to the Jungle — Spain tech
     query: 'site:welcometothejungle.com Spain OR Madrid OR Barcelona "AI Engineer" OR "Solutions Architect" OR "DevRel" OR "Forward Deployed"'
-    enabled: true
-
-  # -- Canadian PM & AI roles (Canada-focused boards) --
-
-  - name: LinkedIn — Product Manager Canada
-    query: 'site:linkedin.com/jobs "Product Manager" "AI" OR "ML" OR "data" Canada OR Toronto OR Vancouver OR Montreal OR Ottawa remote'
-    enabled: true
-
-  - name: LinkedIn — Technical PM Canada
-    query: 'site:linkedin.com/jobs "Technical Product Manager" OR "Senior Product Manager" Canada OR Toronto OR Vancouver OR Waterloo'
-    enabled: true
-
-  - name: Indeed — Senior PM Canada
-    query: 'site:indeed.ca "Senior Product Manager" OR "Director Product" "AI" OR "SaaS" remote Canada'
-    enabled: true
-
-  - name: Job Bank GC — PM roles
-    query: 'site:jobbank.gc.ca "Product Manager" OR "Gestionnaire de produit" Toronto OR Vancouver OR Ottawa OR remote'
-    enabled: true
-
-  - name: Built In Toronto — AI PM
-    query: 'site:builtintoronto.com "Product Manager" "AI" OR "machine learning" OR "data"'
-    enabled: true
-
-  - name: BetaKit Jobs — Canadian tech
-    query: 'site:betakit.com/jobs "Product" OR "PM" "AI" OR "SaaS" Toronto OR Vancouver OR remote'
-    enabled: true
-
-  - name: TrueUp — Remote PM
-    query: 'site:trueup.io "Product Manager" OR "Senior PM" remote "AI" OR "platform"'
-    enabled: true
-
-  - name: Adzuna Canada — AI Senior PM
-    query: 'site:adzuna.ca "Product Manager" "AI" OR "Senior PM" Toronto OR Vancouver OR Montreal OR remote'
     enabled: true
 
   # -- DevRel-specific boards --
@@ -321,6 +315,18 @@ search_queries:
 # Companies whose career pages are checked directly.
 # scan_method: playwright (default), websearch, greenhouse_api
 # For Greenhouse companies, add api: field for faster structured JSON access.
+#
+# Provider routing (scan.mjs):
+#   By default each entry is auto-detected from `careers_url` against the
+#   loaded providers in providers/*.mjs (ashby, greenhouse, lever — the
+#   first one whose detect() matches wins, alphabetical order).
+#
+#   Optional fields on a tracked_companies entry:
+#     provider: <id>     — force a specific provider, skipping detect().
+#                          Useful when careers_url is ambiguous or you want
+#                          to pin behavior. Value must match a loaded
+#                          provider's `id`.
+#     transport: http    — reserved for future transports. Defaults to http.
 
 tracked_companies:
 
@@ -428,6 +434,12 @@ tracked_companies:
     careers_url: https://job-boards.greenhouse.io/runpod
     api: https://boards-api.greenhouse.io/v1/boards/runpod/jobs
     notes: "GPU cloud for AI."
+    enabled: true
+
+  - name: Weights & Biases (CoreWeave)
+    careers_url: https://job-boards.greenhouse.io/coreweave
+    api: https://boards-api.greenhouse.io/v1/boards/coreweave/jobs
+    notes: "Acquired by CoreWeave (announced March 2025, closed May 2025). W&B roles now live on CoreWeave's Greenhouse board. Old Lever URL (jobs.lever.co/wandb) returns 404."
     enabled: true
 
   - name: Glean
@@ -592,17 +604,12 @@ tracked_companies:
     notes: "Paris. European AI lab."
     enabled: true
 
-  - name: Weights & Biases
-    careers_url: https://jobs.lever.co/wandb
-    notes: "MLOps platform."
-    enabled: true
-
   - name: Palantir
     careers_url: https://jobs.lever.co/palantir
     notes: "FDE roles. Mostly US/London."
     enabled: true
 
-  # -- Canada / Canadian tech & AI --
+  # -- Canada / Vancouver tech & AI --
 
   - name: Later
     careers_url: https://job-boards.greenhouse.io/later
@@ -642,76 +649,6 @@ tracked_companies:
     scan_method: websearch
     scan_query: 'site:apply.workable.com/semios'
     notes: "Vancouver. Agtech and crop intelligence platform."
-    enabled: true
-
-  - name: Cohere
-    careers_url: https://jobs.ashbyhq.com/cohere
-    notes: "Toronto + remote. AI/LLM provider. Enterprise AI platform."
-    enabled: true
-
-  - name: Shopify
-    careers_url: https://www.shopify.com/careers
-    scan_method: websearch
-    scan_query: 'site:shopify.com/careers "Product Manager" OR "Senior PM" OR "Staff PM"'
-    notes: "Ottawa/Toronto/Remote. E-commerce giant. Large PM org."
-    enabled: true
-
-  - name: Wealthsimple
-    careers_url: https://jobs.lever.co/wealthsimple
-    notes: "Toronto. Fintech. Strong PM culture, remote-friendly."
-    enabled: true
-
-  - name: Wattpad
-    careers_url: https://job-boards.greenhouse.io/wattpad
-    api: https://boards-api.greenhouse.io/v1/boards/wattpad/jobs
-    notes: "Toronto. Storytelling platform, ML-driven recommendations."
-    enabled: true
-
-  - name: Coveo
-    careers_url: https://www.coveo.com/en/careers
-    scan_method: websearch
-    scan_query: 'site:coveo.com/careers "Product" OR "AI" OR "ML" Quebec OR remote'
-    notes: "Quebec City/Montreal. AI-powered search & recommendations."
-    enabled: true
-
-  - name: Element AI (ServiceNow)
-    careers_url: https://www.servicenow.com/careers.html
-    scan_method: websearch
-    scan_query: 'site:servicenow.com/careers "Product Manager" AI OR ML Canada OR Montreal'
-    notes: "Montreal (Element AI acquired by ServiceNow). Enterprise AI platform."
-    enabled: true
-
-  - name: Thinkific
-    careers_url: https://job-boards.greenhouse.io/thinkific
-    api: https://boards-api.greenhouse.io/v1/boards/thinkific/jobs
-    notes: "Vancouver. E-learning SaaS platform."
-    enabled: true
-
-  - name: Clio
-    careers_url: https://job-boards.greenhouse.io/clioglobal
-    api: https://boards-api.greenhouse.io/v1/boards/clioglobal/jobs
-    notes: "Vancouver. Legal practice management SaaS unicorn."
-    enabled: true
-
-  - name: Visier
-    careers_url: https://jobs.lever.co/visier
-    notes: "Vancouver. People analytics and workforce intelligence."
-    enabled: true
-
-  - name: Blue J Legal
-    careers_url: https://jobs.ashbyhq.com/bluejlegal
-    notes: "Toronto. AI-powered tax and legal research platform."
-    enabled: true
-
-  - name: 1Password
-    careers_url: https://jobs.ashbyhq.com/1password
-    notes: "Ottawa/Remote. Password and security management SaaS."
-    enabled: true
-
-  - name: FreshBooks
-    careers_url: https://job-boards.greenhouse.io/freshbooks
-    api: https://boards-api.greenhouse.io/v1/boards/freshbooks/jobs
-    notes: "Toronto. Cloud accounting SaaS."
     enabled: true
 
   # -- European tech (EMEA-friendly) --

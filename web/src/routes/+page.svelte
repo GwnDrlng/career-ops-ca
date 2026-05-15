@@ -103,8 +103,21 @@
 		<!-- Evaluation panel -->
 		<div class="panel panel-eval" style="display:flex;flex-direction:column;min-width:0">
 			{#if loading}
-				<div style="display:flex;align-items:center;justify-content:center;flex:1;color:var(--fg-3);font-family:var(--mono);font-size:12px">
-					Loading pipeline…
+				<div class="panel-header">
+					<span class="title">Evaluation</span>
+				</div>
+				<div class="report-skeleton" aria-busy="true" aria-label="Loading evaluation">
+					<div class="sk-row sk-wide"></div>
+					<div class="sk-row sk-mid"></div>
+					<div class="sk-row sk-narrow"></div>
+					<div class="sk-row sk-gap"></div>
+					<div class="sk-row sk-wide"></div>
+					<div class="sk-row sk-wide"></div>
+					<div class="sk-row sk-mid"></div>
+					<div class="sk-row sk-gap"></div>
+					<div class="sk-row sk-narrow"></div>
+					<div class="sk-row sk-wide"></div>
+					<div class="sk-row sk-mid"></div>
 				</div>
 			{:else if error}
 				<div style="display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:12px;color:var(--red-2);font-family:var(--mono);font-size:13px">

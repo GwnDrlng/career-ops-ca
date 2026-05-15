@@ -34,7 +34,7 @@
 	<div class="statcard pie">
 		<div class="lbl">🥌 Status mix</div>
 		<div class="pie-row">
-			<div class="pie-donut" style="background:{pieGradient()}" role="img" aria-label="Status pie"></div>
+			<div class="pie-donut" style="background:{pieGradient()}" role="img" aria-label="Status breakdown pie chart"></div>
 			<div class="pie-legend">
 				<div class="li"><span class="sw" style="background:var(--gold)"></span>Evaluated <b>{nEval()}</b></div>
 				<div class="li"><span class="sw" style="background:var(--green)"></span>Applied <b>{nApplied()}</b></div>

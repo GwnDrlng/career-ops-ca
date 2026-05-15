@@ -34,7 +34,7 @@
                     └──────────────────────┘
 ```
 
-## Evaluation Flow (Single Opening)
+## Evaluation Flow (Single Offer)
 
 1. **Input**: User pastes JD text or URL
 2. **Extract**: Playwright/WebFetch extracts JD from URL
@@ -53,7 +53,7 @@
 
 ## Batch Processing
 
-The batch system processes multiple openings in parallel:
+The batch system processes multiple offers in parallel:
 
 ```
 batch-input.tsv    →  batch-runner.sh  →  N × headless CLI workers
@@ -99,13 +99,12 @@ Scripts maintain data consistency:
 | `normalize-statuses.mjs` | Maps status aliases to canonical values |
 | `cv-sync-check.mjs` | Validates setup consistency |
 
-## Web Dashboard
+## Dashboard TUI
 
-The `web/` directory contains a SvelteKit web application that visualizes and manages the pipeline:
+The `dashboard/` directory contains a standalone Go TUI application that visualizes the pipeline:
 
-- Interactive pipeline visualization
-- Filter by status, score, company
-- Sort by date, score, or company name
-- Inline status updates
-- Real-time data synchronization with applications.md
-- Responsive design for desktop and tablet
+- Filter tabs: All, Evaluada, Aplicado, Entrevista, Top >=4, No Aplicar
+- Sort modes: Score, Date, Company, Status
+- Grouped/flat view
+- Lazy-loaded report previews
+- Inline status picker

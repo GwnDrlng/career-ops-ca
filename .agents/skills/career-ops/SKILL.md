@@ -3,7 +3,7 @@ name: career-ops
 description: AI job search command center -- evaluate openings, generate CVs, scan portals, track applications
 arguments: mode # Claude Code specific
 user-invocable: true
-argument-hint: "[scan | deep | pdf | opening | openings | apply | batch | tracker | pipeline | contact | training | project | interview-prep | update]"
+argument-hint: "[scan | deep | pdf | oferta | ofertas | apply | batch | tracker | pipeline | contacto | training | project | interview-prep | update]"
 license: MIT
 ---
 
@@ -17,9 +17,9 @@ Determine the mode from `$mode`:
 |-------|------|
 | (empty / no args) | `discovery` -- Show command menu |
 | JD text or URL (no sub-command) | **`auto-pipeline`** |
-| `opening` | `opening` |
-| `openings` | `openings` |
-| `contact` | `contact` |
+| `oferta` | `oferta` |
+| `ofertas` | `ofertas` |
+| `contacto` | `contacto` |
 | `deep` | `deep` |
 | `interview-prep` | `interview-prep` |
 | `pdf` | `pdf` |
@@ -49,9 +49,9 @@ career-ops -- Command Center
 Available commands:
   /career-ops {JD}      → AUTO-PIPELINE: evaluate + report + PDF + tracker (paste text or URL)
   /career-ops pipeline  → Process pending URLs from inbox (data/pipeline.md)
-  /career-ops opening     → Evaluation only A-G (no auto PDF)
-  /career-ops openings    → Compare and rank multiple openings
-  /career-ops contact   → LinkedIn power move: find contacts + draft message
+  /career-ops oferta      → Evaluation only A-G (no auto PDF)
+  /career-ops ofertas     → Compare and rank multiple openings
+  /career-ops contacto  → LinkedIn power move: find contacts + draft message
   /career-ops deep      → Deep research prompt about company
   /career-ops interview-prep → Generate company-specific interview prep doc
   /career-ops pdf       → PDF only, ATS-optimized CV
@@ -77,7 +77,7 @@ After determining the mode, load the necessary files before executing:
 ### Modes that require `_shared.md` + their mode file:
 Read `modes/_shared.md` + `modes/{mode}.md`
 
-Applies to: `auto-pipeline`, `opening`, `openings`, `pdf`, `contact`, `apply`, `pipeline`, `scan`, `batch`
+Applies to: `auto-pipeline`, `oferta`, `ofertas`, `pdf`, `contacto`, `apply`, `pipeline`, `scan`, `batch`
 
 ### Standalone modes (only their mode file):
 Read `modes/{mode}.md`
