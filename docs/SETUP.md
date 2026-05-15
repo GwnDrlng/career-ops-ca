@@ -4,6 +4,7 @@
 
 - [Claude Code](https://claude.ai/code) installed and configured
 - Node.js 18+ (for PDF generation and utility scripts)
+- (Optional) Go 1.21+ (for the dashboard TUI)
 
 ## Quick Start (5 steps)
 
@@ -49,14 +50,14 @@ Open Claude Code in this directory:
 claude
 ```
 
-Then paste a job opening URL or description. Career-ops will automatically evaluate it, generate a report, create a tailored PDF, and track it.
+Then paste a job offer URL or description. Career-ops will automatically evaluate it, generate a report, create a tailored PDF, and track it.
 
 ## Available Commands
 
 | Action | How |
 |--------|-----|
-| Evaluate an opening | Paste a URL or JD text |
-| Search for openings | `/career-ops scan` |
+| Evaluate an offer | Paste a URL or JD text |
+| Search for offers | `/career-ops scan` |
 | Process pending URLs | `/career-ops pipeline` |
 | Generate a PDF | `/career-ops pdf` |
 | Batch evaluate | `/career-ops batch` |
@@ -70,11 +71,10 @@ node cv-sync-check.mjs      # Check configuration
 node verify-pipeline.mjs     # Check pipeline integrity
 ```
 
-## Start Web Dashboard (Optional)
+## Build Dashboard (Optional)
 
 ```bash
-cd web
-npm run dev
+cd dashboard
+go build -o career-dashboard .
+./career-dashboard --path ..  # Opens TUI pipeline viewer
 ```
-
-Then open `http://localhost:5173` in your browser to browse and manage your pipeline interactively.
