@@ -631,7 +631,7 @@ input.loc-input { background: var(--bg-1); outline: none; width: 140px; cursor: 
 .status-pill.interview { color: var(--cyan); }
 .status-pill.top       { color: var(--gold); }
 .status-pill.rejected  { color: var(--red-2); }
-.status-pill.discarded { color: var(--fg-3); }
+.status-pill.discarded { color: var(--fg-3); border-color: rgba(122,106,102,.30); background: rgba(122,106,102,.08); }
 .status-pill.responded { color: var(--purple); }
 
 /* ────────── kbd ────────── */

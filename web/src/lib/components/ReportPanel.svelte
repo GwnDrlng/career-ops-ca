@@ -3,7 +3,7 @@
 	import { scoreCls } from '$lib/utils/score';
 	import { renderMarkdown } from '$lib/utils/markdown';
 	import { updateOfferState, fetchOffer, updateOfferLoc } from '$lib/api';
-	import { offers, view, evalSize, pipeSize } from '$lib/stores';
+	import { offers, states, view, evalSize, pipeSize } from '$lib/stores';
 
 	function focusOnMount(el: HTMLElement) { el.focus(); }
 
@@ -36,8 +36,14 @@
 
 	async function changeState(newState: string) {
 		if (!offer) return;
+		const oldState = offer.state;
 		const updated = await updateOfferState(offer.n, newState);
 		offers.update(list => list.map(o => o.n === updated.n ? { ...o, state: updated.state } : o));
+		states.update(list => list.map(s => {
+			if (s.id === oldState)       return { ...s, count: Math.max(0, s.count - 1) };
+			if (s.id === updated.state)  return { ...s, count: s.count + 1 };
+			return s;
+		}));
 	}
 
 	async function requestPDF() {
@@ -121,6 +127,8 @@
 					onclick={() => changeState(offer.state === 'applied' ? 'evaluated' : 'applied')}>✓</button>
 				<button class="icon-btn" title={offer.state === 'skip' ? 'Undo skip' : 'Skip'}
 					onclick={() => changeState(offer.state === 'skip' ? 'evaluated' : 'skip')}>⦸</button>
+				<button class="icon-btn" title={offer.state === 'discarded' ? 'Undo discard' : 'Discard'}
+					onclick={() => changeState(offer.state === 'discarded' ? 'evaluated' : 'discarded')}>✕</button>
 				<button class="icon-btn" title="Generate PDF" onclick={requestPDF} disabled={generatingPDF}>
 					{generatingPDF ? '⏳' : '⎙'}
 				</button>
