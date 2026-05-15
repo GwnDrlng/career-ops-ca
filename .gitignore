@@ -44,6 +44,4 @@ bun.lock
 # Claude Code local
 .claude/settings.local.json
 .claude/memory/
-career-dashboard
-dashboard/
 server-new
