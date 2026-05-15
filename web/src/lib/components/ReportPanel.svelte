@@ -115,7 +115,7 @@
 		<div class="panel-header">
 			<span style="color:var(--red-2)">#{offer.n}</span>
 			<span class="title">{offer.company} — {offer.title}</span>
-			<span class="score {scoreCls(offer.score)}" style="margin-left:8px">{offer.score.toFixed(1)}</span>
+			<span class="score {scoreCls(offer.score)}" style="margin-left:8px">{offer.score > 0 ? offer.score.toFixed(1) : '—'}</span>
 			<div class="right">
 				<span class="status-pill {offer.state}">{offer.state}</span>
 				{#if offer.url}
