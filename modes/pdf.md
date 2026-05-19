@@ -35,10 +35,11 @@
 
 - **Fonts**: Space Grotesk (headings, 600-700) + DM Sans (body, 400-500)
 - **Fonts self-hosted**: `fonts/`
-- **Header**: nombre en Space Grotesk 24px bold + línea gradiente `linear-gradient(to right, hsl(187,74%,32%), hsl(270,70%,45%))` 2px + fila de contacto
-- **Section headers**: Space Grotesk 13px, uppercase, letter-spacing 0.05em, color cyan primary
-- **Body**: DM Sans 11px, line-height 1.5
-- **Company names**: color accent purple `hsl(270,70%,45%)`
+- **Header**: nombre centrado en Space Grotesk 32px bold, color navy `#1a2744` → tagline centrado → contact row centrado → `<hr class="header-rule">` (1.5px solid navy)
+- **Section headers**: Space Grotesk 11px, uppercase, letter-spacing 0.22em, color navy `#1a2744`, border-bottom 1.5px solid navy
+- **Body**: DM Sans 11px, line-height 1.5, color `#1f1f1f`
+- **Company names**: color blue `#2563eb`
+- **Job sub-headers**: color blue `#2563eb`, underlined (use class `job-subheader`)
 - **Márgenes**: 0.6in
 - **Background**: blanco puro
 
@@ -70,6 +71,7 @@ Usar el template en `cv-template.html`. Reemplazar los placeholders `{{...}}` co
 | `{{LANG}}` | `en` o `es` |
 | `{{PAGE_WIDTH}}` | `8.5in` (letter) o `210mm` (A4) |
 | `{{NAME}}` | (from profile.yml) |
+| `{{TAGLINE}}` | One-line role descriptor, pipe-separated (e.g. `Product Management Leader \| B2B SaaS \| P&L Owner \| AI Strategy`). Tailor to the JD archetype. |
 | `{{PHONE}}` | (from profile.yml — include with its separator only when `profile.yml` has a non-empty `phone` value; omit both `<span>` and `<span class="separator">` otherwise) |
 | `{{EMAIL}}` | (from profile.yml) |
 | `{{LINKEDIN_URL}}` | [from profile.yml] |
@@ -80,9 +82,9 @@ Usar el template en `cv-template.html`. Reemplazar los placeholders `{{...}}` co
 | `{{SECTION_SUMMARY}}` | Professional Summary / Resumen Profesional |
 | `{{SUMMARY_TEXT}}` | Summary personalizado con keywords |
 | `{{SECTION_COMPETENCIES}}` | Core Competencies / Competencias Core |
-| `{{COMPETENCIES}}` | `<span class="competency-tag">keyword</span>` × 6-8 |
+| `{{COMPETENCIES}}` | Category-label rows: `<div class="competency-row"><span class="cat-label">Category:</span> skill \| skill \| skill</div>` — group into 5-6 categories (Strategy, Growth, Leadership, AI, Delivery, Domains) |
 | `{{SECTION_EXPERIENCE}}` | Work Experience / Experiencia Laboral |
-| `{{EXPERIENCE}}` | HTML de cada trabajo con bullets reordenados |
+| `{{EXPERIENCE}}` | HTML de cada trabajo — see job HTML format below |
 | `{{SECTION_PROJECTS}}` | Projects / Proyectos |
 | `{{PROJECTS}}` | HTML de top 3-4 proyectos |
 | `{{SECTION_EDUCATION}}` | Education / Formación |
@@ -91,6 +93,34 @@ Usar el template en `cv-template.html`. Reemplazar los placeholders `{{...}}` co
 | `{{CERTIFICATIONS}}` | HTML de certificaciones |
 | `{{SECTION_SKILLS}}` | Skills / Competencias |
 | `{{SKILLS}}` | HTML de skills |
+
+## Job Entry HTML Format
+
+Each work experience entry uses this structure:
+
+```html
+<div class="job">
+  <div class="job-header">
+    <div class="job-title-line">
+      <span class="job-role">Role Title</span> | <span class="job-company">Company Name</span>
+    </div>
+    <span class="job-period">Mon YYYY – Mon YYYY</span>
+  </div>
+  <div class="job-context">One-sentence italic context paragraph — impact, scope, or headline achievement.</div>
+  <div class="job-subheader">Sub-category Label</div>
+  <ul>
+    <li>Bullet with <strong>metric</strong> or proof point.</li>
+  </ul>
+  <div class="job-subheader">Another Sub-category</div>
+  <ul>
+    <li>Bullet.</li>
+  </ul>
+</div>
+```
+
+- Use 2-4 `job-subheader` groups per role to organize bullets thematically (e.g. Revenue & Margin, Executive Direction, Market & Portfolio, Organizational Leadership)
+- The `job-context` line is italic and sets the stage — use the strongest framing sentence from the candidate's experience for that role
+- `job-company` renders in blue `#2563eb`; `job-subheader` renders in blue with underline
 
 ## Canva CV Generation (optional)
 

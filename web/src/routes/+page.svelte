@@ -42,7 +42,7 @@
 		if (id != null) history.replaceState(null, '', `#posting/${id}`);
 	});
 
-	const activeOffer = $derived(() => $offers.find(o => o.n === $activeId) ?? null);
+	const activeOffer = $derived($offers.find(o => o.n === $activeId) ?? null);
 
 	function togglePipeExpand() {
 		pipeSize.update(s => {
@@ -125,7 +125,7 @@
 					<div style="color:var(--fg-3);font-size:11px">Make sure the Go server is running: cd dashboard && go run ./cmd/server -path ..</div>
 				</div>
 			{:else}
-				<ReportPanel offer={activeOffer()} />
+				<ReportPanel offer={activeOffer} />
 			{/if}
 		</div>
 	</div>

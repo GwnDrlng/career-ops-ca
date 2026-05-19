@@ -42,7 +42,7 @@
 				onkeydown={e => e.key === 'Enter' && activeId.set(o.n)}
 			>
 				<span class="num mono">#{o.n}</span>
-				<span class="score {scoreCls(o.score)}">{o.score.toFixed(1)}</span>
+				<span class="score {scoreCls(o.score)}">{o.score > 0 ? o.score.toFixed(1) : '—'}</span>
 				<span class="date">{o.date}</span>
 				<span class="co"><b>{o.company}</b></span>
 				<span class="title">{o.title}</span>

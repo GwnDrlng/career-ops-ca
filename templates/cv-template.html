@@ -56,7 +56,7 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     line-height: 1.5;
-    color: #1a1a2e;
+    color: #1f1f1f;
     background: #ffffff;
     padding: 0;
     margin: 0;
@@ -71,34 +71,38 @@
 
   /* === HEADER === */
   .header {
-    margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 16px;
   }
 
   .header h1 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
-    color: #1a1a2e;
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    color: #1a2744;
+    letter-spacing: 0.01em;
+    margin-bottom: 5px;
     line-height: 1.1;
   }
 
-  .header-gradient {
-    height: 2px;
-    background: linear-gradient(to right, hsl(187, 74%, 32%), hsl(270, 70%, 45%));
-    border-radius: 1px;
-    margin-bottom: 10px;
+  .header-tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    color: #444;
+    margin-bottom: 4px;
+    line-height: 1.4;
   }
 
   .contact-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 14px;
+    justify-content: center;
+    gap: 0 10px;
     font-family: 'DM Sans', sans-serif;
     font-size: 10.5px;
     line-height: 1.4;
     color: #555;
+    margin-bottom: 10px;
   }
 
   .contact-row a {
@@ -107,24 +111,31 @@
   }
 
   .contact-row .separator {
-    color: #ccc;
+    color: #bbb;
+  }
+
+  .header-rule {
+    border: none;
+    border-top: 1.5px solid #1a2744;
+    margin: 0;
   }
 
   /* === SECTIONS === */
   .section {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
 
   .section-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: hsl(187, 74%, 32%);
-    border-bottom: 1.5px solid #e2e2e2;
-    padding-bottom: 4px;
+    letter-spacing: 0.22em;
+    color: #1a2744;
+    border-bottom: 1.5px solid #1a2744;
+    padding-bottom: 3px;
     margin-bottom: 10px;
+    margin-top: 14px;
     line-height: 1.2;
   }
 
@@ -132,7 +143,7 @@
   .summary-text {
     font-size: 11px;
     line-height: 1.7;
-    color: #2f2f2f;
+    color: #222;
   }
 
   /* Links must never break across lines */
@@ -141,6 +152,24 @@
   }
 
   /* === CORE COMPETENCIES === */
+  .competencies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .competency-row {
+    font-size: 10.5px;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  .competency-row .cat-label {
+    font-weight: 700;
+    color: #1f1f1f;
+  }
+
+  /* Legacy pill style — kept for backward compat */
   .competencies-grid {
     display: flex;
     flex-wrap: wrap;
@@ -151,11 +180,11 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     font-weight: 500;
-    color: hsl(187, 74%, 28%);
-    background: hsl(187, 40%, 95%);
+    color: #1a2744;
+    background: #eef1f6;
     padding: 4px 10px;
     border-radius: 3px;
-    border: 1px solid hsl(187, 40%, 88%);
+    border: 1px solid #cdd5e0;
   }
 
   /* === WORK EXPERIENCE === */
@@ -168,27 +197,36 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 12px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+  }
+
+  .job-title-line {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f1f1f;
+    flex: 1;
   }
 
   .job-company {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
-    color: hsl(270, 70%, 45%);
+    color: #2563eb;
   }
 
   .job-period {
     font-size: 10.5px;
-    color: #777;
+    color: #666;
     white-space: nowrap;
+    font-style: italic;
   }
 
   .job-role {
     font-size: 11px;
     font-weight: 600;
-    color: #333;
-    margin-bottom: 6px;
+    color: #1f1f1f;
+    margin-bottom: 2px;
   }
 
   .job-location {
@@ -196,16 +234,35 @@
     color: #888;
   }
 
+  .job-context {
+    font-size: 10.5px;
+    font-style: italic;
+    color: #444;
+    margin-bottom: 6px;
+    line-height: 1.55;
+  }
+
+  .job-subheader {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-top: 6px;
+    margin-bottom: 2px;
+  }
+
   .job ul {
     padding-left: 18px;
-    margin-top: 6px;
+    margin-top: 4px;
+    margin-bottom: 2px;
   }
 
   .job li {
     font-size: 10.5px;
     line-height: 1.6;
     color: #333;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
   .job li strong {
@@ -221,14 +278,14 @@
     font-family: 'Space Grotesk', sans-serif;
     font-size: 11.5px;
     font-weight: 600;
-    color: hsl(270, 70%, 45%);
+    color: #2563eb;
   }
 
   .project-badge {
     font-size: 9px;
     font-weight: 500;
-    color: hsl(187, 74%, 32%);
-    background: hsl(187, 40%, 95%);
+    color: #1a2744;
+    background: #eef1f6;
     padding: 1px 6px;
     border-radius: 2px;
     margin-left: 6px;
@@ -262,11 +319,11 @@
   .edu-title {
     font-weight: 600;
     font-size: 11px;
-    color: #333;
+    color: #1f1f1f;
   }
 
   .edu-org {
-    color: hsl(270, 70%, 45%);
+    color: #2563eb;
     font-weight: 500;
   }
 
@@ -281,6 +338,7 @@
     color: #666;
     margin-top: 2px;
     line-height: 1.5;
+    font-style: italic;
   }
 
   /* === CERTIFICATIONS === */
@@ -300,7 +358,7 @@
   }
 
   .cert-org {
-    color: hsl(270, 70%, 45%);
+    color: #2563eb;
     white-space: nowrap;
   }
 
@@ -324,8 +382,8 @@
   }
 
   .skill-category {
-    font-weight: 600;
-    color: #333;
+    font-weight: 700;
+    color: #1f1f1f;
     font-size: 10.5px;
   }
 
@@ -358,10 +416,9 @@
   <!-- HEADER -->
   <div class="header avoid-break">
     <h1>{{NAME}}</h1>
-    <div class="header-gradient"></div>
+    <div class="header-tagline">{{TAGLINE}}</div>
     <div class="contact-row">
-      <span>{{PHONE}}</span>
-      <span class="separator">|</span>
+      {{PHONE}}
       <span>{{EMAIL}}</span>
       <span class="separator">|</span>
       <a href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
@@ -370,6 +427,7 @@
       <span class="separator">|</span>
       <span>{{LOCATION}}</span>
     </div>
+    <hr class="header-rule">
   </div>
 
   <!-- PROFESSIONAL SUMMARY -->
@@ -381,7 +439,7 @@
   <!-- CORE COMPETENCIES -->
   <div class="section">
     <div class="section-title">{{SECTION_COMPETENCIES}}</div>
-    <div class="competencies-grid">
+    <div class="competencies-list">
       {{COMPETENCIES}}
     </div>
   </div>
