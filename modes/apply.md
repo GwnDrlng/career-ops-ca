@@ -1,28 +1,31 @@
-# Mode: apply — Live Application Assistant
+# Mode: apply — Application Content Generator
 
-Interactive mode for when the candidate is filling out an application form in Chrome. It reads what is on the screen, loads the previous context of the job, and generates personalized responses for each form question.
+Generates personalized responses to application form questions for the candidate to copy-paste manually. **Claude never fills out, types into, or submits web application forms — all form interaction is done by the candidate themselves.**
 
-## Requirements
+Playwright may be used to read/snapshot the page and extract questions, but must never type into fields, click form buttons, or trigger any submission.
 
-- **Best with Playwright in visible mode**: In visible mode, the candidate sees the browser and Claude can interact with the page.
-- **Without Playwright**: the candidate shares a screenshot or pastes the questions manually.
+## How to use
+
+1. Share the form URL, a screenshot, or paste the questions directly
+2. Claude reads the page and extracts all questions
+3. You receive a markdown file with ready-to-paste responses — you fill in the form yourself
 
 ## Workflow
 
 ```text
-1. DETECT      → Read active Chrome tab (screenshot/URL/title)
+1. DETECT      → Read active page via Playwright snapshot (read-only) OR screenshot/paste from candidate
 2. IDENTIFY    → Extract company + role from the page
 3. SEARCH      → Match against existing reports in reports/
 4. LOAD        → Read full report + Section G (if it exists)
-5. COMPARE     → Does the role on screen match the one evaluated? If it changed → notify
+5. COMPARE     → Does the role on screen match the one evaluated? If changed → notify
 6. ANALYZE     → Identify ALL visible form questions
 7. GENERATE    → For each question, generate a personalized response
-8. PRESENT     → Show formatted responses for copy-paste
+8. PRESENT     → Show formatted responses for copy-paste (also saved as Section G in the report)
 ```
 
 ## Step 1 — Detect the job
 
-**With Playwright:** Take a snapshot of the active page. Read title, URL, and visible content.
+**With Playwright (read-only):** `browser_navigate` to the URL, then `browser_snapshot` to read title, URL, and visible content. Stop there — do not click, type, or interact with any form element.
 
 **Without Playwright:** Ask the candidate to:
 - Share a screenshot of the form (Read tool can read images)
@@ -101,7 +104,10 @@ If the candidate confirms that they submitted the application:
 
 ## Scroll handling
 
-If the form has more questions than the visible ones:
-- Ask the candidate to scroll and share another screenshot
+If the form has more questions than visible ones:
+- Use `browser_scroll` (read-only) to reveal more content, then `browser_snapshot` again
+- Or ask the candidate to scroll and share another screenshot
 - Or paste the remaining questions
 - Process in iterations until the entire form is covered
+
+**Never use `browser_type`, `browser_click` on form elements, or any action that modifies the page state.**
