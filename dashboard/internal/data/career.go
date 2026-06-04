@@ -20,7 +20,6 @@ var (
 	reTlDr           = regexp.MustCompile(`(?i)\*\*TL;DR\*\*\s*\|\s*(.+)`)
 	reTlDrColon      = regexp.MustCompile(`(?i)\*\*TL;DR:\*\*\s*(.+)`)
 	reRemote         = regexp.MustCompile(`(?i)\*\*Remote\*\*\s*\|\s*(.+)`)
-	reLocationColon  = regexp.MustCompile(`(?m)^\*\*Location:\*\*\s*(.+)`)
 	reComp           = regexp.MustCompile(`(?i)\*\*Comp\*\*\s*\|\s*(.+)`)
 	reArchetypeColon = regexp.MustCompile(`(?i)\*\*Arquetipo:\*\*\s*(.+)`)
 	reReportURL      = regexp.MustCompile(`(?m)^\*\*URL:\*\*\s*(https?://\S+)`)
@@ -481,7 +480,7 @@ func NormalizeStatus(raw string) string {
 	}
 
 	switch {
-	// Most restrictive first — English canonical + legacy Spanish aliases for existing data
+	// Most restrictive first — accepts both English and Spanish
 	case strings.Contains(s, "no aplicar") || strings.Contains(s, "no_aplicar") || s == "skip" || strings.Contains(s, "geo blocker"):
 		return "skip"
 	case strings.Contains(s, "interview") || strings.Contains(s, "entrevista"):
@@ -528,8 +527,6 @@ func LoadReportSummary(careerOpsPath, reportPath string) (archetype, tldr, remot
 
 	if m := reRemote.FindStringSubmatch(text); m != nil {
 		remote = cleanTableCell(m[1])
-	} else if m := reLocationColon.FindStringSubmatch(text); m != nil {
-		remote = cleanTableCell(m[1])
 	}
 
 	if m := reComp.FindStringSubmatch(text); m != nil {
@@ -542,36 +539,6 @@ func LoadReportSummary(careerOpsPath, reportPath string) (archetype, tldr, remot
 	}
 
 	return
-}
-
-// SaveReportLocation writes or updates a **Location:** line in a report file so the
-// manually-provided value is picked up by LoadReportSummary on the next read.
-func SaveReportLocation(careerOpsPath, reportPath, loc string) error {
-	fullPath := filepath.Join(careerOpsPath, reportPath)
-	raw, err := os.ReadFile(fullPath)
-	if err != nil {
-		return err
-	}
-	text := string(raw)
-	tag := "**Location:** " + loc
-
-	// Replace existing **Location:** line if present.
-	if reLocationColon.MatchString(text) {
-		text = reLocationColon.ReplaceAllString(text, tag)
-		return os.WriteFile(fullPath, []byte(text), 0644)
-	}
-
-	// Otherwise, insert after the first markdown heading or at the top.
-	lines := strings.SplitAfter(text, "\n")
-	insertAt := 0
-	for i, l := range lines {
-		if strings.HasPrefix(strings.TrimSpace(l), "#") {
-			insertAt = i + 1
-			break
-		}
-	}
-	result := append(lines[:insertAt], append([]string{tag + "\n"}, lines[insertAt:]...)...)
-	return os.WriteFile(fullPath, []byte(strings.Join(result, "")), 0644)
 }
 
 // UpdateApplicationStatus updates the status of an application in applications.md.

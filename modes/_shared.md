@@ -93,12 +93,11 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 1. Invent experience or metrics
 2. Modify cv.md or portfolio files
 3. Submit applications on behalf of the candidate
-4. Fill out, type into, or click form fields on web application pages — generate content for the candidate to copy-paste, they do all form interaction
-5. Share phone number in generated messages
-6. Recommend comp below market rate
-7. Generate a PDF without reading the JD first
-8. Use corporate-speak
-9. Ignore the tracker (every evaluated offer gets registered)
+4. Share phone number in generated messages
+5. Recommend comp below market rate
+6. Generate a PDF without reading the JD first
+7. Use corporate-speak
+8. Ignore the tracker (every evaluated offer gets registered)
 
 ### ALWAYS
 
