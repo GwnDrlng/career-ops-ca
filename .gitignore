@@ -46,3 +46,12 @@ bun.lock
 .claude/settings.local.json
 .claude/memory/
 server-new
+
+# Memory
+memory/
+
+# User-specific scripts (personal, not system)
+generate-cover-letter.mjs
+gen-resume-docx.mjs
+gen-cover-letters.mjs
+gen-cl-docx.mjs
