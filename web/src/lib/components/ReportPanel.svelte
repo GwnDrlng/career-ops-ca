@@ -63,16 +63,27 @@
 	});
 
 	async function openInNewTab(path: string) {
+		if (path.endsWith('.html')) {
+			// Serve via API so the browser gets a real URL — blob URLs get blocked/downloaded
+			window.open(`/api/raw/${path}`, '_blank', 'noopener');
+			return;
+		}
+		// MD: wrap in styled HTML, open via blob with a simulated link click to avoid popup blockers
 		let content = relatedContent[path];
 		if (!content) {
 			const result = await fetchFileContent(path);
 			relatedContent = { ...relatedContent, [path]: result.content };
 			content = result.content;
 		}
-		const html = path.endsWith('.html') ? content : wrapAsHtmlPage(content, tabLabel(path));
+		const html = wrapAsHtmlPage(content, tabLabel(path));
 		const blob = new Blob([html], { type: 'text/html' });
 		const url = URL.createObjectURL(blob);
-		window.open(url, '_blank');
+		const a = document.createElement('a');
+		a.href = url;
+		a.target = '_blank';
+		a.rel = 'noopener';
+		a.click();
+		setTimeout(() => URL.revokeObjectURL(url), 10_000);
 	}
 
 	function legitimacyCls(l: string) {

@@ -53,6 +53,9 @@ func RegisterRoutes(mux *http.ServeMux, careerOpsPath string) {
 	apiMux.HandleFunc("PUT /api/files/{path...}", func(w http.ResponseWriter, r *http.Request) {
 		handleFilePut(w, r, careerOpsPath)
 	})
+	apiMux.HandleFunc("GET /api/raw/{path...}", func(w http.ResponseWriter, r *http.Request) {
+		handleRawFile(w, r, careerOpsPath)
+	})
 	apiMux.HandleFunc("/api/ws/chat", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not implemented", http.StatusNotImplemented)
 	})
@@ -490,6 +493,45 @@ func handleFilePut(w http.ResponseWriter, r *http.Request, careerOpsPath string)
 		return
 	}
 	writeJSON(w, SaveResultDTO{OK: true})
+}
+
+// anchorScrollScript intercepts hash-link clicks and converts them to
+// scrollIntoView calls, preventing the browser from treating anchor
+// navigation as a new page request (which Safari downloads on /api/ paths).
+const anchorScrollScript = `<script>
+document.addEventListener('click',function(e){
+  var a=e.target.closest('a[href^="#"]');
+  if(!a)return;
+  e.preventDefault();
+  var id=a.getAttribute('href').slice(1);
+  var el=document.getElementById(id);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+});
+</script>`
+
+func handleRawFile(w http.ResponseWriter, r *http.Request, careerOpsPath string) {
+	relPath := r.PathValue("path")
+	fullPath, ok := safePath(careerOpsPath, relPath)
+	if !ok {
+		http.Error(w, "invalid path", http.StatusBadRequest)
+		return
+	}
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		http.Error(w, "file not found", http.StatusNotFound)
+		return
+	}
+	ext := strings.ToLower(filepath.Ext(relPath))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	if ext == ".html" {
+		// Inject scroll intercept before </body> so anchor links never trigger
+		// a navigation event (which Safari re-downloads on /api/ paths).
+		out := strings.Replace(string(content), "</body>", anchorScrollScript+"</body>", 1)
+		w.Write([]byte(out))
+	} else {
+		w.Write(content)
+	}
 }
 
 func handleOfferPDF(w http.ResponseWriter, r *http.Request, careerOpsPath string) {
