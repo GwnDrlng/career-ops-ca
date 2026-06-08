@@ -98,19 +98,20 @@ func appToDTO(app model.CareerApplication, careerOpsPath string, includeReport b
 	legitimacy := extractLegitimacy(careerOpsPath, app.ReportPath)
 
 	dto := OfferDTO{
-		N:          app.Number,
-		Score:      app.Score,
-		Date:       app.Date,
-		Company:    app.Company,
-		Title:      app.Role,
-		State:      data.NormalizeStatus(app.Status),
-		Archetype:  archetype,
-		Legitimacy: legitimacy,
-		Loc:        loc,
-		Comp:       comp,
-		URL:        app.JobURL,
-		Notes:      app.Notes,
-		Report:     app.ReportPath,
+		N:            app.Number,
+		Score:        app.Score,
+		Date:         app.Date,
+		Company:      app.Company,
+		Title:        app.Role,
+		State:        data.NormalizeStatus(app.Status),
+		Archetype:    archetype,
+		Legitimacy:   legitimacy,
+		Loc:          loc,
+		Comp:         comp,
+		URL:          app.JobURL,
+		Notes:        app.Notes,
+		Report:       app.ReportPath,
+		RelatedFiles: data.FindRelatedFiles(careerOpsPath, app.Company),
 	}
 
 	if includeReport && app.ReportPath != "" {
@@ -440,14 +441,16 @@ func handleFiles(w http.ResponseWriter, _ *http.Request, careerOpsPath string) {
 }
 
 func safePath(careerOpsPath, relPath string) (string, bool) {
-	// Prevent path traversal
+	absBase, err := filepath.Abs(careerOpsPath)
+	if err != nil {
+		return "", false
+	}
 	clean := filepath.Clean(relPath)
 	if strings.Contains(clean, "..") {
 		return "", false
 	}
-	full := filepath.Join(careerOpsPath, clean)
-	// Must be under careerOpsPath
-	if !strings.HasPrefix(full, filepath.Clean(careerOpsPath)+string(os.PathSeparator)) {
+	full := filepath.Join(absBase, clean)
+	if !strings.HasPrefix(full, absBase+string(os.PathSeparator)) {
 		return "", false
 	}
 	return full, true

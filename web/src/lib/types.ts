@@ -13,6 +13,7 @@ export interface OfferDTO {
 	notes: string;
 	report: string;
 	report_md?: string;
+	related_files?: string[];
 }
 
 export interface FileNodeDTO {

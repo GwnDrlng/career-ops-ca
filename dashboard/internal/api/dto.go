@@ -2,20 +2,21 @@ package api
 
 // OfferDTO is the JSON shape for a single job offer.
 type OfferDTO struct {
-	N          int     `json:"n"`
-	Score      float64 `json:"score"`
-	Date       string  `json:"date"`
-	Company    string  `json:"company"`
-	Title      string  `json:"title"`
-	State      string  `json:"state"`
-	Archetype  string  `json:"archetype"`
-	Legitimacy string  `json:"legitimacy"`
-	Loc        string  `json:"loc"`
-	Comp       string  `json:"comp"`
-	URL        string  `json:"url"`
-	Notes      string  `json:"notes"`
-	Report     string  `json:"report"`
-	ReportMD   string  `json:"report_md,omitempty"`
+	N            int      `json:"n"`
+	Score        float64  `json:"score"`
+	Date         string   `json:"date"`
+	Company      string   `json:"company"`
+	Title        string   `json:"title"`
+	State        string   `json:"state"`
+	Archetype    string   `json:"archetype"`
+	Legitimacy   string   `json:"legitimacy"`
+	Loc          string   `json:"loc"`
+	Comp         string   `json:"comp"`
+	URL          string   `json:"url"`
+	Notes        string   `json:"notes"`
+	Report       string   `json:"report"`
+	ReportMD     string   `json:"report_md,omitempty"`
+	RelatedFiles []string `json:"related_files,omitempty"`
 }
 
 // FileNodeDTO is the JSON shape for a file tree entry.

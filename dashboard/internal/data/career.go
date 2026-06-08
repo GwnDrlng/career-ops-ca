@@ -432,6 +432,38 @@ func enrichAppURLsByCompany(careerOpsPath string, apps []model.CareerApplication
 	}
 }
 
+// FindRelatedFiles scans interview-prep/ for files whose name contains the
+// normalised company slug, and returns their root-relative paths.
+func FindRelatedFiles(careerOpsPath, company string) []string {
+	slug := normalizeCompany(company)
+	// Also build a short slug: first token only (e.g. "relay" from "relay financial")
+	shortSlug := strings.SplitN(slug, " ", 2)[0]
+	shortSlug = strings.ReplaceAll(shortSlug, " ", "-")
+	slug = strings.ReplaceAll(slug, " ", "-")
+
+	dir := filepath.Join(careerOpsPath, "interview-prep")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil
+	}
+
+	var out []string
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := strings.ToLower(e.Name())
+		ext := filepath.Ext(name)
+		if ext != ".md" && ext != ".html" {
+			continue
+		}
+		if strings.Contains(name, slug) || (shortSlug != slug && strings.Contains(name, shortSlug)) {
+			out = append(out, "interview-prep/"+e.Name())
+		}
+	}
+	return out
+}
+
 // ComputeMetrics calculates aggregate metrics from applications.
 func ComputeMetrics(apps []model.CareerApplication) model.PipelineMetrics {
 	m := model.PipelineMetrics{
@@ -729,6 +761,27 @@ func ComputeProgressMetrics(apps []model.CareerApplication) model.ProgressMetric
 	}
 
 	return pm
+}
+
+// SaveReportLocation writes a **Remote:** field into the report file header.
+func SaveReportLocation(careerOpsPath, reportPath, loc string) error {
+	fullPath := filepath.Join(careerOpsPath, reportPath)
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		return err
+	}
+	text := string(content)
+	reRemoteLine := regexp.MustCompile(`(?m)^\*\*Remote\*\*\s*\|.*$`)
+	if reRemoteLine.MatchString(text) {
+		text = reRemoteLine.ReplaceAllString(text, "**Remote** | "+loc)
+	} else {
+		// Insert after **Score** line
+		reScore := regexp.MustCompile(`(?m)(^\*\*Score:\*\*.*)`)
+		if reScore.MatchString(text) {
+			text = reScore.ReplaceAllString(text, "$1\n**Remote:** "+loc)
+		}
+	}
+	return os.WriteFile(fullPath, []byte(text), 0644)
 }
 
 // safePct returns the percentage of part/whole, or 0 if whole is 0.
