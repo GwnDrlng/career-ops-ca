@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { OfferDTO } from '$lib/types';
 	import { scoreCls } from '$lib/utils/score';
-	import { renderMarkdown } from '$lib/utils/markdown';
-	import { updateOfferState, fetchOffer, updateOfferLoc } from '$lib/api';
+	import { renderMarkdown, extractHtmlContent, wrapAsHtmlPage } from '$lib/utils/markdown';
+	import { updateOfferState, fetchOffer, updateOfferLoc, fetchFileContent } from '$lib/api';
 	import { offers, states, view, evalSize, pipeSize } from '$lib/stores';
 
 	function focusOnMount(el: HTMLElement) { el.focus(); }
@@ -16,8 +16,14 @@
 	let editingLoc = $state(false);
 	let locDraft = $state('');
 
+	// Related files tab state
+	let activeTab = $state<'report' | string>('report');
+	let relatedContent = $state<Record<string, string>>({});
+	let loadingFile = $state(false);
+
 	$effect(() => {
-		if (!offer) { reportMD = null; return; }
+		if (!offer) { reportMD = null; activeTab = 'report'; return; }
+		activeTab = 'report';
 		if (offer.report_md) { reportMD = offer.report_md; return; }
 		loadingReport = true;
 		fetchOffer(offer.n).then(full => {
@@ -26,7 +32,48 @@
 		}).catch(() => { loadingReport = false; });
 	});
 
-	const rendered = $derived(() => reportMD ? renderMarkdown(reportMD) : '');
+	async function selectTab(tab: string) {
+		activeTab = tab;
+		if (tab === 'report') return;
+		if (relatedContent[tab]) return;
+		loadingFile = true;
+		try {
+			const result = await fetchFileContent(tab);
+			relatedContent = { ...relatedContent, [tab]: result.content };
+		} finally {
+			loadingFile = false;
+		}
+	}
+
+	function tabLabel(path: string): string {
+		const name = path.split('/').pop() ?? path;
+		// Strip company prefix up to first dash, then truncate
+		const parts = name.replace(/\.(md|html)$/, '').split('-');
+		// Drop first segment (company slug) and join rest
+		const label = parts.slice(1).join(' ');
+		return label.length > 0 ? label : name;
+	}
+
+	const rendered = $derived(() => {
+		if (activeTab === 'report') return reportMD ? renderMarkdown(reportMD) : '';
+		const content = relatedContent[activeTab];
+		if (!content) return '';
+		if (activeTab.endsWith('.html')) return extractHtmlContent(content);
+		return renderMarkdown(content);
+	});
+
+	async function openInNewTab(path: string) {
+		let content = relatedContent[path];
+		if (!content) {
+			const result = await fetchFileContent(path);
+			relatedContent = { ...relatedContent, [path]: result.content };
+			content = result.content;
+		}
+		const html = path.endsWith('.html') ? content : wrapAsHtmlPage(content, tabLabel(path));
+		const blob = new Blob([html], { type: 'text/html' });
+		const url = URL.createObjectURL(blob);
+		window.open(url, '_blank');
+	}
 
 	function legitimacyCls(l: string) {
 		if (l?.toLowerCase().includes('high')) return 'ok';
@@ -162,11 +209,27 @@
 			{/if}
 		</div>
 
-		{#if loadingReport}
-			<div style="padding:40px 24px;color:var(--fg-3);font-family:var(--mono);font-size:12px">Loading report…</div>
+		{#if offer.related_files && offer.related_files.length > 0}
+			<div class="tab-strip">
+				<button class="tab-btn {activeTab === 'report' ? 'active' : ''}" onclick={() => selectTab('report')}>
+					Report
+				</button>
+				{#each offer.related_files as path}
+					<span class="tab-item {activeTab === path ? 'active' : ''}">
+						<button class="tab-btn {activeTab === path ? 'active' : ''}" onclick={() => selectTab(path)} title={path}>
+							{tabLabel(path)}
+						</button>
+						<button class="tab-open" onclick={(e) => { e.stopPropagation(); openInNewTab(path); }} title="Open in new tab">↗</button>
+					</span>
+				{/each}
+			</div>
+		{/if}
+
+		{#if loadingReport || loadingFile}
+			<div style="padding:40px 24px;color:var(--fg-3);font-family:var(--mono);font-size:12px">Loading…</div>
 		{:else if rendered()}
 			<div class="report">{@html rendered()}</div>
-		{:else if offer.notes}
+		{:else if activeTab === 'report' && offer.notes}
 			<div class="report" style="padding:28px 36px">
 				<p style="color:var(--fg-2)">{offer.notes}</p>
 				{#if !offer.report}
@@ -174,7 +237,7 @@
 				{/if}
 			</div>
 		{:else}
-			<div style="padding:40px 24px;color:var(--fg-3);font-family:var(--mono);font-size:12px">No report available.</div>
+			<div style="padding:40px 24px;color:var(--fg-3);font-family:var(--mono);font-size:12px">No content available.</div>
 		{/if}
 	{/if}
 </div>
