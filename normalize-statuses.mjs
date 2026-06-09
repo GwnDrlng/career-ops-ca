@@ -3,7 +3,7 @@
  * normalize-statuses.mjs — Clean non-canonical states in applications.md
  *
  * Maps all non-canonical statuses to canonical ones per states.yml:
- *   Evaluated, Applied, Responded, Interview, Opening, Rejected, Discarded, SKIP
+ *   Evaluada, Aplicado, Respondido, Entrevista, Oferta, Rechazado, Descartado, NO APLICAR
  *
  * Also strips markdown bold (**) and dates from the status field,
  * moving DUPLICADO info to the notes column.
@@ -67,7 +67,7 @@ function normalizeStatus(raw) {
   // Already canonical (English, per states.yml) — just fix casing/bold
   const canonical = [
     'Evaluated', 'Applied', 'Responded', 'Interview',
-    'Opening', 'Rejected', 'Discarded', 'SKIP',
+    'Offer', 'Rejected', 'Discarded', 'SKIP',
   ];
   for (const c of canonical) {
     if (lower === c.toLowerCase()) return { status: c };
@@ -78,7 +78,7 @@ function normalizeStatus(raw) {
   if (['aplicado', 'enviada', 'aplicada', 'applied', 'sent'].includes(lower)) return { status: 'Applied' };
   if (['respondido'].includes(lower)) return { status: 'Responded' };
   if (['entrevista'].includes(lower)) return { status: 'Interview' };
-  if (['oferta'].includes(lower)) return { status: 'Opening' };
+  if (['oferta'].includes(lower)) return { status: 'Offer' };
   if (['cerrada', 'descartada'].includes(lower)) return { status: 'Discarded' };
   if (['no aplicar', 'no_aplicar', 'skip'].includes(lower)) return { status: 'SKIP' };
 

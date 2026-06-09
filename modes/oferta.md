@@ -1,18 +1,18 @@
-# Mode: opening — Complete Evaluation A-G
+# Mode: job — Full A-G Evaluation
 
-When the candidate pastes an opening (text or URL), ALWAYS deliver all 7 blocks (A-F evaluation + G legitimacy):
+When the candidate pastes a job (text or URL), ALWAYS deliver the 7 blocks (A-F evaluation + G legitimacy):
 
 ## Step 0 — Archetype Detection
 
-Classify the opening into one of 6 archetypes (see `_shared.md`). If hybrid, indicate the 2 closest. This determines:
-- Which proof points to prioritise in block B
+Classify the job into one of the 6 archetypes (see `_shared.md`). If it is a hybrid, indicate the 2 closest ones. This determines:
+- Which proof points to prioritize in block B
 - How to rewrite the summary in block E
 - Which STAR stories to prepare in block F
 
 ## Block A — Role Summary
 
 Table with:
-- Detected archetype
+- Archetype detected
 - Domain (platform/agentic/LLMOps/ML/enterprise)
 - Function (build/consult/manage/deploy)
 - Seniority
@@ -20,74 +20,74 @@ Table with:
 - Team size (if mentioned)
 - TL;DR in 1 sentence
 
-## Block B — CV Match
+## Block B — Match with CV
 
-Read `cv.md`. Create a table with each JD requirement mapped to exact CV lines.
+Read `cv.md`. Create a table with each JD requirement mapped to exact lines in the CV.
 
-**Adapted to archetype:**
-- If FDE → prioritise fast delivery and client-facing proof points
-- If SA → prioritise system design and integrations
-- If PM → prioritise product discovery and metrics
-- If LLMOps → prioritise evals, observability, pipelines
-- If Agentic → prioritise multi-agent, HITL, orchestration
-- If Transformation → prioritise change management, adoption, scaling
+**Adapted to the archetype:**
+- If FDE → prioritize delivery speed and client-facing proof points
+- If SA → prioritize system design and integrations
+- If PM → prioritize product discovery and metrics
+- If LLMOps → prioritize evals, observability, pipelines
+- If Agentic → prioritize multi-agent, HITL, orchestration
+- If Transformation → prioritize change management, adoption, scaling
 
-**Gaps** section with mitigation strategy for each one. For each gap:
+**Gaps** section with mitigation strategy for each. For each gap:
 1. Is it a hard blocker or a nice-to-have?
 2. Can the candidate demonstrate adjacent experience?
 3. Is there a portfolio project that covers this gap?
 4. Concrete mitigation plan (phrase for cover letter, quick project, etc.)
 
-## Block C — Level & Strategy
+## Block C — Level and Strategy
 
-1. **Detected level** in the JD vs **candidate's natural level for that archetype**
+1. **Level detected** in the JD vs **candidate's natural level for that archetype**
 2. **"Sell senior without lying" plan**: specific phrases adapted to the archetype, concrete achievements to highlight, how to position founder experience as an advantage
-3. **"If downlevelled" plan**: accept if comp is fair, negotiate 6-month review, clear promotion criteria
+3. **"If they downlevel me" plan**: accept if compensation is fair, negotiate 6-month review, clear promotion criteria
 
-## Block D — Comp & Demand
+## Block D — Comp and Demand
 
 Use WebSearch for:
 - Current salaries for the role (Glassdoor, Levels.fyi, Blind)
 - Company's compensation reputation
-- Role demand trend
+- Demand trend for the role
 
-Table with data and cited sources. If no data available, say so rather than inventing.
+Table with data and cited sources. If there is no data, state it instead of inventing.
 
-## Block E — Personalisation Plan
+## Block E — Customization Plan
 
-| # | Section | Current state | Proposed change | Why |
-|---|---------|---------------|-----------------|-----|
+| # | Section | Current status | Proposed change | Why |
+|---|---------|---------------|------------------|---------|
 | 1 | Summary | ... | ... | ... |
 | ... | ... | ... | ... | ... |
 
-Top 5 CV changes + Top 5 LinkedIn changes to maximise match.
+Top 5 changes to CV + Top 5 changes to LinkedIn to maximize match.
 
 ## Block F — Interview Plan
 
 6-10 STAR+R stories mapped to JD requirements (STAR + **Reflection**):
 
 | # | JD Requirement | STAR+R Story | S | T | A | R | Reflection |
-|---|----------------|--------------|---|---|---|---|------------|
+|---|-----------------|-----------------|---|---|---|---|------------|
 
 The **Reflection** column captures what was learned or what would be done differently. This signals seniority — junior candidates describe what happened, senior candidates extract lessons.
 
 **Story Bank:** If `interview-prep/story-bank.md` exists, check if any of these stories are already there. If not, append new ones. Over time this builds a reusable bank of 5-10 master stories that can be adapted to any interview question.
 
-**Selected and framed according to archetype:**
-- FDE → emphasise fast delivery and client-facing
-- SA → emphasise architecture decisions
-- PM → emphasise discovery and trade-offs
-- LLMOps → emphasise metrics, evals, production hardening
-- Agentic → emphasise orchestration, error handling, HITL
-- Transformation → emphasise adoption, organisational change
+**Selected and framed according to the archetype:**
+- FDE → emphasize delivery speed and client-facing
+- SA → emphasize architectural decisions
+- PM → emphasize discovery and trade-offs
+- LLMOps → emphasize metrics, evals, production hardening
+- Agentic → emphasize orchestration, error handling, HITL
+- Transformation → emphasize adoption, organizational change
 
 Also include:
 - 1 recommended case study (which of their projects to present and how)
-- Red-flag questions and how to answer them (e.g. "why did you sell your company?", "do you have a reports team?")
+- Red-flag questions and how to answer them (e.g., "why did you sell your company?", "do you have a team of reports?")
 
 ## Block G — Posting Legitimacy
 
-Analyze the job posting for signals that indicate whether this is a real, active opening. This helps the user prioritise their effort on opportunities most likely to result in a hiring process.
+Analyze the job posting for signals that indicate whether this is a real, active opening. This helps the user prioritize their effort on opportunities most likely to result in a hiring process.
 
 **Ethical framing:** Present observations, not accusations. Every signal has legitimate explanations. The user decides how to weigh them.
 
@@ -142,16 +142,16 @@ Analyze the job posting for signals that indicate whether this is a real, active
 
 ---
 
-## Post-Evaluation
+## Post-evaluation
 
 **ALWAYS** after generating blocks A-G:
 
 ### 1. Save report .md
 
-Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
+Save full evaluation in `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 
 - `{###}` = next sequential number (3 digits, zero-padded)
-- `{company-slug}` = company name in lowercase, no spaces (use hyphens)
+- `{company-slug}` = company name in lowercase, without spaces (use hyphens)
 - `{YYYY-MM-DD}` = current date
 
 **Report format:**
@@ -160,6 +160,7 @@ Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 # Evaluation: {Company} — {Role}
 
 **Date:** {YYYY-MM-DD}
+**URL:**
 **Archetype:** {detected}
 **Score:** {X/5}
 **Legitimacy:** {High Confidence | Proceed with Caution | Suspicious}
@@ -168,46 +169,46 @@ Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 ---
 
 ## A) Role Summary
-(full block A content)
+(full content of block A)
 
-## B) CV Match
-(full block B content)
+## B) Match with CV
+(full content of block B)
 
-## C) Level & Strategy
-(full block C content)
+## C) Level and Strategy
+(full content of block C)
 
-## D) Comp & Demand
-(full block D content)
+## D) Comp and Demand
+(full content of block D)
 
-## E) Personalisation Plan
-(full block E content)
+## E) Customization Plan
+(full content of block E)
 
 ## F) Interview Plan
-(full block F content)
+(full content of block F)
 
 ## G) Posting Legitimacy
-(full block G content)
+(full content of block G)
 
 ## H) Draft Application Answers
 (only if score >= 4.5 — draft answers for the application form)
 
 ---
 
-## Extracted Keywords
-(list of 15-20 keywords from JD for ATS optimisation)
+## Keywords extracted
+(list of 15-20 keywords from the JD for ATS optimization)
 ```
 
-### 2. Register in tracker
+### 2. Record in tracker
 
-**ALWAYS** register in `data/applications.md`:
+**ALWAYS** record in `data/applications.md`:
 - Next sequential number
 - Current date
 - Company
 - Role
-- Score: average match (1-5)
+- Score: match average (1-5)
 - Status: `Evaluated`
 - PDF: ❌ (or ✅ if auto-pipeline generated PDF)
-- Report: relative link to the .md report (e.g. `[001](reports/001-company-2026-01-01.md)`)
+- Report: root-relative link `[001](reports/001-company-2026-01-01.md)` (when merged via `merge-tracker.mjs` it is normalized to be relative to the tracker's own dir, e.g. `../reports/...`; see #760)
 
 **Tracker format:**
 

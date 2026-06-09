@@ -1,8 +1,10 @@
 # Personal data (user fills these)
 cv.md
 data/applications.md
+data/applications.md.bak
 data/pipeline.md
 data/scan-history.tsv
+data/scan-history.tsv.bak
 reports/*.md
 !reports/.gitkeep
 output/*
@@ -43,5 +45,13 @@ bun.lock
 # Claude Code local
 .claude/settings.local.json
 .claude/memory/
-career-dashboard
-package-lock.json
+server-new
+
+# Memory
+memory/
+
+# User-specific scripts (personal, not system)
+generate-cover-letter.mjs
+gen-resume-docx.mjs
+gen-cover-letters.mjs
+gen-cl-docx.mjs

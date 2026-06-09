@@ -139,3 +139,64 @@ After delivering the report:
 - **Cite everything.** Every question, every stat, every claim gets a source or an `[inferred]` tag.
 - Generate in the language of the JD (EN default).
 - Be direct. This is a working prep document, not a pep talk.
+
+## PM Interview Patterns
+
+When preparing for Product Manager interviews, adapt the standard prep to include these PM-specific rounds and frameworks:
+
+### Common PM Interview Round Types
+
+| Round Type | What They Test | Typical Duration |
+|-----------|---------------|-----------------|
+| Product Sense / Product Design | Customer empathy, feature prioritization, tradeoff reasoning | 45-60 min |
+| Execution / Metrics | Goal setting, metric selection, root cause analysis, experiment design | 45-60 min |
+| Strategy / Behavioral | Leadership, stakeholder management, failure reflection, influence | 45-60 min |
+| Technical / Estimation | Back-of-envelope sizing, system understanding, data literacy | 30-45 min |
+| Case Study / Take-Home | Full product spec, PRD, or strategy document | 2-8 hours |
+
+### PM Interview Frameworks to Prepare
+
+1. **CIRCLES Method** (for product design): Comprehend → Identify users → Report pain points → Cut prioritization → List solutions → Evaluate tradeoffs → Summarize
+2. **RESOLVED Method** (for execution/metrics): Root cause exploration → Establish metrics → Suggest experiments → Look for guardrails → Validate with data → Execute with milestones → Decision framework
+3. **STAR+R** (for behavioral): Situation, Task, Action, Result, + Reflection (what you'd do differently)
+
+### PM-Specific Questions to Anticipate
+
+- "How would you improve [product]?" — product sense with metric reasoning
+- "What metric would you use to measure [X]?" — execution framework
+- "Tell me about a time you had to say no to a stakeholder" — influence without authority
+- "How would you prioritize [feature list]?" — RICE, ICE, or custom framework
+- "Design [product] for [user]" — end-to-end product thinking
+- "What's your favorite product and why?" — product taste + articulation
+- "Estimate the market size for [X] in Canada" — TAM/SAM/SOM with Canadian market context
+
+### AI Product Manager — Specific Questions
+
+These target the intersection of product management and AI/ML systems. Expect 2-3 of these in any AI PM or Technical PM interview:
+
+**Non-deterministic output & product quality**
+- "How would you design an AI feature that has non-deterministic output?" — Talk about evaluation datasets, acceptance thresholds, guardrails, graceful degradation, and user-facing communication about probabilistic results.
+- "How do you measure success of an ML-powered product feature?" — Beyond engagement metrics: precision/recall at threshold, user trust signals (override rate, correction rate), cost per inference, time-to-value, and whether users return after first experience.
+- "Your model's accuracy dropped 15% in production. Walk me through your response." — Detection (monitoring, alerts), triage (data drift? feature change? edge case?), mitigation (rollback, fallback rules, throttling), root cause, and prevention (canary deploys, shadow scoring).
+
+**Prioritization under AI uncertainty**
+- "Walk me through how you'd prioritize between improving model accuracy vs. improving UX latency." — Frame as ROI: how many users hit the accuracy threshold vs. how many bounce on latency. Use marginal improvement curves. Propose A/B testing both levers.
+- "You have 3 AI feature requests from stakeholders. You can only build one. How do you decide?" — Impact × feasibility × data-readiness scoring. Key question: do we have the training data and evaluation criteria for each? If not, that feature isn't ready regardless of stakeholder pressure.
+- "How do you decide when an AI feature should use a heuristic/rules-based approach vs. ML?" — Rules when: deterministic output required, small data, high-stakes domain, need for auditability. ML when: pattern complexity exceeds rule-writing capacity, sufficient training data exists, graceful degradation is acceptable.
+
+**AI product lifecycle & stakeholder management**
+- "Describe the lifecycle of an AI feature from prototype to production." — Prototype in notebooks → offline evaluation → shadow mode in production → canary release with guardrails → full rollout with monitoring → continuous evaluation → retraining triggers.
+- "How do you communicate AI risk and limitations to non-technical stakeholders?" — Concrete analogies (weather forecast confidence intervals), worst-case scenario framing, preview demos with known failure modes, and setting expectations about improvement timelines.
+- "Your team's AI feature made a costly mistake in production. What do you do?" — Immediate: contain the blast radius (kill switch, fallback). Short-term: incident review, customer communication. Long-term: evaluation pipeline improvement, guardrails, and process changes.
+
+**Data & evaluation strategy**
+- "How would you build an evaluation framework for a generative AI product?" — Golden datasets with human-rated examples, automated metrics (BLEU, ROUGE, BERTScore for starters), LLM-as-judge for non-grounded outputs, A/B testing with user satisfaction signals, and regression testing across model versions.
+- "What's your approach to cold-start problems for AI features?" — Bootstrap with rules/heuristics, synthetic data, or transfer learning. Design for data flywheel: every user interaction labels future training data. Set explicit milestones for when ML takes over from rules.
+- "How do you handle data privacy concerns when building AI products for Canadian users?" — PIPEDA compliance, data residency (Canadian servers), anonymization pipeline, consent management, and differential privacy for analytics. For Quebec: additional Bill 96 language and privacy requirements.
+
+### Canadian PM Interview Nuances
+
+- **Bilingual interviews**: Toronto/Vancouver are English-only. Montreal roles often require French fluency (written AND verbal). Quebec's Charter of the French Language means PM roles targeting Quebec users must operate in French.
+- **Comp discussions**: Canadian PM comp is typically discussed as base + bonus + RSUs (not total comp as in US). Reference CAD figures. Equity at Canadian companies is usually smaller.
+- **Work-life balance questions**: Canadian companies often value work-life balance explicitly. Asking about it in the interview is normal and not a red flag.
+- **Cultural fit**: "culture add" framing is becoming more common than "culture fit" at progressive Canadian employers.

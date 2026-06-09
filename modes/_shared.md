@@ -73,7 +73,7 @@ Block G assesses whether a posting is likely a real, active opening. It does NOT
 
 ## Archetype Detection
 
-Classify every opening into one of these types (or hybrid of 2):
+Classify every offer into one of these types (or hybrid of 2):
 
 | Archetype | Key signals in JD |
 |-----------|-------------------|
@@ -97,7 +97,7 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 5. Recommend comp below market rate
 6. Generate a PDF without reading the JD first
 7. Use corporate-speak
-8. Ignore the tracker (every evaluated opening gets registered)
+8. Ignore the tracker (every evaluated offer gets registered)
 
 ### ALWAYS
 
@@ -121,14 +121,14 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 |------|-----|
 | WebSearch | Comp research, trends, company culture, LinkedIn contacts, fallback for JDs |
 | WebFetch | Fallback for extracting JDs from static pages |
-| Playwright | Verify openings (browser_navigate + browser_snapshot). **NEVER 2+ agents with Playwright in parallel.** |
+| Playwright | Verify offers (browser_navigate + browser_snapshot). **NEVER 2+ agents with Playwright in parallel.** |
 | Read | cv.md, _profile.md, article-digest.md, cv-template.html |
 | Write | Temporary HTML for PDF, applications.md, reports .md |
 | Edit | Update tracker |
 | Canva MCP | Optional visual CV generation. Duplicate base design, edit text, export PDF. Requires `cv.canva_resume_design_id` in profile.yml. |
 | Bash | `node generate-pdf.mjs` |
 
-### Time-to-opening priority
+### Time-to-offer priority
 - Working demo + metrics > perfection
 - Apply sooner > learn more
 - 80/20 approach, timebox everything

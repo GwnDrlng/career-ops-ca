@@ -34,7 +34,7 @@
                     └──────────────────────┘
 ```
 
-## Evaluation Flow (Single Opening)
+## Evaluation Flow (Single Offer)
 
 1. **Input**: User pastes JD text or URL
 2. **Extract**: Playwright/WebFetch extracts JD from URL
@@ -53,7 +53,7 @@
 
 ## Batch Processing
 
-The batch system processes multiple openings in parallel:
+The batch system processes multiple offers in parallel:
 
 ```
 batch-input.tsv    →  batch-runner.sh  →  N × headless CLI workers

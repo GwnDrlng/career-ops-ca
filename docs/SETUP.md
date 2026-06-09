@@ -50,14 +50,14 @@ Open Claude Code in this directory:
 claude
 ```
 
-Then paste a job opening URL or description. Career-ops will automatically evaluate it, generate a report, create a tailored PDF, and track it.
+Then paste a job offer URL or description. Career-ops will automatically evaluate it, generate a report, create a tailored PDF, and track it.
 
 ## Available Commands
 
 | Action | How |
 |--------|-----|
-| Evaluate an opening | Paste a URL or JD text |
-| Search for openings | `/career-ops scan` |
+| Evaluate an offer | Paste a URL or JD text |
+| Search for offers | `/career-ops scan` |
 | Process pending URLs | `/career-ops pipeline` |
 | Generate a PDF | `/career-ops pdf` |
 | Batch evaluate | `/career-ops batch` |
