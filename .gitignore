@@ -55,3 +55,13 @@ generate-cover-letter.mjs
 gen-resume-docx.mjs
 gen-cover-letters.mjs
 gen-cl-docx.mjs
+gen-manulife-dcl-docx.mjs
+tracker-links.mjs
+
+# Interview prep — all personal data
+interview-prep/*.md
+interview-prep/*.html
+
+# Local server binaries/dirs
+api-server
+dashboard-server
