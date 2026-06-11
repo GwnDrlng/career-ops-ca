@@ -26,6 +26,25 @@ var (
 	reBatchID        = regexp.MustCompile(`(?m)^\*\*Batch ID:\*\*\s*(\d+)`)
 )
 
+// resolveReportPath converts a report link from the tracker into a path
+// relative to careerOpsPath. Links are normally relative to the tracker
+// file's own directory (see merge-tracker.mjs link normalization, #760);
+// legacy trackers may still carry root-relative links, so fall back to the
+// raw link when the tracker-relative resolution does not exist on disk.
+func resolveReportPath(careerOpsPath, trackerPath, link string) string {
+	resolved := filepath.Join(filepath.Dir(trackerPath), link)
+	if _, err := os.Stat(resolved); err != nil {
+		legacy := filepath.Join(careerOpsPath, link)
+		if _, err2 := os.Stat(legacy); err2 == nil {
+			resolved = legacy
+		}
+	}
+	if rel, err := filepath.Rel(careerOpsPath, resolved); err == nil {
+		return rel
+	}
+	return link
+}
+
 // ParseApplications reads applications.md and returns parsed applications.
 // It tries both {path}/applications.md and {path}/data/applications.md for compatibility.
 func ParseApplications(careerOpsPath string) []model.CareerApplication {
@@ -96,16 +115,24 @@ func ParseApplications(careerOpsPath string) []model.CareerApplication {
 			app.Score, _ = strconv.ParseFloat(sm[1], 64)
 		}
 
-		// Parse report link
+		// Parse report link. Tracker links are written relative to the
+		// tracker file itself (e.g. ../reports/... when the tracker lives in
+		// data/), so resolve against the tracker's directory and normalize
+		// back to a careerOpsPath-relative path, which is what every
+		// consumer joins against. Legacy root-relative links are kept as a
+		// fallback when the resolved file does not exist.
 		if rm := reReportLink.FindStringSubmatch(fields[7]); rm != nil {
 			app.ReportNumber = rm[1]
-			app.ReportPath = rm[2]
+			app.ReportPath = resolveReportPath(careerOpsPath, filePath, rm[2])
 		}
 
 		// Notes (field 8 if exists)
 		if len(fields) > 8 {
 			app.Notes = fields[8]
 		}
+
+		// Lift location / work mode / pay / last-contact out of the notes free-text
+		deriveNoteFields(&app)
 
 		apps = append(apps, app)
 	}
@@ -432,38 +459,6 @@ func enrichAppURLsByCompany(careerOpsPath string, apps []model.CareerApplication
 	}
 }
 
-// FindRelatedFiles scans interview-prep/ for files whose name contains the
-// normalised company slug, and returns their root-relative paths.
-func FindRelatedFiles(careerOpsPath, company string) []string {
-	slug := normalizeCompany(company)
-	// Also build a short slug: first token only (e.g. "relay" from "relay financial")
-	shortSlug := strings.SplitN(slug, " ", 2)[0]
-	shortSlug = strings.ReplaceAll(shortSlug, " ", "-")
-	slug = strings.ReplaceAll(slug, " ", "-")
-
-	dir := filepath.Join(careerOpsPath, "interview-prep")
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil
-	}
-
-	var out []string
-	for _, e := range entries {
-		if e.IsDir() {
-			continue
-		}
-		name := strings.ToLower(e.Name())
-		ext := filepath.Ext(name)
-		if ext != ".md" && ext != ".html" {
-			continue
-		}
-		if strings.Contains(name, slug) || (shortSlug != slug && strings.Contains(name, shortSlug)) {
-			out = append(out, "interview-prep/"+e.Name())
-		}
-	}
-	return out
-}
-
 // ComputeMetrics calculates aggregate metrics from applications.
 func ComputeMetrics(apps []model.CareerApplication) model.PipelineMetrics {
 	m := model.PipelineMetrics{
@@ -761,27 +756,6 @@ func ComputeProgressMetrics(apps []model.CareerApplication) model.ProgressMetric
 	}
 
 	return pm
-}
-
-// SaveReportLocation writes a **Remote:** field into the report file header.
-func SaveReportLocation(careerOpsPath, reportPath, loc string) error {
-	fullPath := filepath.Join(careerOpsPath, reportPath)
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		return err
-	}
-	text := string(content)
-	reRemoteLine := regexp.MustCompile(`(?m)^\*\*Remote\*\*\s*\|.*$`)
-	if reRemoteLine.MatchString(text) {
-		text = reRemoteLine.ReplaceAllString(text, "**Remote** | "+loc)
-	} else {
-		// Insert after **Score** line
-		reScore := regexp.MustCompile(`(?m)(^\*\*Score:\*\*.*)`)
-		if reScore.MatchString(text) {
-			text = reScore.ReplaceAllString(text, "$1\n**Remote:** "+loc)
-		}
-	}
-	return os.WriteFile(fullPath, []byte(text), 0644)
 }
 
 // safePct returns the percentage of part/whole, or 0 if whole is 0.
