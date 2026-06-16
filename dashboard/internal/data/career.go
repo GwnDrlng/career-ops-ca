@@ -765,3 +765,54 @@ func safePct(part, whole int) float64 {
 	}
 	return float64(part) / float64(whole) * 100
 }
+
+// FindRelatedFiles scans interview-prep/ for files whose name contains the
+// normalised company slug, and returns their root-relative paths.
+func FindRelatedFiles(careerOpsPath, company string) []string {
+	slug := normalizeCompany(company)
+	shortSlug := strings.SplitN(slug, " ", 2)[0]
+	shortSlug = strings.ReplaceAll(shortSlug, " ", "-")
+	slug = strings.ReplaceAll(slug, " ", "-")
+
+	dir := filepath.Join(careerOpsPath, "interview-prep")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil
+	}
+
+	var out []string
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := strings.ToLower(e.Name())
+		ext := filepath.Ext(name)
+		if ext != ".md" && ext != ".html" {
+			continue
+		}
+		if strings.Contains(name, slug) || (shortSlug != slug && strings.Contains(name, shortSlug)) {
+			out = append(out, "interview-prep/"+e.Name())
+		}
+	}
+	return out
+}
+
+// SaveReportLocation writes a **Remote:** field into the report file header.
+func SaveReportLocation(careerOpsPath, reportPath, loc string) error {
+	fullPath := filepath.Join(careerOpsPath, reportPath)
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		return err
+	}
+	text := string(content)
+	reRemoteLine := regexp.MustCompile(`(?m)^\*\*Remote\*\*\s*\|.*$`)
+	if reRemoteLine.MatchString(text) {
+		text = reRemoteLine.ReplaceAllString(text, "**Remote** | "+loc)
+	} else {
+		reScore := regexp.MustCompile(`(?m)(^\*\*Score:\*\*.*)`)
+		if reScore.MatchString(text) {
+			text = reScore.ReplaceAllString(text, "$1\n**Remote:** "+loc)
+		}
+	}
+	return os.WriteFile(fullPath, []byte(text), 0644)
+}
