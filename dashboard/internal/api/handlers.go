@@ -213,14 +213,14 @@ func handleMeta(w http.ResponseWriter, _ *http.Request, careerOpsPath string) {
 	apps := data.ParseApplications(careerOpsPath)
 	metrics := data.ComputeMetrics(apps)
 	writeJSON(w, MetaDTO{
-		User:        "mark",
+		User:        "gwen",
 		Project:     "career-ops",
 		Version:     readVersion(careerOpsPath),
 		AvgScore:    metrics.AvgScore,
 		TotalOffers: metrics.Total,
 		Generated:   time.Now().Format("2006-01-02"),
-		Candidate:   "Mark Thistle",
-		Location:    "Ottawa, ON",
+		Candidate:   "Gwen Darling",
+		Location:    "Greater Toronto Area, ON",
 	})
 }
 
@@ -241,14 +241,14 @@ func handleOffers(w http.ResponseWriter, _ *http.Request, careerOpsPath string) 
 
 	writeJSON(w, OffersResponseDTO{
 		Meta: MetaDTO{
-			User:        "mark",
+			User:        "gwen",
 			Project:     "career-ops",
 			Version:     readVersion(careerOpsPath),
 			AvgScore:    metrics.AvgScore,
 			TotalOffers: metrics.Total,
 			Generated:   time.Now().Format("2006-01-02"),
-			Candidate:   "Mark Thistle",
-			Location:    "Ottawa, ON",
+			Candidate:   "Gwen Darling",
+			Location:    "Greater Toronto Area, ON",
 		},
 		States: buildStateCounts(apps),
 		Offers: dtos,

@@ -14,7 +14,7 @@
 
 3. **Select primary target**: the person who would benefit most from the candidate being there
 
-4. **Generate message** with a 3-sentence framework adapted to the contact type:
+4. **Generate message** with a 3-sentence framework adapted to the contact  type:
 
    ### Recruiter
    - **Sentence 1 (Fit)**: Direct match criteria -- role, relevant experience, availability, or location
