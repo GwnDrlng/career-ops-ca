@@ -24,7 +24,7 @@ There are two layers. Read `DATA_CONTRACT.md` for the full list.
 
 ## Update Check
 
-On the first message of each session, run the update checker silently:
+There is no automatic update check on session start. If the user says "check for updates" or "update career-ops", run the checker:
 
 ```bash
 node update-system.mjs check
@@ -34,12 +34,11 @@ Parse the JSON output:
 - `{"status": "update-available", "local": "1.0.0", "remote": "1.1.0", "changelog": "..."}` → tell the user:
   > "career-ops update available (v{local} → v{remote}). Your data (CV, profile, tracker, reports) will NOT be touched. Want me to update?"
   If yes → run `node update-system.mjs apply`. If no → run `node update-system.mjs dismiss`.
-- `{"status": "up-to-date"}` → say nothing
-- `{"status": "dismissed"}` → say nothing
-- `{"status": "offline"}` → say nothing
-- `{"status": "no-remote-version"}` → say nothing (checker reached GitHub but neither VERSION nor the latest release tag parsed as semver — treat as a silent non-failure, same as offline)
+- `{"status": "up-to-date"}` → tell the user they're up to date.
+- `{"status": "dismissed"}` → tell the user an update was previously dismissed; offer to re-check.
+- `{"status": "offline"}` → tell the user the check couldn't reach GitHub.
+- `{"status": "no-remote-version"}` → tell the user the check reached GitHub but couldn't parse a version (treat as a non-failure, same as offline).
 
-The user can also say "check for updates" or "update career-ops" at any time to force a check.
 To rollback: `node update-system.mjs rollback`
 
 ## What is career-ops
@@ -213,6 +212,7 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | Asks for company research | `deep` |
 | Preps for interview at specific company | `interview-prep` |
 | Wants to generate CV/PDF | `pdf` |
+| Wants to generate a cover letter | `cover` |
 | Evaluates a course/cert | `training` |
 | Evaluates portfolio project | `project` |
 | Asks about application status | `tracker` |

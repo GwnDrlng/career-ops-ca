@@ -1,0 +1,23 @@
+# Do-not-apply list — checked by route-tier.mjs before any apply lane runs.
+# A company/role match here is dropped silently (logged to data/audit-log.tsv,
+# never sent to Slack as an apply candidate). This is user data — fill it in
+# yourself or ask Claude to fill it in; this file is never auto-populated.
+
+current_employer:
+  # name: "Arctic Wolf Networks"
+  # reason: "current employer — never apply"
+
+in_process:
+  # Companies with an active application/interview loop already underway
+  # (status Applied/Responded/Interview/Offer in data/applications.md).
+  # Listing them here is a belt-and-suspenders guard against the pipeline
+  # re-evaluating or re-applying to the same company+role while in process.
+  # - name: ""
+  #   role: ""
+  #   reason: ""
+
+opt_outs:
+  # Companies you never want to apply to regardless of score (e.g. ethical
+  # objections, past bad experience, competitor of someone you support).
+  # - name: ""
+  #   reason: ""

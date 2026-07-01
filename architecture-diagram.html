@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Career-Ops Re-Architecture — Diagram</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0;
+    background: #0e1116;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  header {
+    padding: 28px 32px 8px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 650; }
+  header p { margin: 0; color: #8b949e; font-size: 13px; }
+  .legend {
+    display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
+    margin: 14px 0 4px; font-size: 12px; color: #8b949e;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .cloud { background: #2f3f5c; }
+  .onprem { background: #2f5c3f; }
+  .slack { background: #5c3f2f; }
+  .todo { background: #4a4a4a; border: 1px dashed #999; }
+  .diagram-wrap { padding: 8px 16px 40px; overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; }
+  .deepdive {
+    max-width: 940px; margin: 0 auto 56px; padding: 0 24px;
+    border-top: 1px solid #21262d;
+  }
+  .deepdive h2 { font-size: 19px; font-weight: 650; margin: 32px 0 4px; }
+  .deepdive .sub { color: #8b949e; font-size: 13px; margin: 0 0 18px; }
+  .deepdive h3 { font-size: 15px; font-weight: 600; margin: 26px 0 8px; color: #d2a8ff; }
+  .deepdive p { font-size: 14px; line-height: 1.6; color: #c9d1d9; }
+  .deepdive code { background: #161b22; border: 1px solid #21262d; border-radius: 4px; padding: 1px 5px; font-size: 12.5px; }
+  .ceilings { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 14px 0 6px; }
+  .ceiling { background: #12161c; border: 1px solid #21262d; border-radius: 8px; padding: 12px 14px; }
+  .ceiling .name { font-weight: 600; font-size: 13.5px; }
+  .ceiling .win { color: #8b949e; font-size: 12px; margin: 2px 0 6px; }
+  .ceiling .why { font-size: 12.5px; line-height: 1.5; color: #c9d1d9; }
+  .ceiling.hard { border-color: #b5875b; }
+  .ceiling.pct { border-color: #5b7cb5; }
+  .callouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 14px 0; }
+  .callout { background: #12161c; border-left: 3px solid #5bb57c; border-radius: 6px; padding: 11px 14px; }
+  .callout.warn { border-left-color: #b5875b; }
+  .callout .t { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .callout .d { font-size: 12.5px; line-height: 1.5; color: #b0b8c0; }
+</style>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "dark",
+    flowchart: { curve: "basis", nodeSpacing: 45, rankSpacing: 55 },
+    themeVariables: { fontSize: "14px" }
+  });
+</script>
+</head>
+<body>
+  <header>
+    <h1>Career-Ops — Cloud Scan + On-Prem Apply Pipeline</h1>
+    <p>Daily cloud scan &amp; grade (Vercel eve, Claude via AI Gateway) → Slack → on-prem watcher routes by score → human-approved apply</p>
+    <div class="legend">
+      <span><i class="dot slack"></i>Slack</span>
+      <span><i class="dot cloud"></i>Cloud — Vercel eve (built, typechecked + smoke-tested, not deployed)</span>
+      <span><i class="dot onprem"></i>On-prem — local watcher + career-ops (Opus 4.8, built &amp; tested)</span>
+      <span><i class="dot todo"></i>Not yet built (prompt/rubric versioning · risk register)</span>
+    </div>
+  </header>
+
+  <div class="diagram-wrap">
+    <pre class="mermaid">
+flowchart TB
+
+  %% ---------------- SLACK ----------------
+  subgraph SLACK["Slack — #job-pipeline"]
+    SL["Graded reports • flags • 1-click approve buttons"]
+  end
+
+  %% ---------------- CLOUD ----------------
+  subgraph CLOUD["CLOUD — cloud/agent/** · Vercel eve · Claude via AI Gateway (built, not deployed)"]
+    SCH["schedules/daily-scan.ts<br/>cron 0 12 * * * → receive(slack, …)"] --> ORCH["Root agent.ts + instructions.md<br/>per-job state machine (Sonnet)"]
+    ORCH --> SCAN["subagents/scanner<br/>tools/scan_portals.ts (Haiku)<br/>lib/portals-config.ts + lib/dedup.ts (in-memory only)"]
+    ORCH --> GRADE["subagents/grader<br/>skills/grading-rubric.md (Sonnet)<br/>digest: data/candidate-digest.md, de-identified"]
+    SCAN --> GRADE
+    GRADE --> REP["tools/format_report.ts<br/>A–G + Machine Summary YAML"]
+    REP --> POST["tools/post_to_slack.ts<br/>Vercel Connect bot token · unverified live"]
+  end
+
+  POST --> SL
+
+  %% ---------------- ON-PREM ----------------
+  subgraph ONPREM["ON-PREM — local watcher + pipeline/ (built &amp; tested)"]
+    WATCH["watcher/watch.mjs<br/>polls Slack (Keychain token) → writes reports/"] --> GATE{"pipeline/gates.mjs<br/>legitimacy (drop Suspicious)<br/>blocklist · duplicate · volume caps ≤8/day"}
+    GATE --> ROUTE{"pipeline/route-tier.mjs<br/>score /5"}
+
+    ROUTE -->|"≤ 2.0"| IGN["Ignore: delete report, log to<br/>data/watcher-ignored.tsv"]
+
+    ROUTE -->|"2.1 – 3.6"| GEN["Generic CV<br/>output/Gwen_DarlingCV2026.PDF"]
+    GEN --> APP{"pipeline/applier.mjs<br/>ATS allowlist? curated Qs?"}
+    APP -->|"curated Q / non-ATS"| FLAGM["Flag manual / draft-only"]
+    APP -->|"ATS, fillable"| VAULT["pipeline/vault.mjs<br/>fill from Keychain · sensitive unset → flag"]
+    VAULT --> SCREEN["Post filled form + approval token to<br/>#job-approvals (applier never submits here)"]
+    SCREEN -->|"pipeline/approval.mjs<br/>single-use · 12h expiry · verified Slack ID"| APPROVE{"Approval gate<br/>verifyAndConsume()"}
+    APPROVE -->|"verified approver replies<br/>approve &lt;token&gt; · watcher/approval-consumer.mjs"| SUBMIT["applier.mjs --submit<br/>re-gate → re-fill → click submit<br/>(only if apply_enabled)"]
+
+    ROUTE -->|"≥ 3.7"| DOC["modes/cover.md + generate-cover-letter.mjs<br/>curated CV + CL (.docx) — Opus 4.8"]
+    DOC --> JUDGE["pipeline/judge.mjs — SEPARATE process<br/>via pipeline/opus-call.mjs · Opus 4.8 · 0–100%"]
+    JUDGE -->|"< 90% · attempt < 3"| DOC
+    JUDGE -->|"3rd still < 90%"| FLAGF["Flag user: best attempt + feedback"]
+    JUDGE -->|"≥ 90%"| GROUND{"pipeline/grounding-check.mjs<br/>no fabrication vs cv.md"}
+    GROUND -->|"pass"| FLAGA["Flag user: advance"]
+    GROUND -->|"ungrounded"| DOC
+    JUDGE -.->|"log every attempt"| HIST[("data/judge-history.tsv")]
+
+    TOK["pipeline/token-budget.mjs — 4 ceilings<br/>≤75% 5h · ≤60% weekly ·<br/>≤75% monthly $ · per-application $ (hard)<br/>gate BEFORE / record AFTER via opus-call.mjs"]
+    TOK -.->|"gates every Opus call"| DOC
+    TOK -.->|"gates every Opus call"| JUDGE
+    TOK -.->|"gates every Opus call"| GROUND
+    TOK -.->|"gates draft"| APP
+
+    KILL["pipeline/kill-switch.mjs — /pause /resume<br/>auto-pause: 3 consecutive fails (fail-closed)"]
+    AUDIT[("data/audit-log.tsv<br/>pipeline/audit.mjs · every gate + state change")]
+    TOK -.->|"budget.halt (job-scoped)"| AUDIT
+    OVR["pipeline/budget-override.mjs · on halt, Slack offers:<br/>'budget-override &lt;token&gt;' → continue (bounded 3 calls, scoped, expiring)<br/>'budget-defer &lt;token&gt;' → pause pipeline until next daily cron"]
+    TOK -.->|"halt → offer override / defer"| OVR
+    OVR -.->|"override → next call(s) proceed"| TOK
+    OVR -.->|"defer → pauseUntil(next cron)"| KILL
+    OVR -.->|"override_* / defer audited"| AUDIT
+    OVR -.-> SL
+    APPROVE -.->|"approval.approved / rejected"| AUDIT
+    ROUTE -.->|"route.dispatch"| AUDIT
+    KILL -.->|"kill.pause / auto_pause"| AUDIT
+
+    DLQ[("data/dead-letter.tsv<br/>pipeline/dead-letter.mjs · poison msg after 3 retries")]
+    WATCH -.->|"process fails ×3 → skip past, don't block queue"| DLQ
+    DLQ -.->|"deadletter.drop"| AUDIT
+
+    CAL["pipeline/calibrate.mjs (spot-check)<br/>re-grade sampled job w/ cloud rubric + digest<br/>drift &gt; 0.4/5 → flag (measures only, never blocks)"]
+    ROUTE -.->|"sampled report"| CAL
+    CAL -.->|"calibration.drift / ok"| AUDIT
+    CAL -.->|"drift → alert"| SL
+
+    GEN --> MERGE["merge-tracker.mjs → data/applications.md"]
+    SUBMIT --> MERGE
+    FLAGA --> MERGE
+  end
+
+  SL --> WATCH
+  SCREEN --> SL
+  FLAGM --> SL
+  FLAGA --> SL
+  FLAGF --> SL
+  TOK -.->|"budget reached"| SL
+  KILL -.-> SL
+
+  %% ---------------- styling ----------------
+  classDef cloud fill:#2f3f5c,stroke:#5b7cb5,color:#e6edf3;
+  classDef onprem fill:#2f5c3f,stroke:#5bb57c,color:#e6edf3;
+  classDef slack fill:#5c3f2f,stroke:#b5875b,color:#e6edf3;
+  classDef store fill:#3a2f5c,stroke:#8a5bb5,color:#e6edf3;
+  classDef todo fill:#3a3a3a,stroke:#999,color:#cfcfcf,stroke-dasharray: 4 3;
+
+  class SL slack;
+  class SCH,ORCH,SCAN,GRADE,REP,POST cloud;
+  class WATCH,GATE,ROUTE,IGN,GEN,APP,VAULT,SCREEN,APPROVE,SUBMIT,DOC,JUDGE,GROUND,FLAGA,FLAGF,TOK,OVR,KILL,CAL,MERGE onprem;
+  class HIST,AUDIT,DLQ store;
+    </pre>
+  </div>
+
+  <!-- ============ DEEP-DIVE: the Opus budget guardrail ============ -->
+  <section class="deepdive">
+    <h2>Deep-Dive — The Opus Budget Guardrail</h2>
+    <p class="sub">One guardrail, end to end — a worked example of how the whole safety layer is designed.</p>
+
+    <h3>The problem</h3>
+    <p>The ≥3.7 lane spends real money on Opus 4.8: judge → grounding-check, and a failing judge triggers up to two revise-and-re-judge retries. One application can fan out to 4–6 Opus calls, so a routing bug or retry loop could quietly burn a month's budget in an afternoon. Cost is invisible until the bill arrives, so it needs a hard automatic stop — not a dashboard you remember to check.</p>
+
+    <h3>The core invariant: one chokepoint, gate-before / record-after</h3>
+    <p>Every Opus call goes through a single function — <code>opus-call.mjs → callOpus()</code>. Nothing calls <code>claude -p</code> directly. That chokepoint checks the budget <em>before</em> the spend and records actual cost <em>after</em> it, so the ledger is always the source of truth and any new caller inherits every ceiling for free.</p>
+
+    <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Lane as judge / grounding / applier
+    participant Opus as opus-call.mjs
+    participant Budget as token-budget.mjs
+    participant Ledger as token-usage.tsv
+    participant Audit as audit-log.tsv
+    Lane->>Opus: callOpus(prompt, lane, {jobId})
+    Opus->>Budget: gate --job-id ID (BEFORE spend)
+    Budget->>Ledger: sum 4 windows
+    alt any ceiling breached
+        Budget->>Audit: budget.halt (job-scoped)
+        Budget-->>Opus: exit 1
+        Opus-->>Lane: ok:false, haltedByBudget — no tokens spent
+    else under all ceilings
+        Budget-->>Opus: exit 0
+        Opus->>Opus: claude -p (the spend)
+        Opus->>Budget: record --cost-usd C --job-id ID (AFTER)
+        Budget->>Ledger: append row
+        Opus-->>Lane: ok:true + cost
+    end
+    </pre>
+
+    <h3>Four ceilings, three shapes — matched to what each protects</h3>
+    <div class="ceilings">
+      <div class="ceiling pct">
+        <div class="name">5-hour token block</div>
+        <div class="win">rolling 5h · trips at 75%</div>
+        <div class="why">Rolling window matches Anthropic's usage block — it's what actually refills.</div>
+      </div>
+      <div class="ceiling pct">
+        <div class="name">Weekly token allowance</div>
+        <div class="win">rolling 7d · trips at 60%</div>
+        <div class="why">Same reasoning, weekly grain.</div>
+      </div>
+      <div class="ceiling pct">
+        <div class="name">Monthly cost cap</div>
+        <div class="win">calendar month · trips at 75%</div>
+        <div class="why">Anchored to the 1st (billing-aligned). A % ceiling leaves headroom to finish in-flight work by hand.</div>
+      </div>
+      <div class="ceiling hard">
+        <div class="name">Per-application cost cap</div>
+        <div class="win">all-time, one job_id · hard 100%</div>
+        <div class="why">A per-item budget, not a buffer on a shared pool — so a hard line, scoped by a grouping key in the ledger.</div>
+      </div>
+    </div>
+    <p>The percentage-vs-hard-cap split is the key call: a shared pool (monthly) wants a <em>margin</em> so you're warned before you're broke; a per-item budget (per-application) wants an exact line — "never spend more than $X on one application" means $X, not 75% of it.</p>
+
+    <div class="callouts">
+      <div class="callout">
+        <div class="t">Why per-application needed a schema change</div>
+        <div class="d">Monthly is a global rollup — no notion of <em>which</em> job. Per-application is <code>sum WHERE job_id = X</code>, and that key didn't exist. So it added a <code>job_id</code> column + threaded an id through 4 files; the monthly cap needed none. Splitting the two kept each change reviewable.</div>
+      </div>
+      <div class="callout warn">
+        <div class="t">Honest limitation: cost is known only AFTER the call</div>
+        <div class="d"><code>claude -p</code> reports cost on return, so the gate blocks the <em>next</em> call, not the first over-budget one. Monthly tolerates one call of overshoot; per-application is tighter, so a future pre-call estimate could block proactively. Logged as accepted risk, not ignored.</div>
+      </div>
+      <div class="callout">
+        <div class="t">Fail-closed vs fail-open, per component</div>
+        <div class="d">Budget gate + kill switch <em>fail closed</em> (unclear state → halt/pause — never spend/act on doubt). The audit log <em>fails open</em> (a write error never breaks the observed action). "Fail safe" means opposite things for a spend gate vs an observer.</div>
+      </div>
+      <div class="callout">
+        <div class="t">Config-not-code, everything auditable</div>
+        <div class="d">Every threshold is in <code>config/guardrails.yml</code> — a cap change is a diff-reviewable config edit, not a script. Every halt writes a job-scoped <code>budget.halt</code> row, so "why did nothing draft for job 231?" is one <code>audit.mjs tail</code> away.</div>
+      </div>
+      <div class="callout">
+        <div class="t">A stop, not a dead end — override or defer</div>
+        <div class="d">On halt, Slack names the ceiling + a token and a verified approver picks: <code>budget-override &lt;token&gt;</code> to continue now (a <em>bounded</em> few more calls, default 3, for that job) — or <code>budget-defer &lt;token&gt;</code> to pause the whole pipeline until the next daily cron and auto-resume. Same trust model as the submit gate — approver-bound, scoped, expiring, fully audited. Override = capped, logged overspend; defer = "the budget's spent, try tomorrow." A real three-way choice, not override-or-nothing.</div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

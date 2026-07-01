@@ -17,6 +17,18 @@ batch/tracker-additions/**/*.tsv
 !batch/tracker-additions/.gitkeep
 jds/*
 !jds/.gitkeep
+data/judge-history.tsv
+data/token-usage.tsv
+data/watcher-ignored.tsv
+data/audit-log.tsv
+data/pipeline-state.json
+data/approvals.json
+data/dead-letter.tsv
+data/dead-letter-retries.json
+data/budget-overrides.json
+data/calibration-log.tsv
+watcher/.checkpoint.json
+watcher/.approval-checkpoint.json
 
 # Writing samples (user's personal files — never committed)
 writing-samples/*
