@@ -160,6 +160,44 @@ function check(jobId = "") {
   };
 }
 
+// Roll up spend for a "session" — either one application (--job-id) or a time
+// window (--since ISO). Sums the ledger rows that match. Pure read, no Slack:
+// callers (opus-call.postSpendSummary) do the posting so this stays importable
+// without a Slack dependency.
+export function sessionSummary({ jobId = "", sinceISO = "" } = {}) {
+  const since = sinceISO ? new Date(sinceISO).getTime() : 0;
+  const rows = readLedger().filter((r) => {
+    if (jobId && r.jobId !== jobId) return false;
+    if (since && new Date(r.timestamp).getTime() < since) return false;
+    return true;
+  });
+  const tokensIn = rows.reduce((s, r) => s + r.tokensIn, 0);
+  const tokensOut = rows.reduce((s, r) => s + r.tokensOut, 0);
+  const costUsd = rows.reduce((s, r) => s + r.costUsd, 0);
+  return {
+    jobId: jobId || null,
+    since: sinceISO || null,
+    calls: rows.length,
+    tokensIn,
+    tokensOut,
+    tokensTotal: tokensIn + tokensOut,
+    costUsd: Number(costUsd.toFixed(4)),
+  };
+}
+
+// One-line Slack-ready spend summary. The dollar figure is the notional
+// API-equivalent cost claude -p reports — on a Pro subscription it's a usage
+// proxy, not a real bill (see config/guardrails.yml cost.* + RE_ARCHITECTURE.md).
+export function formatSessionSummary(s, label = "") {
+  const scope = label || (s.jobId ? `job ${s.jobId}` : "session");
+  return (
+    `🧾 *Spend summary — ${scope}*\n` +
+    `• Opus calls: ${s.calls}\n` +
+    `• Tokens: ${s.tokensTotal.toLocaleString()} (in ${s.tokensIn.toLocaleString()} / out ${s.tokensOut.toLocaleString()})\n` +
+    `• Cost: $${s.costUsd.toFixed(4)} _(notional API-equivalent — usage proxy, not a real bill on a Pro subscription)_`
+  );
+}
+
 // --- CLI (only runs when executed directly, not when imported) ---
 if (import.meta.url === `file://${process.argv[1]}`) {
 const cmd = process.argv[2];
@@ -177,6 +215,16 @@ if (cmd === "record") {
   }
   record(tokensIn, tokensOut, model, lane, costUsd, jobId);
   console.log(JSON.stringify({ recorded: true, tokensIn, tokensOut, model, lane, costUsd, jobId: jobId || "" }));
+} else if (cmd === "summary") {
+  const s = sessionSummary({ jobId: arg("job-id") || "", sinceISO: arg("since") || "" });
+  const line = formatSessionSummary(s, arg("label") || "");
+  console.log(JSON.stringify(s, null, 2));
+  if (process.argv.includes("--post")) {
+    const { channels, postMessage } = await import("./slack-client.mjs");
+    await postMessage(channels.jobPipeline, line).catch((e) =>
+      console.error("[token-budget] Slack post failed:", e.message)
+    );
+  }
 } else if (cmd === "check") {
   console.log(JSON.stringify(check(arg("job-id") || ""), null, 2));
 } else if (cmd === "gate") {
@@ -198,7 +246,7 @@ if (cmd === "record") {
   }
   process.exit(0);
 } else {
-  console.error("Usage: node token-budget.mjs <record|check|gate> [options]");
+  console.error("Usage: node token-budget.mjs <record|check|gate|summary> [options]");
   process.exit(1);
 }
 }

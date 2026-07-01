@@ -30,7 +30,7 @@ import { chromium } from "playwright";
 import { parseReport } from "./report-parse.mjs";
 import { legitimacyGate, blocklistGate, duplicateGuard, volumeCapStatus, atsFromUrl } from "./gates.mjs";
 import { matchVaultKey, getVaultEntry } from "./vault.mjs";
-import { callOpus } from "./opus-call.mjs";
+import { callOpus, postSpendSummary } from "./opus-call.mjs";
 import { channels, postMessage } from "./slack-client.mjs";
 import { newLivenessPage, checkUrlLivenessWithFallback } from "../liveness-browser.mjs";
 import { isPaused, recordFailure, resetFailures } from "./kill-switch.mjs";
@@ -55,7 +55,7 @@ let headed;
 let actorName = "applier";
 let auditCtx = { jobId: "", company: "", role: "" };
 
-function stop(decision) {
+async function stop(decision) {
   const result = decision.applied ? "submitted" : (decision.ok === false ? "refused" : "ok");
   appendAudit({
     actor: actorName,
@@ -64,6 +64,14 @@ function stop(decision) {
     ...auditCtx,
     detail: decision.reason || decision.note || "",
   });
+  // End-of-run spend summary for this application (skipped when the job recorded
+  // no Opus calls, e.g. a shadow-mode / paused refusal that never drafted).
+  if (auditCtx.jobId) {
+    await postSpendSummary({
+      jobId: auditCtx.jobId,
+      label: `job ${auditCtx.jobId} — ${auditCtx.company || "?"} (${auditCtx.role || "?"}) · ${result}`,
+    });
+  }
   console.log(JSON.stringify(decision, null, 2));
   process.exit(decision.applied ? 0 : (decision.ok === false ? 1 : 0));
 }

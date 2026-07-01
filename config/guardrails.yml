@@ -23,8 +23,8 @@ volume_caps:
 token_budget:
   rolling_5h_block_pct: 75   # halt new Opus work above this % of the rolling 5h block
   weekly_pct: 60              # halt new Opus work above this % of the weekly allowance
-  rolling_5h_block_limit_tokens: null   # total token allowance for your Claude plan's 5h block; set this to enable the check
-  weekly_limit_tokens: null              # total token allowance for your Claude plan's weekly window; set this to enable the check
+  rolling_5h_block_limit_tokens: 200000   # ESTIMATE for Claude Pro's 5h block — no official token figure exists; tune from data/token-usage.tsv
+  weekly_limit_tokens: 1000000            # ESTIMATE for Claude Pro's weekly window — tune from data/token-usage.tsv
   ledger: "data/token-usage.tsv"
 
 approval:
@@ -35,7 +35,7 @@ approval:
   # or send /pause /resume. Empty = nobody can approve, so nothing can ever be
   # auto-submitted until you add yourself here. Find your id: click your Slack
   # profile -> More -> Copy member ID.
-  verified_approver_ids: []
+  verified_approver_ids: ["U0BF4GVPKHN"]
 
 auto_pause:
   consecutive_failures: 3   # this many consecutive submit failures trips the kill switch
@@ -66,9 +66,9 @@ slack:
   keychain_service: "career-ops-slack-bot-token"
 
 cost:
-  monthly_cap_usd: null        # your total monthly Opus spend ceiling in USD; null = not yet configured (cost gate never halts until set)
+  monthly_cap_usd: 50          # notional API-equivalent USD ceiling for this pipeline's Opus spend (see note: on a Pro subscription this is a usage proxy, not a real bill)
   monthly_pct: 75              # halt new Opus work once this-month spend reaches this % of monthly_cap_usd
-  per_application_cap_usd: null  # recorded per lane; enforcement TBD (needs per-application accumulation)
+  per_application_cap_usd: 2   # hard USD ceiling for one application's Opus spend (~4-6 Opus calls); halts further calls for that job
 
 audit:
   # Append-only accountability ledger (pipeline/audit.mjs): routing decisions,
@@ -99,3 +99,14 @@ budget_override:
   grant_calls: 3         # how many Opus calls one approved override permits (bounded overspend)
   wait_seconds: 0        # 0 = halt now, override applies to the next run; >0 = a halted call
                           # blocks up to N seconds in-process waiting for approval, then continues
+
+cloud:
+  # Deployed eve agent (Vercel). Used by scan-now.mjs to trigger the daily-scan
+  # pipeline on demand, outside the cron. The alias is stable across redeploys.
+  # Override per-invocation with --url, or the CAREER_OPS_CLOUD_URL env var.
+  deployment_url: "https://cloud-xi-eight.vercel.app"
+  # Slash-command endpoint path (cloud/agent/channels/slack-commands.ts). eve
+  # mounts a custom-channel route at its literal path (no /eve/v1 prefix), so
+  # this IS the full path. Set {deployment_url}{slash_command_path} as the
+  # Request URL of the Slack /scan slash command.
+  slash_command_path: "/slack/commands"

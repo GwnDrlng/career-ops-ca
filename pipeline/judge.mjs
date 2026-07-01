@@ -20,7 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import yaml from "js-yaml";
 import { extractDocxText } from "./docx-text.mjs";
-import { callOpus } from "./opus-call.mjs";
+import { callOpus, postSpendSummary } from "./opus-call.mjs";
 import { sanitizeJd } from "./sanitize-jd.mjs";
 import { versionTag } from "./prompt-version.mjs";
 
@@ -147,6 +147,9 @@ if (!pass) {
       `\nAttempt ${attempt} still below ${PASS_THRESHOLD}% after ${MAX_RETRIES} retries. ` +
       `Flag the user with the best attempt + this feedback. Do not retry further.`
     );
+    // Terminal in the judge lane (this job never advances to the applier), so
+    // post the job's cumulative spend summary now — the applier hook won't fire.
+    await postSpendSummary({ jobId, label: `job ${jobId} — ${company} (${role}) · judge lane, flagged` });
   } else {
     console.error(`\nAttempt ${attempt} below ${PASS_THRESHOLD}%. Retry (${MAX_RETRIES - attempt + 1} left) using the feedback above.`);
   }

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Career-Ops — User Journey & Experience Flow</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      color: #2d3748;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    header h1 {
+      font-size: 42px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    header p {
+      font-size: 18px;
+      color: #718096;
+      font-weight: 500;
+    }
+
+    /* Journey phases */
+    .phases {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    .phase {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border-left: 6px solid;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .phase:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .phase.setup { border-left-color: #667eea; }
+    .phase.discover { border-left-color: #f093fb; }
+    .phase.evaluate { border-left-color: #4facfe; }
+    .phase.apply { border-left-color: #43e97b; }
+    .phase.interview { border-left-color: #fa709a; }
+    .phase.close { border-left-color: #30b0fe; }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .phase-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .phase.setup .phase-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .phase.discover .phase-icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .phase.evaluate .phase-icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .phase.apply .phase-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .phase.interview .phase-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .phase.close .phase-icon { background: linear-gradient(135deg, #30b0fe 0%, #5ae7f0 100%); }
+
+    .phase-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .phase-subtitle {
+      font-size: 14px;
+      color: #a0aec0;
+      margin-top: 4px;
+    }
+
+    .phase-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* Step cards */
+    .step {
+      background: #f8f9fb;
+      border-radius: 12px;
+      padding: 20px;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .step:hover {
+      border-color: #cbd5e0;
+      background: #f5f7fa;
+    }
+
+    .step-number {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      background: #edf2f7;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 32px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #667eea;
+      margin-bottom: 12px;
+    }
+
+    .step-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: #718096;
+      line-height: 1.6;
+    }
+
+    .step-action {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #667eea;
+      padding: 6px 12px;
+      background: #edf2f7;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .step:hover .step-action {
+      background: #667eea;
+      color: white;
+    }
+
+    /* Feedback loops */
+    .flow-diagram {
+      margin-top: 40px;
+      padding: 30px;
+      background: #f8f9fb;
+      border-radius: 16px;
+      border: 2px dashed #cbd5e0;
+    }
+
+    .flow-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-title::before {
+      content: '🔄';
+      font-size: 20px;
+    }
+
+    .flow-box {
+      display: inline-block;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 2px solid #cbd5e0;
+      margin: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .flow-arrow {
+      display: inline-block;
+      margin: 0 8px;
+      font-size: 18px;
+      color: #cbd5e0;
+    }
+
+    /* Outcome cards */
+    .outcomes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .outcome {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      border: 2px solid #e2e8f0;
+    }
+
+    .outcome-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .outcome-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+
+    .outcome-description {
+      font-size: 13px;
+      color: #718096;
+      line-height: 1.6;
+    }
+
+    /* Timeline */
+    .timeline {
+      margin-top: 40px;
+      padding: 30px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      border-radius: 16px;
+    }
+
+    .timeline-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeline-title::before {
+      content: '⏱️';
+      font-size: 20px;
+    }
+
+    .timeline-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .timeline-item {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+      font-size: 13px;
+      color: #718096;
+    }
+
+    .timeline-item-label {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 6px;
+    }
+
+    .timeline-item-time {
+      font-size: 12px;
+      color: #a0aec0;
+    }
+
+    /* Bottom section */
+    .value-props {
+      margin-top: 60px;
+      padding: 40px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .value-props h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .props-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .prop {
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .prop:nth-child(1) {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .prop:nth-child(2) {
+      background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+      border: 2px solid rgba(240, 147, 251, 0.2);
+    }
+
+    .prop:nth-child(3) {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+      border: 2px solid rgba(79, 172, 254, 0.2);
+    }
+
+    .prop-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .prop-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+
+    .prop-text {
+      font-size: 14px;
+      color: #718096;
+      line-height: 1.6;
+    }
+
+    /* Feedback loop detail */
+    .feedback-detail {
+      background: #f8f9fb;
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    .feedback-detail h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-detail p {
+      font-size: 13px;
+      color: #718096;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .feedback-detail ul {
+      font-size: 13px;
+      color: #718096;
+      margin-left: 20px;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>Career-Ops User Journey</h1>
+      <p>From profile setup through offer negotiation — your complete experience</p>
+    </header>
+
+    <!-- Journey Phases -->
+    <div class="phases">
+      <!-- Phase 1: Setup -->
+      <div class="phase setup">
+        <div class="phase-header">
+          <div class="phase-icon">🎯</div>
+          <div>
+            <div class="phase-title">Phase 1: Setup & Personalization</div>
+            <div class="phase-subtitle">Get career-ops to know you</div>
+          </div>
+        </div>
+        <div class="phase-content">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-name">Add Your CV</div>
+            <div class="step-description">Paste your CV, LinkedIn profile, or describe your experience. We convert it to clean markdown — your source of truth for all evaluations.</div>
+            <span class="step-action">📄 Upload</span>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-name">Define Your Profile</div>
+            <div class="step-description">Name, email, location, timezone. Target roles & salary range. This drives personalized scoring and filters.</div>
+            <span class="step-action">⚙️ Configure</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-name">Set Up Portals</div>
+            <div class="step-description">Choose 45+ pre-configured job boards (LinkedIn, Greenhouse, Ashby, etc.) and customize keywords for your roles.</div>
+            <span class="step-action">🔍 Connect</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-name">Customize Scoring</div>
+            <div class="step-description">Tell us what matters: comp, equity, remote, growth, team size, mission. We weight the evaluation rubric to match your priorities.</div>
+            <span class="step-action">⭐ Personalize</span>
+          </div>
+        </div>
+        <div class="feedback-detail">
+          <h4>💡 Why this matters</h4>
+          <p>Career-ops learns about you once, then gets smarter with every evaluation. The system will never suggest a role that doesn't fit — it knows your deal-breakers, your superpowers, and what excites you.</p>
+        </div>
+      </div>
+
+      <!-- Phase 2: Discover -->
+      <div class="phase discover">
+        <div class="phase-header">
+          <div class="phase-icon">🔎</div>
+          <div>
+            <div class="phase-title">Phase 2: Discover & Monitor</div>
+            <div class="phase-subtitle">Never miss an opportunity</div>
+          </div>
+        </div>
+        <div class="phase-content">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-name">Auto-Scan Portals</div>
+            <div class="step-description">A cloud agent scans your portals automatically every day at noon — or trigger a scan anytime with <code>/scan</code> in Slack or <code>scan-now.mjs</code> from your terminal. Zero-cost scanning hits APIs directly — no LLM overhead, no rate limits.</div>
+            <span class="step-action">⚡ Schedule + on-demand</span>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-name">Grade Every Job</div>
+            <div class="step-description">Cloud agent (Claude Sonnet) reads each JD with your digest and scoring rubric, grades it A–G (legitimacy, role fit, comp, growth, etc.).</div>
+            <span class="step-action">✅ Auto-Grade</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-name">Slack Daily Digest</div>
+            <div class="step-description">At noon every day, 1-click approval buttons for high-fit roles. Details: company, role, score/5, and why it matches you.</div>
+            <span class="step-action">📲 Notify</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-name">Paste a Job URL</div>
+            <div class="step-description">Found something interesting? Paste the link anytime. We evaluate it in seconds and add it to your pipeline.</div>
+            <span class="step-action">🔗 Evaluate</span>
+          </div>
+        </div>
+        <div class="feedback-detail">
+          <h4>💡 Why this matters</h4>
+          <p>Discovery is passive and continuous. You're never scrambling to remember which jobs were relevant — the system presents only fit roles, filtered by your criteria. Most candidates spend 80% of time wading through noise. You spend 80% on quality applications.</p>
+        </div>
+      </div>
+
+      <!-- Phase 3: Evaluate -->
+      <div class="phase evaluate">
+        <div class="phase-header">
+          <div class="phase-icon">📊</div>
+          <div>
+            <div class="phase-title">Phase 3: Evaluate & Decide</div>
+            <div class="phase-subtitle">Deep-dive scoring and written reports</div>
+          </div>
+        </div>
+        <div class="phase-content">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-name">Read Full Report</div>
+            <div class="step-description">Each job gets a 6-block report (compensation, role fit, growth, team, mission, company stability) + legitimacy score. Not a summary — real analysis.</div>
+            <span class="step-action">📄 Report</span>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-name">See Your Score</div>
+            <div class="step-description">0–5 score based on your rubric: does it fit your priorities? ≥3.7 = consider. &lt;3.0 = probably not a fit. Your gut instinct confirmed by data.</div>
+            <span class="step-action">⭐ Score</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-name">Compare Offers</div>
+            <div class="step-description">Apply to 5 jobs? Compare them side by side. Weighted by your priorities (not just base salary). See total comp, equity, growth path, culture fit.</div>
+            <span class="step-action">🏆 Compare</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-name">Track Pipeline</div>
+            <div class="step-description">Applications, interviews, offers — one table. Status updates live. Know exactly where you stand with each company.</div>
+            <span class="step-action">📋 Track</span>
+          </div>
+        </div>
+        <div class="feedback-detail">
+          <h4>💡 Why this matters</h4>
+          <p>Job search is emotional. You'll fall in love with a startup or a prestigious company name. Career-ops gives you the data to push back on your instinct — not to ignore it, but to make sure emotion doesn't cost you thousands in comp or a year of burnout.</p>
+        </div>
+      </div>
+
+      <!-- Phase 4: Apply -->
+      <div class="phase apply">
+        <div class="phase-header">
+          <div class="phase-icon">✍️</div>
+          <div>
+            <div class="phase-title">Phase 4: Apply Strategically</div>
+            <div class="phase-subtitle">Tailored applications, zero manual work</div>
+          </div>
+        </div>
+        <div class="phase-content">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-name">Generate Tailored CV</div>
+            <div class="step-description">Your base CV + proof points curated for this company. Highlight your wins that match their needs. Export as PDF (ATS-optimized) or .docx.</div>
+            <span class="step-action">📄 PDF</span>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-name">Draft Cover Letter</div>
+            <div class="step-description">Sonnet drafts a compelling cover letter. Graded for coherence (90%+ quality) + grounded against your CV (no made-up claims). Revise until perfect.</div>
+            <span class="step-action">📝 Draft</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-name">Fill Application Form</div>
+            <div class="step-description">ATS form with curated questions? We fill from your vault (stored safely) + flag tricky Qs for you to review. Never auto-submit.</div>
+            <span class="step-action">✅ Fill</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-name">You Approve & Apply</div>
+            <div class="step-description">Review everything, then approve right from Slack (<code>approve &lt;token&gt;</code>) — a single-use, 12-hour-expiring token that only you can use. Nothing submits until you say so. We track it and note the outcome. Full control, from your phone.</div>
+            <span class="step-action">🚀 Apply</span>
+          </div>
+        </div>
+        <div class="feedback-detail">
+          <h4>💡 Why this matters</h4>
+          <p>Tailored applications convert 2–3x better than generic ones. Hiring managers can tell if you care. Career-ops makes it effortless — the system does the legwork, you keep the judgment.</p>
+        </div>
+      </div>
+
+      <!-- Phase 5: Interview -->
+      <div class="phase interview">
+        <div class="phase-header">
+          <div class="phase-icon">🎤</div>
+          <div>
+            <div class="phase-title">Phase 5: Interview & Negotiate</div>
+            <div class="phase-subtitle">Prepared, confident, data-driven</div>
+          </div>
+        </div>
+        <div class="phase-content">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-name">Company Deep-Dive</div>
+            <div class="step-description">Research: funding, team, recent news, tech stack, culture signals. We compile publicly available intel so you walk in prepared.</div>
+            <span class="step-action">🔍 Research</span>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-name">Interview Prep</div>
+            <div class="step-description">STAR stories tailored to their role. Practice answers to common questions. Story bank: accumulated lessons from past interviews.</div>
+            <span class="step-action">📚 Prep</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-name">Offer Evaluation</div>
+            <div class="step-description">Offer sheet? We score it like we scored the JD. Base salary, equity, benefits, growth, culture. See exactly how it compares to other offers.</div>
+            <span class="step-action">💰 Evaluate</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-name">Negotiation Script</div>
+            <div class="step-description">Market data (roles, comps, locations). Counter-offer frameworks. Scripts to negotiate without sounding greedy. Land an extra $50K confidently.</div>
+            <span class="step-action">💬 Negotiate</span>
+          </div>
+        </div>
+        <div class="feedback-detail">
+          <h4>💡 Why this matters</h4>
+          <p>Offers are negotiable — almost always. Most candidates don't negotiate out of fear or discomfort. Career-ops gives you the data and the scripts. $50K over 5 years is $250K. It's worth 30 minutes of discomfort.</p>
+        </div>
+      </div>
+
+      <!-- Phase 6: Close -->
+      <div class="phase close">
+        <div class="phase-header">
+          <div class="phase-icon">🎉</div>
+          <div>
+            <div class="phase-title">Phase 6: Close & Reflect</div>
+            <div class="phase-subtitle">Lessons learned, patterns to own</div>
+          </div>
+        </div>
+        <div class="phase-content">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-name">Analyze Patterns</div>
+            <div class="step-description">Which archetypes got offers? Which fell through? Where are you getting rejections? Data-driven insights to improve targeting next time.</div>
+            <span class="step-action">📈 Analyze</span>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-name">Update Your Profile</div>
+            <div class="step-description">Lessons from interviews (what resonated), stories that worked, new archetypes, deal-breakers to add. Career-ops gets smarter.</div>
+            <span class="step-action">🔄 Learn</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-name">Export & Archive</div>
+            <div class="step-description">Full audit trail: all reports, offers, outcomes. Searchable history. Reference for your next search (could be in 5 years).</div>
+            <span class="step-action">💾 Archive</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-name">Success Story</div>
+            <div class="step-description">You landed the role. Offer accepted. Calendar set. Next phase: onboarding. Career-ops did its job — now go crush it.</div>
+            <span class="step-action">🚀 Go!</span>
+          </div>
+        </div>
+        <div class="feedback-detail">
+          <h4>💡 Why this matters</h4>
+          <p>Job search isn't one-time. You'll do this again — maybe in 2 years, maybe in 10. Career-ops captures everything so you learn from this cycle. And when you do search again, you're 10x faster because the system already knows you.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Loops -->
+    <section class="flow-diagram">
+      <div class="flow-title">Continuous Learning Loop</div>
+      <div>
+        <span class="flow-box">You Evaluate Report</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">Apply / Skip</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">Interview Feedback</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">Update Profile</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">Better Scoring</span>
+        <span class="flow-arrow">↻</span>
+      </div>
+      <div style="margin-top: 16px; font-size: 13px; color: #718096; line-height: 1.6;">
+        Each decision (apply, skip, negotiate, reject) trains the system. You tell us "this score was too high, I wouldn't apply" — we learn. You tell us "I got the offer despite a 3.2 score" — we recalibrate. Over 10 applications, the system knows you better than you know yourself.
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="timeline">
+      <div class="timeline-title">Typical Timeline</div>
+      <div class="timeline-items">
+        <div class="timeline-item">
+          <div class="timeline-item-label">Setup</div>
+          <div class="timeline-item-time">30 min</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-label">Discover (1st week)</div>
+          <div class="timeline-item-time">Auto-scan</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-label">Evaluate</div>
+          <div class="timeline-item-time">15 min/job</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-label">Apply</div>
+          <div class="timeline-item-time">20 min/app</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-label">Interview</div>
+          <div class="timeline-item-time">Varies</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-label">Close</div>
+          <div class="timeline-item-time">1–2 mo</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Props -->
+    <section class="value-props">
+      <h2>Why This Matters</h2>
+      <div class="props-grid">
+        <div class="prop">
+          <div class="prop-icon">⏱️</div>
+          <div class="prop-title">Save 40+ Hours</div>
+          <div class="prop-text">Stop copy-pasting cover letters and filling forms by hand. Career-ops handles the grind so you focus on what matters — the actual conversations.</div>
+        </div>
+        <div class="prop">
+          <div class="prop-icon">💰</div>
+          <div class="prop-title">Negotiate Better</div>
+          <div class="prop-text">With real market data and proven scripts, you land more money and better terms — easily $50–150K over the course of a career.</div>
+        </div>
+        <div class="prop">
+          <div class="prop-icon">🎯</div>
+          <div class="prop-title">Find the Right Fit</div>
+          <div class="prop-text">Data-driven scoring removes emotion. You apply to roles where there's a genuine match, not just the brand name. Better odds, better outcomes.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

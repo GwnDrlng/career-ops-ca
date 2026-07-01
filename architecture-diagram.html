@@ -65,12 +65,12 @@
 <body>
   <header>
     <h1>Career-Ops — Cloud Scan + On-Prem Apply Pipeline</h1>
-    <p>Daily cloud scan &amp; grade (Vercel eve, Claude via AI Gateway) → Slack → on-prem watcher routes by score → human-approved apply</p>
+    <p>Daily <em>+ on-demand</em> cloud scan &amp; grade (Vercel eve, deployed) → Slack → on-prem watcher routes by score → human-approved apply</p>
     <div class="legend">
       <span><i class="dot slack"></i>Slack</span>
-      <span><i class="dot cloud"></i>Cloud — Vercel eve (built, typechecked + smoke-tested, not deployed)</span>
-      <span><i class="dot onprem"></i>On-prem — local watcher + career-ops (Opus 4.8, built &amp; tested)</span>
-      <span><i class="dot todo"></i>Not yet done (cloud deploy — needs Vercel account actions)</span>
+      <span><i class="dot cloud"></i>Cloud — Vercel eve (deployed &amp; live · Claude via AI Gateway)</span>
+      <span><i class="dot onprem"></i>On-prem — launchd daemons + career-ops (Opus 4.8, built &amp; tested)</span>
+      <span><i class="dot todo"></i>External setup pending — Slack /scan command + SLACK_SIGNING_SECRET</span>
     </div>
   </header>
 
@@ -84,20 +84,21 @@ flowchart TB
   end
 
   %% ---------------- CLOUD ----------------
-  subgraph CLOUD["CLOUD — cloud/agent/** · Vercel eve · Claude via AI Gateway (built, not deployed)"]
+  subgraph CLOUD["CLOUD — cloud/agent/** · Vercel eve · Claude via AI Gateway (DEPLOYED · cloud-xi-eight.vercel.app)"]
     SCH["schedules/daily-scan.ts<br/>cron 0 12 * * * → receive(slack, …)"] --> ORCH["Root agent.ts + instructions.md<br/>per-job state machine (Sonnet)"]
+    TRIG["On-demand triggers<br/>scan-now.mjs (local, OIDC → /eve/v1/session)<br/>channels/slack-commands.ts → /scan (signed)"] --> ORCH
     ORCH --> SCAN["subagents/scanner<br/>tools/scan_portals.ts (Haiku)<br/>lib/portals-config.ts + lib/dedup.ts (in-memory only)"]
     ORCH --> GRADE["subagents/grader<br/>skills/grading-rubric.md (Sonnet)<br/>digest: data/candidate-digest.md, de-identified"]
     SCAN --> GRADE
     GRADE --> REP["tools/format_report.ts<br/>A–G + Machine Summary YAML"]
-    REP --> POST["tools/post_to_slack.ts<br/>Vercel Connect bot token · unverified live"]
+    REP --> POST["tools/post_to_slack.ts<br/>Vercel Connect bot token · live"]
   end
 
   POST --> SL
 
   %% ---------------- ON-PREM ----------------
-  subgraph ONPREM["ON-PREM — local watcher + pipeline/ (built &amp; tested)"]
-    WATCH["watcher/watch.mjs<br/>polls Slack (Keychain token) → writes reports/"] --> GATE{"pipeline/gates.mjs<br/>legitimacy (drop Suspicious)<br/>blocklist · duplicate · volume caps ≤8/day"}
+  subgraph ONPREM["ON-PREM — launchd daemons + pipeline/ (built &amp; tested)"]
+    WATCH["watcher/watch.mjs — launchd daemon<br/>polls Slack (Keychain token) → writes reports/"] --> GATE{"pipeline/gates.mjs<br/>legitimacy (drop Suspicious)<br/>blocklist · duplicate · volume caps ≤8/day"}
     GATE --> ROUTE{"pipeline/route-tier.mjs<br/>score /5"}
 
     ROUTE -->|"≤ 2.0"| IGN["Ignore: delete report, log to<br/>data/watcher-ignored.tsv"]
@@ -125,7 +126,7 @@ flowchart TB
     TOK -.->|"gates every Opus call"| GROUND
     TOK -.->|"gates draft"| APP
 
-    KILL["pipeline/kill-switch.mjs — /pause /resume<br/>auto-pause: 3 consecutive fails (fail-closed)"]
+    KILL["pipeline/kill-switch.mjs — pause/resume (plain-text, on-prem)<br/>via approval-consumer.mjs (launchd daemon)<br/>auto-pause: 3 consecutive fails (fail-closed)"]
     AUDIT[("data/audit-log.tsv<br/>pipeline/audit.mjs · every gate + state change")]
     TOK -.->|"budget.halt (job-scoped)"| AUDIT
     OVR["pipeline/budget-override.mjs · on halt, Slack offers:<br/>'budget-override &lt;token&gt;' → continue (bounded 3 calls, scoped, expiring)<br/>'budget-defer &lt;token&gt;' → pause pipeline until next daily cron"]
@@ -153,6 +154,10 @@ flowchart TB
     GEN --> MERGE["merge-tracker.mjs → data/applications.md"]
     SUBMIT --> MERGE
     FLAGA --> MERGE
+
+    SPEND["opus-call.postSpendSummary()<br/>🧾 per-run tokens + notional $ → #job-pipeline<br/>token-budget.sessionSummary() by job_id"]
+    JUDGE -.->|"final-fail: post job spend"| SPEND
+    APP -.->|"terminal stop(): post job spend"| SPEND
   end
 
   SL --> WATCH
@@ -160,6 +165,7 @@ flowchart TB
   FLAGM --> SL
   FLAGA --> SL
   FLAGF --> SL
+  SPEND -.->|"🧾 spend summary"| SL
   TOK -.->|"budget reached"| SL
   KILL -.-> SL
 
@@ -171,8 +177,8 @@ flowchart TB
   classDef todo fill:#3a3a3a,stroke:#999,color:#cfcfcf,stroke-dasharray: 4 3;
 
   class SL slack;
-  class SCH,ORCH,SCAN,GRADE,REP,POST cloud;
-  class WATCH,GATE,ROUTE,IGN,GEN,APP,VAULT,SCREEN,APPROVE,SUBMIT,DOC,JUDGE,GROUND,FLAGA,FLAGF,TOK,OVR,KILL,CAL,GOV,MERGE onprem;
+  class SCH,ORCH,TRIG,SCAN,GRADE,REP,POST cloud;
+  class WATCH,GATE,ROUTE,IGN,GEN,APP,VAULT,SCREEN,APPROVE,SUBMIT,DOC,JUDGE,GROUND,FLAGA,FLAGF,TOK,OVR,KILL,CAL,GOV,MERGE,SPEND onprem;
   class HIST,AUDIT,DLQ store;
     </pre>
   </div>

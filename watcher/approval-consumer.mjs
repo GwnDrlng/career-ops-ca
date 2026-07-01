@@ -4,9 +4,15 @@
 // restricted-membership channel) for three control messages from a verified
 // approver:
 //
-//   /pause [reason]     -> trip the kill switch (halts all lanes)
-//   /resume             -> clear the kill switch
+//   pause [reason]      -> trip the kill switch (halts all lanes)
+//   resume              -> clear the kill switch
 //   approve <token>     -> authorize the matching filled form for submission
+//
+// Type these as PLAIN text (no leading slash) in #job-approvals. A real Slack
+// slash command ("/pause") is intercepted by Slack and never posts as a message
+// this poller can read; a leading slash is tolerated but discouraged. Slash
+// commands that DO reach the cloud (e.g. /scan) live in
+// cloud/agent/channels/slack-commands.ts, a separate mechanism.
 //
 // The consumer never decides on its own to submit. On `approve <token>` it hands
 // off to `applier.mjs --submit`, which independently re-verifies + burns the
@@ -57,8 +63,11 @@ async function handleControl(message) {
   const text = (message.text || "").trim();
   const user = message.user;
 
-  const pauseMatch = text.match(/^\/pause\b\s*(.*)$/i);
-  const resumeMatch = /^\/resume\b/i.test(text);
+  // Leading slash is OPTIONAL: Slack intercepts a real "/pause" as a slash
+  // command (and, unregistered, never posts it as a message the poller can
+  // see), so approvers type plain "pause"/"resume". Both forms are accepted.
+  const pauseMatch = text.match(/^\/?pause\b\s*(.*)$/i);
+  const resumeMatch = /^\/?resume\b/i.test(text);
   const approveMatch = text.match(/^approve\s+([a-f0-9]{16,})\b/i);
   const overrideMatch = text.match(/^budget-override\s+([a-f0-9]{16,})\b/i);
   const deferMatch = text.match(/^budget-defer(?:\s+([a-f0-9]{16,}))?\b/i);
@@ -73,9 +82,9 @@ async function handleControl(message) {
   }
 
   if (pauseMatch) {
-    const reason = pauseMatch[1].trim() || "Slack /pause";
+    const reason = pauseMatch[1].trim() || "Slack pause";
     pause(reason, user);
-    await reply(`⏸ Pipeline *paused* by <@${user}>${pauseMatch[1].trim() ? ` — ${pauseMatch[1].trim()}` : ""}. All lanes halted. Send \`/resume\` to continue.`, message.ts);
+    await reply(`⏸ Pipeline *paused* by <@${user}>${pauseMatch[1].trim() ? ` — ${pauseMatch[1].trim()}` : ""}. All lanes halted. Send \`resume\` to continue.`, message.ts);
     return;
   }
 

@@ -7,6 +7,20 @@ import { spawnSync } from "node:child_process";
 import { channels, postMessage } from "./slack-client.mjs";
 import { appendAudit } from "./audit.mjs";
 import { getConfig, ensurePendingRequest, consumeActiveGrant } from "./budget-override.mjs";
+import { sessionSummary, formatSessionSummary } from "./token-budget.mjs";
+
+// Post an end-of-run spend summary (tokens + notional $) to #job-pipeline.
+// Called at each on-prem lane's terminal point (judge final-fail, applier stop).
+// onlyIfSpent skips the post when this scope recorded zero Opus calls, so pure
+// refusals (shadow-mode, gate blocks) don't spam the channel with $0 lines.
+export async function postSpendSummary({ jobId = "", sinceISO = "", label = "", onlyIfSpent = true } = {}) {
+  const s = sessionSummary({ jobId, sinceISO });
+  if (onlyIfSpent && s.calls === 0) return null;
+  await postMessage(channels.jobPipeline, formatSessionSummary(s, label)).catch((e) =>
+    console.error("[opus-call] spend summary post failed:", e.message)
+  );
+  return s;
+}
 
 const MODEL = "claude-opus-4-8";
 

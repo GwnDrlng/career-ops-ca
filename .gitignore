@@ -29,6 +29,7 @@ data/budget-overrides.json
 data/calibration-log.tsv
 data/guardrails-snapshot.json
 data/prompt-hashes.json
+data/launchd-*.log
 watcher/.checkpoint.json
 watcher/.approval-checkpoint.json
 
