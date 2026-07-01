@@ -77,35 +77,38 @@ export function diffFlat(oldFlat, newFlat) {
   return changes;
 }
 
-const cmd = process.argv[2];
-const reasonIdx = process.argv.indexOf("--reason");
-const reason = reasonIdx !== -1 ? process.argv[reasonIdx + 1] : "";
+// --- CLI (only runs when executed directly, not when imported) ---
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const cmd = process.argv[2];
+  const reasonIdx = process.argv.indexOf("--reason");
+  const reason = reasonIdx !== -1 ? process.argv[reasonIdx + 1] : "";
 
-if (cmd === "snapshot") {
-  const flat = loadCurrent();
-  saveSnapshot(flat);
-  console.log(JSON.stringify({ snapshot: SNAPSHOT, keys: Object.keys(flat).length }, null, 2));
-} else if (cmd === "diff" || cmd === "check") {
-  const current = loadCurrent();
-  const snapshot = loadSnapshot();
-  if (snapshot === null) {
-    // First run — nothing to diff against. Baseline silently so future edits are caught.
-    saveSnapshot(current);
-    console.log(JSON.stringify({ baselined: true, keys: Object.keys(current).length, note: "No prior snapshot — baselined. Re-run after your next edit to see changes." }, null, 2));
-    process.exit(0);
-  }
-  const changes = diffFlat(snapshot, current);
-  if (cmd === "check") {
-    for (const c of changes) {
-      appendAudit({
-        actor: "config-guard", event: "config.change", result: c.kind,
-        detail: `guardrails.yml ${c.key}: ${c.kind === "added" ? "" : `${c.from} → `}${c.kind === "removed" ? "(removed)" : c.to}${reason ? ` — ${reason}` : ""}`,
-      });
+  if (cmd === "snapshot") {
+    const flat = loadCurrent();
+    saveSnapshot(flat);
+    console.log(JSON.stringify({ snapshot: SNAPSHOT, keys: Object.keys(flat).length }, null, 2));
+  } else if (cmd === "diff" || cmd === "check") {
+    const current = loadCurrent();
+    const snapshot = loadSnapshot();
+    if (snapshot === null) {
+      // First run — nothing to diff against. Baseline silently so future edits are caught.
+      saveSnapshot(current);
+      console.log(JSON.stringify({ baselined: true, keys: Object.keys(current).length, note: "No prior snapshot — baselined. Re-run after your next edit to see changes." }, null, 2));
+      process.exit(0);
     }
-    saveSnapshot(current);
+    const changes = diffFlat(snapshot, current);
+    if (cmd === "check") {
+      for (const c of changes) {
+        appendAudit({
+          actor: "config-guard", event: "config.change", result: c.kind,
+          detail: `guardrails.yml ${c.key}: ${c.kind === "added" ? "" : `${c.from} → `}${c.kind === "removed" ? "(removed)" : c.to}${reason ? ` — ${reason}` : ""}`,
+        });
+      }
+      saveSnapshot(current);
+    }
+    console.log(JSON.stringify({ changes, audited: cmd === "check", count: changes.length }, null, 2));
+  } else {
+    console.error("Usage: node pipeline/config-guard.mjs <check|diff|snapshot> [--reason \"...\"]");
+    process.exit(1);
   }
-  console.log(JSON.stringify({ changes, audited: cmd === "check", count: changes.length }, null, 2));
-} else {
-  console.error("Usage: node pipeline/config-guard.mjs <check|diff|snapshot> [--reason \"...\"]");
-  process.exit(1);
 }

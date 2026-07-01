@@ -95,24 +95,27 @@ export function checkDrift({ audit = false } = {}) {
   return drift;
 }
 
-const cmd = process.argv[2];
-if (cmd === "list") {
-  console.log(JSON.stringify(allTags(), null, 2));
-} else if (cmd === "tag") {
-  const name = process.argv[3];
-  const tag = versionTag(name);
-  if (!tag) {
-    console.error(`Unknown artifact "${name}". Registered: ${Object.keys(loadRegistry()).join(", ")}`);
+// --- CLI (only runs when executed directly, not when imported) ---
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const cmd = process.argv[2];
+  if (cmd === "list") {
+    console.log(JSON.stringify(allTags(), null, 2));
+  } else if (cmd === "tag") {
+    const name = process.argv[3];
+    const tag = versionTag(name);
+    if (!tag) {
+      console.error(`Unknown artifact "${name}". Registered: ${Object.keys(loadRegistry()).join(", ")}`);
+      process.exit(1);
+    }
+    console.log(tag);
+  } else if (cmd === "check") {
+    const drift = checkDrift({ audit: true });
+    console.log(JSON.stringify({ drift, count: drift.length }, null, 2));
+    if (drift.length) {
+      console.error(`\n⚠️  ${drift.length} artifact(s) changed without a version bump. Bump the version in config/prompt-versions.yml so past scores stay reproducible.`);
+    }
+  } else {
+    console.error("Usage: node pipeline/prompt-version.mjs <list|tag <name>|check>");
     process.exit(1);
   }
-  console.log(tag);
-} else if (cmd === "check") {
-  const drift = checkDrift({ audit: true });
-  console.log(JSON.stringify({ drift, count: drift.length }, null, 2));
-  if (drift.length) {
-    console.error(`\n⚠️  ${drift.length} artifact(s) changed without a version bump. Bump the version in config/prompt-versions.yml so past scores stay reproducible.`);
-  }
-} else {
-  console.error("Usage: node pipeline/prompt-version.mjs <list|tag <name>|check>");
-  process.exit(1);
 }

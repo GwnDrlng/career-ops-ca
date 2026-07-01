@@ -160,6 +160,8 @@ function check(jobId = "") {
   };
 }
 
+// --- CLI (only runs when executed directly, not when imported) ---
+if (import.meta.url === `file://${process.argv[1]}`) {
 const cmd = process.argv[2];
 
 if (cmd === "record") {
@@ -198,4 +200,5 @@ if (cmd === "record") {
 } else {
   console.error("Usage: node token-budget.mjs <record|check|gate> [options]");
   process.exit(1);
+}
 }
