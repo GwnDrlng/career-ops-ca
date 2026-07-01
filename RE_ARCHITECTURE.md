@@ -8,9 +8,9 @@ Built and tested locally, in order: Part 6 (housekeeping) → Part 7 config laye
 
 **Unit 9 (observability) — IN PROGRESS.** Part 7E's **audit log** is BUILT and tested (`pipeline/audit.mjs` → `data/audit-log.tsv`, wired at the authoritative chokepoints: kill-switch pause/resume/auto-pause, approval request/approve/reject, route-tier dispatch, applier refusals/fill/submit). 9 behavioral checks pass.
 
-**Part 7E is now complete** (audit log, monthly + per-application cost caps, manual budget override + defer, dead-letter queue, grading calibration spot-check).
+**Part 7E and 7F are now complete.** 7E: audit log, monthly + per-application cost caps, manual budget override + defer, dead-letter queue, grading calibration spot-check. 7F: config-change logging (`config-guard.mjs`), prompt/rubric versioning (`prompt-version.mjs` + `config/prompt-versions.yml`, stamped into judge-history + calibration-log), and the accepted-risk register (`RISK_REGISTER.md`).
 
-**Not yet built:** Part 7F (guardrails-change logging, prompt/rubric versioning, risk register) and Part 6's `test-all.mjs` additions + the 20-point verification checklist at the bottom of this doc.
+**Not yet built:** Part 6's `test-all.mjs` additions + the 20-point verification checklist at the bottom of this doc. (All of Part 7 — governance, safety, guardrails — is now complete.)
 
 **Needs your action before Part 1 (cloud) can run for real:** `vercel link`, the Vercel Connect Slack walkthrough (see `cloud/agent/channels/slack.ts`'s header comment), and an `AI_GATEWAY_API_KEY` or Vercel OIDC link. Local dev also needs `node@24` on PATH — see the Decisions section.
 
@@ -120,7 +120,7 @@ Real eve project layout is `cloud/agent/**`, not `cloud/**` directly — every a
 - Delete the **"## Update Check"** block from `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `modes/ru/_shared.md`. Keep manual `update-system.mjs`. Leave cold-start `doctor.mjs` onboarding intact.
 - Add `test-all.mjs` checks: report-format parity (Machine Summary parseable), tier thresholds (2.0/2.1/3.6/3.7), curated-question classifier, judge retry-cap + 90% gate + history logging, token-budget halt, rubric parity (cloud vs local).
 
-### Part 7 — Governance, Safety & Guardrails — **A, B, C, D done. E and F NOT built (planned for unit 9).** Unit 8 completed C (sanitize-jd.mjs) and D (approval-delivery gate + kill switch); see those sub-sections for details.
+### Part 7 — Governance, Safety & Guardrails — **COMPLETE (A–F).** Unit 8 completed C (sanitize-jd.mjs) and D (approval-delivery gate + kill switch); unit 9 completed E (audit log, cost caps, override/defer, dead-letter, calibration) and F (config-change logging, prompt/rubric versioning, risk register). See sub-sections for details.
 All guardrails are config-driven from a single source of truth (`config/guardrails.yml`) so thresholds are auditable and changeable without code edits. Secrets live in **macOS Keychain** (read via the `security` CLI); the cloud holds **no PII and no submit credentials** (the grader gets a de-identified digest, not real `cv.md` — see Decisions above).
 
 **A. Application integrity (pre-submit gates — all must pass or the job is flagged, never submitted):** — **DONE**
@@ -151,10 +151,10 @@ All guardrails are config-driven from a single source of truth (`config/guardrai
 - **Grading calibration spot-check:** DONE. `pipeline/calibrate.mjs` re-grades a cloud-graded job on-prem with the **same** rubric (`cloud/agent/subagents/grader/skills/grading-rubric.md`) + de-identified digest (`cloud/data/candidate-digest.md`) via `opus-call.mjs`, then compares the on-prem score to the score the cloud wrote into the report. Drift > `calibration.drift_threshold` (default 0.4/5) → Slack flag + `calibration.drift` audit; otherwise `calibration.ok`. Logs every check to `data/calibration-log.tsv`. It measures only — never blocks. JD comes from `--jd <path|->` or a co-located `jds/{slug}.md`. Pure helpers (drift, threshold, JD resolution) unit-tested (8 checks); the live Opus grade path is built but not exercised (avoids burning tokens on a throwaway, same posture as `judge.mjs`). Sample one job periodically via `/loop` or cron.
 - **Part 7E is complete.**
 
-**F. Process / change control:** — **partially true by construction**
-- **Config-not-code thresholds:** DONE — every number lives in `config/guardrails.yml`. Changes are NOT yet logged to an audit log (the audit log itself doesn't exist).
-- **Prompt & rubric versioning:** NOT built.
-- **Accepted-risk register:** NOT written up as a formal register entry anywhere yet.
+**F. Process / change control:** — **DONE (unit 9)**
+- **Config-not-code thresholds + change logging:** DONE. Every number lives in `config/guardrails.yml`, and `pipeline/config-guard.mjs` now makes edits auditable: it snapshots the flattened config (`data/guardrails-snapshot.json`) and, on `check [--reason]`, diffs current vs snapshot and writes one `config.change` audit row per changed key (`old → new` + reason), then advances the snapshot. `diff` previews without auditing; `snapshot` re-baselines. Advisory, never a gate. Run after editing (or wire into a git pre-commit hook).
+- **Prompt & rubric versioning:** DONE. `config/prompt-versions.yml` holds an explicit semantic version per graded-output artifact (rubric, judge, grounding); `pipeline/prompt-version.mjs` pins each to `"<version>+<8-hex content hash>"`. `judge.mjs` and `calibrate.mjs` stamp that tag into `data/judge-history.tsv` (`prompt_version`) and `data/calibration-log.tsv` (`rubric_version`), so every recorded score traces to the exact prompt that produced it. `check` compares source hashes to `data/prompt-hashes.json` and audits `prompt.version_drift` when a source changed **without** a version bump (silent-drift detector). 9 behavioral checks pass (config-guard baseline/detect/audit/diff-no-write; version tag format; drift with/without version bump).
+- **Accepted-risk register:** DONE. `RISK_REGISTER.md` — 10 known accepted risks (post-hoc cost accounting, unexercised submit path, in-memory cloud dedup, heuristic sanitize-jd, unverified Connect post, user-id-based Slack auth, null-by-default ceilings, model-vs-artifact versioning, poll-driven auto-resume, generic form selectors), each with severity/likelihood/posture, mitigation, and a concrete **revisit trigger** so "accepted" never silently becomes "forgotten."
 
 ### Critical files
 

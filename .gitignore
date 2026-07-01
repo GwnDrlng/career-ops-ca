@@ -27,6 +27,8 @@ data/dead-letter.tsv
 data/dead-letter-retries.json
 data/budget-overrides.json
 data/calibration-log.tsv
+data/guardrails-snapshot.json
+data/prompt-hashes.json
 watcher/.checkpoint.json
 watcher/.approval-checkpoint.json
 

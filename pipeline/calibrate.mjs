@@ -28,6 +28,7 @@ import { callOpus } from "./opus-call.mjs";
 import { sanitizeJd } from "./sanitize-jd.mjs";
 import { appendAudit } from "./audit.mjs";
 import { channels, postMessage } from "./slack-client.mjs";
+import { versionTag } from "./prompt-version.mjs";
 
 const RUBRIC_PATH = "cloud/agent/subagents/grader/skills/grading-rubric.md";
 const DIGEST_PATH = "cloud/data/candidate-digest.md";
@@ -91,7 +92,7 @@ Apply the rubric's five dimensions and produce the weighted global score on the 
 function logCalibration(logPath, row) {
   fs.mkdirSync(path.dirname(logPath), { recursive: true });
   if (!fs.existsSync(logPath)) {
-    fs.writeFileSync(logPath, "timestamp\tjob_id\tcompany\tcloud_score\tonprem_score\tdrift\tover_threshold\n");
+    fs.writeFileSync(logPath, "timestamp\tjob_id\tcompany\tcloud_score\tonprem_score\tdrift\tover_threshold\trubric_version\n");
   }
   fs.appendFileSync(logPath, row.join("\t") + "\n");
 }
@@ -154,10 +155,11 @@ async function main() {
   const onpremScore = Number(verdict.global_score);
   const drift = computeDrift(parsed.score, onpremScore);
   const over = isDrift(drift, threshold);
+  const rubricVersion = versionTag("rubric") || "";
 
   logCalibration(logPath, [
     new Date().toISOString(), jobId, parsed.company,
-    parsed.score, onpremScore, drift, over,
+    parsed.score, onpremScore, drift, over, rubricVersion,
   ]);
 
   appendAudit({
@@ -175,7 +177,7 @@ async function main() {
 
   console.log(JSON.stringify({
     jobId, company: parsed.company, cloudScore: parsed.score, onpremScore, drift, threshold, over,
-    archetype: verdict.archetype, jdSource: jd.source,
+    archetype: verdict.archetype, jdSource: jd.source, rubricVersion,
   }, null, 2));
   process.exit(0);
 }

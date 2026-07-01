@@ -1,0 +1,23 @@
+# Explicit versions for the graded-output prompts and rubrics (RE_ARCHITECTURE.md
+# Part 7F). A score is only reproducible if you know which rubric/prompt produced
+# it, so each graded output records the version of the artifact that graded it.
+#
+# Bump `version` when you materially change the corresponding artifact.
+# pipeline/prompt-version.mjs also stores a content hash of each `source`; if a
+# source changes but its version was NOT bumped, `check` warns and audits
+# `prompt.version_drift` — catching silent prompt edits that would make old
+# scores non-reproducible.
+#
+# version_tag recorded in outputs is "<version>+<short content hash>", e.g.
+# "1.0.0+a1b2c3d4", so both the human-meaningful version and the exact bytes are
+# pinned.
+
+rubric:
+  version: "1.0.0"
+  source: "cloud/agent/subagents/grader/skills/grading-rubric.md"
+judge:
+  version: "1.0.0"
+  source: "pipeline/judge.mjs"
+grounding:
+  version: "1.0.0"
+  source: "pipeline/grounding-check.mjs"

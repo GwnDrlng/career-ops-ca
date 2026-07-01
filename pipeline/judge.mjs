@@ -22,6 +22,7 @@ import yaml from "js-yaml";
 import { extractDocxText } from "./docx-text.mjs";
 import { callOpus } from "./opus-call.mjs";
 import { sanitizeJd } from "./sanitize-jd.mjs";
+import { versionTag } from "./prompt-version.mjs";
 
 function arg(name, required = false) {
   const i = process.argv.indexOf(`--${name}`);
@@ -120,23 +121,25 @@ const pass = verdict.overall_pct >= PASS_THRESHOLD;
 const willRetry = !pass && attempt <= MAX_RETRIES;
 const timestamp = new Date().toISOString();
 
+// Stamp the judge prompt version so this score is reproducible (Part 7F).
+const promptVersion = versionTag("judge") || "";
 const row = [
   jobId, company, role, attempt,
   verdict.cv_score ?? "", verdict.cl_score ?? "", verdict.overall_pct,
-  pass, willRetry, timestamp,
+  pass, willRetry, timestamp, promptVersion,
 ].join("\t");
 
 fs.mkdirSync(path.dirname(HISTORY_PATH), { recursive: true });
 if (!fs.existsSync(HISTORY_PATH)) {
   fs.writeFileSync(
     HISTORY_PATH,
-    "job_id\tcompany\trole\tattempt\tcv_score\tcl_score\toverall_pct\tpass\tsent_back\ttimestamp\n"
+    "job_id\tcompany\trole\tattempt\tcv_score\tcl_score\toverall_pct\tpass\tsent_back\ttimestamp\tprompt_version\n"
   );
 }
 fs.appendFileSync(HISTORY_PATH, row + "\n");
 
 const final = attempt > MAX_RETRIES;
-console.log(JSON.stringify({ ...verdict, pass, attempt, max_retries: MAX_RETRIES, final }, null, 2));
+console.log(JSON.stringify({ ...verdict, pass, attempt, max_retries: MAX_RETRIES, final, prompt_version: promptVersion }, null, 2));
 
 if (!pass) {
   if (final) {
