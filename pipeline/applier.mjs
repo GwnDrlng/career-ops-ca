@@ -149,7 +149,7 @@ async function submitFlow({ token, approver }) {
       return stop({ ok: false, stage: "submit-guard", reason: "Curated question(s) present at submit time — refusing to auto-submit; complete manually." });
     }
     const draft = await draftAnswers(submitReportPath, { parsed: { ...parsed, company, role }, questions: fields });
-    await fillForm(page, fields, draft);
+    await fillForm(page, fields, draft, { salaryExpectation: resolveSalaryExpectation(parsed.body) });
 
     const submitBtn = await findSubmitButton(page);
     if (!submitBtn) {
@@ -274,7 +274,7 @@ async function main() {
     }
 
     const draft = await draftAnswers(reportPath, { parsed, questions: fields });
-    const fillResult = await fillForm(page, fields, draft);
+    const fillResult = await fillForm(page, fields, draft, { salaryExpectation: resolveSalaryExpectation(parsed.body) });
 
     const screenshotPath = path.join("output", `applier-${parsed.company.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}.png`);
     fs.mkdirSync("output", { recursive: true });
@@ -447,9 +447,46 @@ Respond with ONLY a JSON object mapping each question's exact label text to a dr
   }
 }
 
+// --- Salary expectation: the midpoint of the comp band the posting discloses.
+// Reads the report's Comp section first (the disclosed band lives there) and
+// falls back to the whole body; considers only figures in a plausible salary
+// window so proof-point numbers (ARR, growth %) don't leak in. Returns null when
+// the posting shows no usable band — the caller then falls back to the personal
+// default held in the local Keychain vault (never a number baked into this
+// committed file). ---
+export function resolveSalaryExpectation(body) {
+  if (!body) return null;
+  const compSection = body.match(/##\s*[^\n]*\bComp\b[^\n]*\n([\s\S]*?)(?=\n##\s|$)/i)?.[1] || "";
+  const moneyRe = /\$\s?(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*([KkMm])?/g;
+  const figuresIn = (src) => {
+    const out = [];
+    let m;
+    while ((m = moneyRe.exec(src)) !== null) {
+      let n = parseFloat(m[1].replace(/,/g, ""));
+      const suf = m[2]?.toLowerCase();
+      if (suf === "k") n *= 1000;
+      else if (suf === "m") n *= 1_000_000;
+      if (n >= 40000 && n <= 2_000_000) out.push(n);
+    }
+    moneyRe.lastIndex = 0;
+    return out;
+  };
+  // Prefer the Comp section; if it yields no usable band, scan the whole body.
+  let figures = figuresIn(compSection);
+  if (figures.length < 2) figures = figuresIn(body);
+  if (figures.length >= 2) {
+    return Math.round((Math.min(...figures) + Math.max(...figures)) / 2);
+  }
+  if (figures.length === 1) return figures[0]; // a single disclosed number
+  return null; // no band disclosed — caller uses the local vault default
+}
+
 // --- Fill the form: sensitive fields from the vault only, everything else
-// from the drafted answers. Never invents a sensitive-field value. ---
-async function fillForm(page, fields, draft) {
+// from the drafted answers. Never invents a sensitive-field value. The salary
+// expectation is the one sensitive field the caller may supply a computed
+// fallback for (opts.salaryExpectation), since it's derived from the posting's
+// own disclosed band rather than invented. ---
+async function fillForm(page, fields, draft, opts = {}) {
   const filled = [];
   const manual = [];
 
@@ -458,7 +495,14 @@ async function fillForm(page, fields, draft) {
     let value = null;
 
     if (vaultKey) {
-      value = getVaultEntry(vaultKey);
+      // Salary expectation: the posting-derived midpoint wins when the posting
+      // disclosed a band; otherwise fall back to the personal default in the
+      // local Keychain vault. No comp number is baked into this committed file.
+      if (vaultKey === "salary_expectation" && opts.salaryExpectation != null) {
+        value = String(opts.salaryExpectation);
+      } else {
+        value = getVaultEntry(vaultKey);
+      }
       if (value == null) {
         manual.push({ label: field.label, reason: `sensitive field, no vault entry for "${vaultKey}"` });
         continue;
