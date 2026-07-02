@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { hasSeenPosting, markSeenPosting } from "../../../lib/dedup.js";
+import { hasSeenPosting, markSeenPosting, flushSeenPostings } from "../../../lib/dedup.js";
 import { titleFilter, trackedCompanies } from "../../../lib/portals-config.js";
 
 function detectAts(apiUrl: string): "greenhouse" | "ashby" | "lever" | null {
@@ -77,6 +77,9 @@ export default defineTool({
         });
       }
     }
+
+    // Persist the dedup set once, after all companies are scanned.
+    await flushSeenPostings();
 
     return { newPostings, companiesScanned: companies.length };
   },

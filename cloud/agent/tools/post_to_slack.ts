@@ -19,11 +19,13 @@ export default defineTool({
     text: z.string().describe("Full report Markdown to post"),
   }),
   async execute({ channelId, text }) {
-    const { botToken } = await connectSlackCredentials(CONNECT_UID);
+    const { botToken } = connectSlackCredentials(CONNECT_UID);
+    if (!botToken) throw new Error("Slack credentials missing botToken");
+    const token = typeof botToken === "function" ? await botToken() : botToken;
     const res = await fetch("https://slack.com/api/chat.postMessage", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${botToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ channel: channelId, text }),
