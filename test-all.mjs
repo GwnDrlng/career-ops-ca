@@ -329,7 +329,10 @@ if (!QUICK) {
   console.log('\n4. Dashboard build');
   const isWindows = process.platform === 'win32';
   const outPath = isWindows ? 'career-dashboard-test.exe' : '/tmp/career-dashboard-test';
-  const goBuild = run(`cd dashboard && go build -o ${outPath} . 2>&1`);
+  // Invoke go without a shell (execFileSync via the args form) so the temp
+  // output path is passed as a literal argument, never interpolated into a
+  // shell command string — avoids shell-command-injection (CodeQL js/shell-command-injection-from-environment).
+  const goBuild = run('go', ['build', '-o', outPath, '.'], { cwd: join(ROOT, 'dashboard') });
   if (goBuild !== null) {
     pass('Dashboard compiles');
     if (isWindows) {
