@@ -104,12 +104,16 @@ export default defineTool({
     }
 
     // Report post: compact header as the message, full report as an attached
-    // file. If the upload path fails (e.g. missing files:write scope), fall
-    // back to posting the full report inline so the watcher never loses data —
-    // that's the pre-file-attachment behavior, verbose but functional.
+    // file. The managed Vercel Connect connector's scopes are fixed by Vercel's
+    // Slack app and don't include files:write, so the file upload runs on the
+    // career-ops-ca bot token (SLACK_BOT_TOKEN — the on-prem app, which has
+    // files:write) when present, falling back to the Connect token otherwise.
+    // If the upload still fails (no scope), we post the full report inline so
+    // the watcher never loses data — verbose, but the pre-attachment behavior.
+    const uploadToken = process.env.SLACK_BOT_TOKEN ?? token;
     const fileName = `${text.match(/^# Evaluation:\s*(.+)$/m)?.[1]?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "report"}.md`;
     try {
-      const { ts } = await uploadReportFile(token, targetChannel, fileName, report, text);
+      const { ts } = await uploadReportFile(uploadToken, targetChannel, fileName, report, text);
       return { posted: true, ts };
     } catch (err) {
       console.error(`[post_to_slack] file upload failed, falling back to inline text: ${(err as Error).message}`);
