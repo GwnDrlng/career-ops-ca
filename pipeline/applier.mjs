@@ -135,7 +135,16 @@ async function submitFlow({ token, approver }) {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(1000);
 
-    const fields = await extractFormFields(page);
+    let fields = await extractFormFields(page);
+    if (!fields.length) {
+      // Same JD-page-vs-form gap as the fill phase (Ashby et al.): reach the
+      // real form before extracting, or submit would find nothing to fill.
+      const reached = await reachApplicationForm(page, url);
+      if (reached) {
+        await page.waitForTimeout(1000);
+        fields = await extractFormFields(page);
+      }
+    }
     if (fields.some((f) => isCuratedQuestion(f.label))) {
       return stop({ ok: false, stage: "submit-guard", reason: "Curated question(s) present at submit time — refusing to auto-submit; complete manually." });
     }
@@ -240,7 +249,17 @@ async function main() {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(1000);
 
-    const fields = await extractFormFields(page);
+    let fields = await extractFormFields(page);
+    if (!fields.length) {
+      // Several ATSes (notably Ashby) land you on the job-description page; the
+      // form is behind an "Apply" button or at a `/application` sub-path. Try to
+      // reach it, then re-extract once, before giving up.
+      const reached = await reachApplicationForm(page, url);
+      if (reached) {
+        await page.waitForTimeout(1000);
+        fields = await extractFormFields(page);
+      }
+    }
     if (!fields.length) {
       return stop({ ok: false, stage: "extract", reason: "No form fields detected — page may require manual navigation to the application form." });
     }
@@ -317,6 +336,41 @@ export function isCuratedQuestion(label) {
 // --- Form field extraction: best-effort generic scan. Per-ATS selector
 // tuning (Greenhouse/Ashby/Lever/Workable each render differently) is future
 // work — this covers the common case of labeled inputs/textareas/selects. ---
+// When the landing URL is a job-description page rather than the form itself,
+// try to reach the actual application form: first click an in-page "Apply"
+// control, then (for Ashby, whose form lives at `{jobUrl}/application`) fall
+// back to navigating to that sub-path directly. Returns true if a navigation or
+// click was performed (caller re-extracts to confirm a form is now present).
+async function reachApplicationForm(page, url) {
+  const applyButton = page
+    .locator(
+      'a:has-text("Apply for this Job"), a:has-text("Apply for this job"), ' +
+      'button:has-text("Apply for this Job"), button:has-text("Apply for this job"), ' +
+      'a:has-text("Apply Now"), button:has-text("Apply Now"), ' +
+      'a[href*="/application"], button:has-text("Apply")'
+    )
+    .first();
+  try {
+    if (await applyButton.count()) {
+      await applyButton.click({ timeout: 5000 });
+      await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {});
+      return true;
+    }
+  } catch {
+    // fall through to the sub-path fallback
+  }
+
+  // Ashby fallback: the application form is a `/application` sub-path of the job.
+  if (/ashbyhq\.com/i.test(url)) {
+    const appUrl = url.replace(/\/+$/, "") + "/application";
+    if (appUrl !== url) {
+      await page.goto(appUrl, { waitUntil: "domcontentloaded", timeout: 30000 }).catch(() => {});
+      return true;
+    }
+  }
+  return false;
+}
+
 async function extractFormFields(page) {
   return page.evaluate(() => {
     function labelFor(el) {
@@ -418,8 +472,21 @@ async function fillForm(page, fields, draft) {
       continue;
     }
 
+    // Build a selector via attribute matching (`[id="…"]` / `[name="…"]`) rather
+    // than the `#id` shorthand, which is invalid CSS when the id starts with a
+    // digit or is a UUID (common on Ashby) and throws SyntaxError. Fields with
+    // neither a usable id nor name can't be targeted — flag them for manual entry
+    // instead of falling back to `[name=""]`, which matches nothing and hangs
+    // until the fill timeout.
+    const attrSel = (attr, v) => `[${attr}="${String(v).replace(/(["\\])/g, "\\$1")}"]`;
+    const selector = field.id ? attrSel("id", field.id) : (field.name ? attrSel("name", field.name) : null);
+    if (!selector) {
+      manual.push({ label: field.label, reason: "no id/name attribute to target field" });
+      continue;
+    }
+
     try {
-      const locator = field.id ? page.locator(`#${field.id.replace(/([:.[\],])/g, "\\$1")}`) : page.locator(`[name="${field.name}"]`).first();
+      const locator = page.locator(selector).first();
       if (field.tag === "select") {
         await locator.selectOption({ label: value }).catch(() => locator.selectOption(value));
       } else {

@@ -28,6 +28,20 @@ export function parseReport(reportPath) {
     role: summary.role || titleMatch?.[2]?.trim() || null,
     score: summary.score != null ? Number(summary.score) : (scoreMatch ? Number(scoreMatch[1]) : null),
     legitimacyTier: summary.legitimacy_tier || legitMatch?.[1]?.trim() || null,
-    url: urlMatch?.[1]?.trim() || null,
+    url: normalizeUrl(urlMatch?.[1]),
   };
+}
+
+// The cloud posts the report through Slack, which auto-links a bare URL as
+// `<https://…>` (and a labelled one as `<https://…|text>`). Strip that wrapper
+// so downstream `new URL()` calls (gates.atsFromUrl, applier liveness) get a
+// clean URL instead of throwing ERR_INVALID_URL.
+export function normalizeUrl(raw) {
+  if (!raw) return null;
+  let u = raw.trim();
+  const angle = u.match(/^<([^>]+)>$/);
+  if (angle) u = angle[1];
+  const pipe = u.indexOf("|");
+  if (pipe !== -1) u = u.slice(0, pipe);
+  return u.trim() || null;
 }
