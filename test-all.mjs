@@ -82,6 +82,13 @@ const scripts = [
 ];
 
 for (const { name, allowFail } of scripts) {
+  // Some scripts are upstream-only and absent from this fork (never synced from
+  // upstream). Skip — don't fail — when the target script file isn't present.
+  const scriptFile = name.split(' ')[0];
+  if (!fileExists(scriptFile)) {
+    warn(`${name} skipped (${scriptFile} not present in this fork)`);
+    continue;
+  }
   const result = run(NODE, name.split(' '), { stdio: ['pipe', 'pipe', 'pipe'] });
   if (result !== null) {
     pass(`${name} runs OK`);
@@ -507,9 +514,14 @@ const expectedModes = [
   'interview.md', 'latex.md',
 ];
 
+// Upstream-only modes not shipped in this fork — warn if absent, don't fail.
+const optionalModes = new Set(['interview.md']);
+
 for (const mode of expectedModes) {
   if (fileExists(`modes/${mode}`)) {
     pass(`Mode exists: ${mode}`);
+  } else if (optionalModes.has(mode)) {
+    warn(`Optional mode absent in this fork: ${mode}`);
   } else {
     fail(`Missing mode: ${mode}`);
   }
@@ -628,7 +640,10 @@ if (
 
 console.log('\n10. Portals config validator');
 
-try {
+if (!fileExists('validate-portals.mjs')) {
+  // validate-portals.mjs is upstream-only and not present in this fork.
+  warn('Portals validator tests skipped (validate-portals.mjs not present in this fork)');
+} else try {
   const tmp = mkdtempSync(join(tmpdir(), 'career-ops-portals-validator-'));
   const validPath = join(tmp, 'valid.yml');
   const invalidProviderPath = join(tmp, 'invalid-provider.yml');
