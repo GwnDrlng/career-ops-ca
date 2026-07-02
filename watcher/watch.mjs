@@ -102,6 +102,34 @@ async function processMessage(message) {
   // apply lanes. A non-zero exit is a refusal/failure, not a crash of the
   // watcher; log it and move on so the queue isn't blocked.
   if (APPLY_LANES.has(decision.lane)) {
+    // curated-docgen: generate a tailored CV + cover letter first (the step the
+    // tier is named for). Non-fatal — a budget halt or LLM failure is a clean
+    // refusal; log it, tell the approver docs are missing, and still hand off to
+    // the applier so the form is filled for manual review.
+    let curatedDocs = null;
+    if (decision.lane === "curated-docgen") {
+      const docResult = run("node", ["pipeline/curate-docs.mjs", "--report", path.relative(PROJECT_ROOT, reportPath)]);
+      let docDecision;
+      try {
+        docDecision = JSON.parse(docResult.stdout);
+      } catch {
+        docDecision = null;
+      }
+      if (docDecision?.ok) {
+        curatedDocs = docDecision;
+        console.log(`[watch] curate-docs: ${decision.company} / ${decision.role} -> ${docDecision.resumePath}, ${docDecision.coverLetterPath}`);
+      } else {
+        console.error(`[watch] curate-docs failed for ${reportPath}: ${docDecision?.reason || docResult.stderr || docResult.stdout}`);
+      }
+      await postMessage(
+        channels.jobPipeline,
+        curatedDocs
+          ? `*${decision.company}* — ${decision.role || "?"}: curated CV + cover letter generated.\n> ${curatedDocs.resumePath}\n> ${curatedDocs.coverLetterPath}`
+          : `*${decision.company}* — ${decision.role || "?"}: curated doc generation did not complete (${docDecision?.reason || "see watcher log"}) — proceeding to form-fill only.`,
+        { thread_ts: message.ts }
+      ).catch((err) => console.error("[watch] Slack curated-docs post failed (non-fatal):", err.message));
+    }
+
     const applyResult = run("node", ["pipeline/applier.mjs", "--report", path.relative(PROJECT_ROOT, reportPath)]);
     let applyDecision;
     try {
