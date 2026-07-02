@@ -16,22 +16,33 @@ interface RawPosting {
   description?: string;
 }
 
+// Per-portal request timeout. The whole scan runs inside ONE durable workflow
+// step, bounded by the Vercel function max duration (300s). A single slow or
+// hung portal must not consume that budget, so every fetch is capped and the
+// portals are scanned in parallel (see execute()). AbortSignal.timeout aborts
+// the request when it fires; the caller treats an abort like any other failure.
+const FETCH_TIMEOUT_MS = 15_000;
+
+function timedFetch(url: string): Promise<Response> {
+  return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+}
+
 async function fetchGreenhouse(apiUrl: string): Promise<RawPosting[]> {
-  const res = await fetch(`${apiUrl}?content=true`);
+  const res = await timedFetch(`${apiUrl}?content=true`);
   if (!res.ok) return [];
   const data = (await res.json()) as { jobs?: Array<{ title: string; absolute_url: string; content?: string }> };
   return (data.jobs || []).map((j) => ({ title: j.title, url: j.absolute_url, description: j.content }));
 }
 
 async function fetchAshby(apiUrl: string): Promise<RawPosting[]> {
-  const res = await fetch(apiUrl);
+  const res = await timedFetch(apiUrl);
   if (!res.ok) return [];
   const data = (await res.json()) as { jobs?: Array<{ title: string; jobUrl: string; descriptionPlain?: string }> };
   return (data.jobs || []).map((j) => ({ title: j.title, url: j.jobUrl, description: j.descriptionPlain }));
 }
 
 async function fetchLever(apiUrl: string): Promise<RawPosting[]> {
-  const res = await fetch(apiUrl);
+  const res = await timedFetch(apiUrl);
   if (!res.ok) return [];
   const data = (await res.json()) as Array<{ text: string; hostedUrl: string; descriptionPlain?: string }>;
   return (data || []).map((j) => ({ title: j.text, url: j.hostedUrl, description: j.descriptionPlain }));
@@ -50,21 +61,30 @@ export default defineTool({
   async execute() {
     const companies = trackedCompanies.filter((c) => c.enabled);
 
-    const newPostings: Array<{ company: string; title: string; url: string; description: string }> = [];
-
-    for (const company of companies) {
-      const ats = detectAts(company.api);
-      if (!ats) continue;
-
-      let postings: RawPosting[] = [];
-      try {
+    // Scan every portal in parallel. Sequentially awaiting ~45 portals summed
+    // their latencies into one step and a single hung endpoint could exhaust
+    // the whole 300s function budget (→ 504 → the workflow retries forever and
+    // nothing ever posts). Parallel + per-request timeout bounds this step to
+    // the slowest single portal (≤ FETCH_TIMEOUT_MS), not the sum.
+    const scanned = await Promise.allSettled(
+      companies.map(async (company) => {
+        const ats = detectAts(company.api);
+        if (!ats) return { company, postings: [] as RawPosting[] };
+        let postings: RawPosting[] = [];
         if (ats === "greenhouse") postings = await fetchGreenhouse(company.api);
         else if (ats === "ashby") postings = await fetchAshby(company.api);
         else if (ats === "lever") postings = await fetchLever(company.api);
-      } catch {
-        continue; // one company's API failing shouldn't fail the whole scan
-      }
+        return { company, postings };
+      }),
+    );
 
+    const newPostings: Array<{ company: string; title: string; url: string; description: string }> = [];
+
+    // The dedup checks below operate on an in-memory cache (loaded once), so
+    // this loop is fast and CPU-bound — no network in here.
+    for (const result of scanned) {
+      if (result.status !== "fulfilled") continue; // a failed/timed-out portal is skipped, not fatal
+      const { company, postings } = result.value;
       for (const posting of postings) {
         if (!titleMatches(posting.title)) continue;
         if (await hasSeenPosting(posting.url)) continue;

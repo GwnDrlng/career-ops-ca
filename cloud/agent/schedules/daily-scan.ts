@@ -13,7 +13,7 @@ export default defineSchedule({
         message:
           "Run the daily job scan and grading pipeline now, following your instructions.md state machine: " +
           "scan portals, grade each new posting, format each into a report, and post every graded report to this channel. " +
-          "If there are no new postings, finish without posting anything. " +
+          "If there are no new postings, post exactly one message `🔍 Scan run — no new postings found this run.` so the run always leaves a trace. " +
           "When you finish, post ONE closing summary line to this channel of the form: " +
           "`🧾 Scan run — {N} postings scanned, {M} graded, {K} reports posted · ~{tokens} tokens used this run`. " +
           "Report token usage only if you can observe it for this run; otherwise omit the token figure. " +

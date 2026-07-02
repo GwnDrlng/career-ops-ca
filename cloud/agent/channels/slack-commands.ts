@@ -70,7 +70,7 @@ export default defineChannel({
           message:
             "Run the daily job scan and grading pipeline now, following your instructions.md state machine: " +
             "scan portals, grade each new posting, format each into a report, and post every graded report to " +
-            "this channel. If there are no new postings, finish without posting anything. " +
+            "this channel. If there are no new postings, post exactly one message `🔍 Scan run — no new postings found this run.` so the run always leaves a trace. " +
             `On-demand run triggered from Slack /scan by <@${userId}>.`,
           target: { channelId: JOB_PIPELINE_CHANNEL_ID },
           auth: { authenticator: "app", principalId: "eve:app", principalType: "runtime", attributes: {} },

@@ -12,13 +12,25 @@ import { connectSlackCredentials } from "@vercel/connect/eve";
 // see agent/channels/slack.ts.
 const CONNECT_UID = "slack/career-ops";
 
+// The #job-pipeline channel ID. This is baked in (overridable via env) so the
+// MODEL never has to know, supply, or guess a channel ID — earlier runs either
+// guessed wrong (channel_not_found) or stalled asking the user for the ID.
+// Keep in sync with config/guardrails.yml slack.job_pipeline_channel_id.
+const JOB_PIPELINE_CHANNEL_ID = process.env.JOB_PIPELINE_CHANNEL_ID ?? "C0BF4H3V280";
+
 export default defineTool({
-  description: "Post a graded job report to the #job-pipeline Slack channel.",
+  description:
+    "Post a graded job report to the #job-pipeline Slack channel. Always posts to " +
+    "#job-pipeline automatically — do NOT ask for or supply a channel ID; omit channelId.",
   inputSchema: z.object({
-    channelId: z.string().describe("Slack channel ID, e.g. C0123ABC"),
+    channelId: z
+      .string()
+      .optional()
+      .describe("Optional Slack channel ID override. Leave unset to post to #job-pipeline (the default)."),
     text: z.string().describe("Full report Markdown to post"),
   }),
   async execute({ channelId, text }) {
+    const targetChannel = channelId ?? JOB_PIPELINE_CHANNEL_ID;
     const { botToken } = connectSlackCredentials(CONNECT_UID);
     if (!botToken) throw new Error("Slack credentials missing botToken");
     const token = typeof botToken === "function" ? await botToken() : botToken;
@@ -28,7 +40,7 @@ export default defineTool({
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({ channel: channelId, text }),
+      body: JSON.stringify({ channel: targetChannel, text }),
     });
     const body = (await res.json()) as { ok: boolean; ts?: string; error?: string };
     if (!body.ok) throw new Error(`Slack chat.postMessage failed: ${body.error}`);
