@@ -63,14 +63,19 @@ export default defineTool({
       "```",
     ].join("\n");
 
-    const markdown = `# Evaluation: ${input.company} — ${input.role}
+    // The report header block. Doubles as the compact Slack message (`slackText`):
+    // it's all the human reader needs in #job-pipeline — the full Block A-G detail
+    // rides along as the attached report file and lands in the on-prem report.
+    const header = `# Evaluation: ${input.company} — ${input.role}
 
 **Date:** ${input.date}
 **Score:** ${input.score.toFixed(1)}/5
 **Legitimacy:** ${input.legitimacyTier}
 **URL:** ${input.url}
 **PDF:** ❌
-**Source:** cloud (daily scan)
+**Source:** cloud (daily scan)`;
+
+    const markdown = `${header}
 
 ---
 
@@ -120,6 +125,6 @@ ${list(input.softGaps, "None detected.")}
 ${machineSummary}
 `;
 
-    return { markdown, jobId };
+    return { markdown, slackText: header, jobId };
   },
 });
