@@ -2258,6 +2258,63 @@ try {
     warn(`curated-question classifier not checked (applier import failed: ${e.message.split('\n')[0]})`);
   }
 
+  // 17c-ii. identity-field matcher + resolution (form_autofill PII, deterministic)
+  {
+    const { matchIdentityField, getIdentityValue, IDENTITY_FIELDS } = await imp('pipeline/identity.mjs');
+    const idOk =
+      matchIdentityField('Preferred name') === 'preferred_name' &&
+      matchIdentityField('Full name') === 'full_name' &&
+      matchIdentityField('Phone') === 'phone' &&
+      matchIdentityField('Where are you located?') === 'location' &&
+      matchIdentityField('First name') === 'first_name' &&
+      matchIdentityField('Why do you want to work here?') === null;
+    if (idOk) pass('identity matcher: name/phone/location resolve, essay does not');
+    else fail('identity matcher misclassified a field');
+    // first/last derive from full_name when profile is configured; tolerate an
+    // unconfigured env (getIdentityValue returns null) rather than hard-failing.
+    const first = getIdentityValue('first_name');
+    if (first === null || typeof first === 'string') pass('identity resolution returns a string or null (no throw)');
+    else fail('identity resolution returned an unexpected type');
+    if (IDENTITY_FIELDS && 'preferred_name' in IDENTITY_FIELDS && 'full_name' in IDENTITY_FIELDS) pass('IDENTITY_FIELDS exports the expected keys');
+    else fail('IDENTITY_FIELDS missing expected keys');
+  }
+
+  // 17c-iii. new sensitive vault categories (onsite / interview-travel / referral / background)
+  {
+    const { matchVaultKey, VAULT_FIELDS } = await imp('pipeline/vault.mjs');
+    const vOk =
+      matchVaultKey('Are you able to be in-office a few days a week?') === 'onsite_commitment' &&
+      matchVaultKey('Can you travel to our office for an in-person interview?') === 'interview_travel' &&
+      matchVaultKey('How did you hear about this job?') === 'referral_source' &&
+      matchVaultKey('Consent to a background check') === 'background_check';
+    if (vOk && 'onsite_commitment' in VAULT_FIELDS && 'interview_travel' in VAULT_FIELDS) {
+      pass('vault matcher: onsite/interview-travel/referral/background-check categories resolve');
+    } else {
+      fail('vault matcher missed a new sensitive category');
+    }
+  }
+
+  // 17c-iv. closestOption + pickReferralOption for custom widget dropdowns
+  try {
+    const { closestOption, pickReferralOption } = await imp('pipeline/applier.mjs');
+    const cOk =
+      closestOption(['LinkedIn', 'Company Website / Careers Page', 'Indeed', 'Other'], 'Company website') === 'Company Website / Careers Page' &&
+      closestOption(['Yes, I can', 'No'], 'Yes') === 'Yes, I can' &&
+      closestOption(['Red', 'Blue'], 'Company website') === null;
+    if (cOk) pass('closestOption: fuzzy select/radio match with a null when nothing plausibly fits');
+    else fail('closestOption returned an unexpected match');
+    // "Company website" -> the company's own careers-site option, even when the
+    // literal words don't appear (real Ashby options for the Jobber posting).
+    const jobberOpts = ['Jobber Careers Site', 'Jobber Employee', 'LinkedIn', 'Indeed', 'Other'];
+    const rOk =
+      pickReferralOption(jobberOpts, 'Company website', 'Jobber') === 'Jobber Careers Site' &&
+      pickReferralOption(jobberOpts, 'LinkedIn', 'Jobber') === 'LinkedIn';
+    if (rOk) pass('pickReferralOption: "Company website" maps to the company careers-site option');
+    else fail('pickReferralOption mismatched the referral option');
+  } catch (e) {
+    warn(`closestOption/pickReferralOption not checked (applier import failed: ${e.message.split('\n')[0]})`);
+  }
+
   // 17d. calibrate drift + strict threshold
   const cal = await imp('pipeline/calibrate.mjs');
   if (cal.computeDrift(4.2, 3.8) === 0.4 && cal.isDrift(0.4, 0.4) === false && cal.isDrift(0.41, 0.4) === true) {
