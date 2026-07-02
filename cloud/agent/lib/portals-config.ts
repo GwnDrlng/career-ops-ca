@@ -62,7 +62,6 @@ export const titleFilter = {
 };
 
 export const trackedCompanies: TrackedCompany[] = [
-  { name: "Arctic Wolf Networks", api: "https://boards-api.greenhouse.io/v1/boards/arcticwolfnetworks/jobs", enabled: true },
   { name: "Okta", api: "https://boards-api.greenhouse.io/v1/boards/okta/jobs", enabled: true },
   { name: "CrowdStrike", api: "https://boards-api.greenhouse.io/v1/boards/crowdstrike/jobs", enabled: true },
   { name: "SentinelOne", api: "https://boards-api.greenhouse.io/v1/boards/sentinelone/jobs", enabled: true },
@@ -89,4 +88,29 @@ export const trackedCompanies: TrackedCompany[] = [
   { name: "Airtable", api: "https://boards-api.greenhouse.io/v1/boards/airtable/jobs", enabled: true },
   { name: "Notion", api: "https://boards-api.greenhouse.io/v1/boards/notion/jobs", enabled: true },
   { name: "Anthropic", api: "https://boards-api.greenhouse.io/v1/boards/anthropic/jobs", enabled: true },
+
+  // Software for hardware / robotics / AV / industrial IoT (breadth: new verticals)
+  { name: "Samsara", api: "https://boards-api.greenhouse.io/v1/boards/samsara/jobs", enabled: true },
+  { name: "Cognite", api: "https://boards-api.greenhouse.io/v1/boards/cognite/jobs", enabled: true },
+  { name: "Verkada", api: "https://boards-api.greenhouse.io/v1/boards/verkada/jobs", enabled: true },
+  { name: "Nuro", api: "https://boards-api.greenhouse.io/v1/boards/nuro/jobs", enabled: true },
+  { name: "Waymo", api: "https://boards-api.greenhouse.io/v1/boards/waymo/jobs", enabled: true },
+  { name: "Waabi", api: "https://api.lever.co/v0/postings/waabi?mode=json", enabled: true },
+  { name: "Anduril", api: "https://boards-api.greenhouse.io/v1/boards/andurilindustries/jobs", enabled: true },
+  { name: "Flexport", api: "https://boards-api.greenhouse.io/v1/boards/flexport/jobs", enabled: true },
+
+  // Developer tools / data / infrastructure
+  { name: "Databricks", api: "https://boards-api.greenhouse.io/v1/boards/databricks/jobs", enabled: true },
+  { name: "MongoDB", api: "https://boards-api.greenhouse.io/v1/boards/mongodb/jobs", enabled: true },
+  { name: "GitLab", api: "https://boards-api.greenhouse.io/v1/boards/gitlab/jobs", enabled: true },
+  { name: "Vercel", api: "https://boards-api.greenhouse.io/v1/boards/vercel/jobs", enabled: true },
+  { name: "Grafana Labs", api: "https://boards-api.greenhouse.io/v1/boards/grafanalabs/jobs", enabled: true },
+  { name: "Amplitude", api: "https://boards-api.greenhouse.io/v1/boards/amplitude/jobs", enabled: true },
+
+  // New-vertical SaaS (commerce / HR / marketplace / spend)
+  { name: "Brex", api: "https://boards-api.greenhouse.io/v1/boards/brex/jobs", enabled: true },
+  { name: "Gusto", api: "https://boards-api.greenhouse.io/v1/boards/gusto/jobs", enabled: true },
+  { name: "Faire", api: "https://boards-api.greenhouse.io/v1/boards/faire/jobs", enabled: true },
+  { name: "Webflow", api: "https://boards-api.greenhouse.io/v1/boards/webflow/jobs", enabled: true },
+  { name: "Instacart", api: "https://boards-api.greenhouse.io/v1/boards/instacart/jobs", enabled: true },
 ];

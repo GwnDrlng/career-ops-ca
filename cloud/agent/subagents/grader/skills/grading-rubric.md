@@ -23,6 +23,8 @@ Grade against the candidate digest in `lib/candidate-digest.md`, which is de-ide
 
 Classify the role into one of the candidate's target archetypes (from the digest): B2B SaaS PM, Cybersecurity/FinTech PM, Strategy Leadership, or AI/ML Product Leader (secondary -- a positive signal, not a requirement). Note the archetype in the output.
 
+**Industry match is a light signal, not a heavy one.** Any software or software-for-hardware (industrial, IoT, robotics, devices, embedded) PM role is in scope. Classify it by product/leadership shape (e.g. a robotics-company Director of Product is still "B2B SaaS PM" or "Strategy Leadership" by shape), not by whether the vertical matches the candidate's prior domains. When the vertical is unfamiliar, score North Star alignment and Match-with-CV on transferable strengths (P&L, 0-to-1, portfolio, strategy, GTM); do NOT dock those dimensions for domain unfamiliarity alone. Prior-domain depth is a bonus when present, not a requirement -- a strong PM role in an unfamiliar-but-adjacent software vertical should land in the same score band as an equivalent cyber/fintech role.
+
 ## Posting legitimacy (separate from the 1-5 score)
 
 The cloud scanner has no browser/page-snapshot access -- it only has the JD text and metadata from the ATS API. Assess legitimacy from what's actually available:
