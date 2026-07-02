@@ -27,6 +27,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..");
 const CHECKPOINT_PATH = path.join(__dirname, ".checkpoint.json");
 
+// Lanes that should hand off to applier.mjs for form-fill + an approval request
+// in #job-approvals. Ignore/dropped/duplicate/paused/unrouted stop at routing.
+const APPLY_LANES = new Set(["generic-apply", "curated-docgen"]);
+
 function loadCheckpoint() {
   if (!fs.existsSync(CHECKPOINT_PATH)) return { lastTs: "0" };
   return JSON.parse(fs.readFileSync(CHECKPOINT_PATH, "utf8"));
@@ -89,6 +93,25 @@ async function processMessage(message) {
     `*${decision.company}* — ${decision.role || "?"} — score ${decision.score}/5 -> *${decision.lane}*${decision.reason ? `\n> ${decision.reason}` : ""}`,
     { thread_ts: message.ts }
   ).catch((err) => console.error("[watch] Slack confirmation post failed (non-fatal):", err.message));
+
+  // Hand off apply-eligible lanes to applier.mjs, which fills the form and posts
+  // the approval request (with a single-use token) to #job-approvals. applier
+  // re-runs its own preflight gates — shadow mode (apply_enabled: false), kill
+  // switch, legitimacy/blocklist/duplicate, and volume caps — and refuses
+  // cleanly if any fail, so this handoff is safe to run unconditionally for the
+  // apply lanes. A non-zero exit is a refusal/failure, not a crash of the
+  // watcher; log it and move on so the queue isn't blocked.
+  if (APPLY_LANES.has(decision.lane)) {
+    const applyResult = run("node", ["pipeline/applier.mjs", "--report", path.relative(PROJECT_ROOT, reportPath)]);
+    let applyDecision;
+    try {
+      applyDecision = JSON.parse(applyResult.stdout);
+    } catch {
+      console.error(`[watch] applier.mjs produced no parseable decision for ${reportPath}:`, applyResult.stderr || applyResult.stdout);
+      return;
+    }
+    console.log(`[watch] applier: ${decision.company} / ${decision.role} -> stage: ${applyDecision.stage}${applyDecision.reason ? ` (${applyDecision.reason})` : ""}`);
+  }
 }
 
 async function poll() {

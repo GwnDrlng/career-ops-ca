@@ -23,7 +23,7 @@ volume_caps:
 token_budget:
   rolling_5h_block_pct: 75   # halt new Opus work above this % of the rolling 5h block
   weekly_pct: 60              # halt new Opus work above this % of the weekly allowance
-  rolling_5h_block_limit_tokens: 200000   # ESTIMATE for Claude Pro's 5h block — no official token figure exists; tune from data/token-usage.tsv
+  rolling_5h_block_limit_tokens: 400000   # 2026-07-02: doubled from 200000 (gwen) to give the live apply pipeline more 5h headroom; still an ESTIMATE for Claude Pro's 5h block — tune from data/token-usage.tsv
   weekly_limit_tokens: 1000000            # ESTIMATE for Claude Pro's weekly window — tune from data/token-usage.tsv
   ledger: "data/token-usage.tsv"
 
@@ -49,7 +49,7 @@ auto_fill_scope:
   ats_allowlist: ["greenhouse", "ashby", "lever", "workable"]
   # any other host -> draft-only answers for manual copy-paste, no programmatic fill
 
-apply_enabled: false   # shadow mode by default; flip to true only after a 3-day dry run
+apply_enabled: true   # LIVE — applier fills real forms + posts approval requests to #job-approvals (2026-07-02, gwen; nothing auto-submits, each apply still needs a Slack approve token)
 
 schedule:
   # The cloud daily-scan cron (cloud/agent/schedules/daily-scan.ts is "0 12 * * *").
