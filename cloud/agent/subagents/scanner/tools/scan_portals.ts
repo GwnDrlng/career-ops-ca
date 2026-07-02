@@ -3,10 +3,11 @@ import { z } from "zod";
 import { hasSeenPosting, markSeenPosting, flushSeenPostings } from "../../../lib/dedup.js";
 import { titleFilter, trackedCompanies } from "../../../lib/portals-config.js";
 
-function detectAts(apiUrl: string): "greenhouse" | "ashby" | "lever" | null {
+function detectAts(apiUrl: string): "greenhouse" | "ashby" | "lever" | "workday" | null {
   if (apiUrl.includes("greenhouse.io")) return "greenhouse";
   if (apiUrl.includes("ashbyhq.com")) return "ashby";
   if (apiUrl.includes("api.lever.co")) return "lever";
+  if (apiUrl.includes("myworkdayjobs.com")) return "workday";
   return null;
 }
 
@@ -25,6 +26,15 @@ const FETCH_TIMEOUT_MS = 15_000;
 
 function timedFetch(url: string): Promise<Response> {
   return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+}
+
+function timedPost(url: string, body: unknown): Promise<Response> {
+  return fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
 }
 
 async function fetchGreenhouse(apiUrl: string): Promise<RawPosting[]> {
@@ -48,6 +58,40 @@ async function fetchLever(apiUrl: string): Promise<RawPosting[]> {
   return (data || []).map((j) => ({ title: j.text, url: j.hostedUrl, description: j.descriptionPlain }));
 }
 
+// Workday exposes a public CXS jobs endpoint (POST, paginated). `apiUrl` is the
+// full CXS URL, e.g. https://<tenant>.<inst>.myworkdayjobs.com/wday/cxs/<tenant>/<site>/jobs.
+// Job links are relative to the site (origin + /<site> + externalPath), so we
+// derive the site segment (the one right before "/jobs") from the same URL.
+const WORKDAY_PAGE_SIZE = 20;
+const WORKDAY_MAX_PAGES = 25; // ≤ 500 postings/site — bounds the per-portal step
+
+async function fetchWorkday(apiUrl: string): Promise<RawPosting[]> {
+  const m = apiUrl.match(/^(https:\/\/[^/]+)\/wday\/cxs\/[^/]+\/([^/]+)\/jobs/);
+  if (!m) return [];
+  const [, origin, site] = m;
+  const jobBase = `${origin}/${site}`;
+  const postings: RawPosting[] = [];
+  for (let page = 0; page < WORKDAY_MAX_PAGES; page++) {
+    const res = await timedPost(apiUrl, {
+      limit: WORKDAY_PAGE_SIZE,
+      offset: page * WORKDAY_PAGE_SIZE,
+      searchText: "",
+      appliedFacets: {},
+    });
+    if (!res.ok) break;
+    const data = (await res.json()) as {
+      jobPostings?: Array<{ title: string; externalPath: string }>;
+    };
+    const batch = data.jobPostings || [];
+    for (const j of batch) {
+      if (!j.externalPath) continue;
+      postings.push({ title: j.title, url: jobBase + j.externalPath });
+    }
+    if (batch.length < WORKDAY_PAGE_SIZE) break;
+  }
+  return postings;
+}
+
 function titleMatches(title: string): boolean {
   const t = title.toLowerCase();
   if (titleFilter.negative.some((n) => t.includes(n.toLowerCase()))) return false;
@@ -56,7 +100,7 @@ function titleMatches(title: string): boolean {
 }
 
 export default defineTool({
-  description: "Scan configured job portals (Greenhouse/Ashby/Lever direct APIs) and return newly-seen postings matching the title filter. Already-reported postings are excluded.",
+  description: "Scan configured job portals (Greenhouse/Ashby/Lever/Workday direct APIs) and return newly-seen postings matching the title filter. Already-reported postings are excluded.",
   inputSchema: z.object({}),
   async execute() {
     const companies = trackedCompanies.filter((c) => c.enabled);
@@ -74,6 +118,7 @@ export default defineTool({
         if (ats === "greenhouse") postings = await fetchGreenhouse(company.api);
         else if (ats === "ashby") postings = await fetchAshby(company.api);
         else if (ats === "lever") postings = await fetchLever(company.api);
+        else if (ats === "workday") postings = await fetchWorkday(company.api);
         return { company, postings };
       }),
     );

@@ -88,6 +88,18 @@ export const trackedCompanies: TrackedCompany[] = [
   { name: "Airtable", api: "https://boards-api.greenhouse.io/v1/boards/airtable/jobs", enabled: true },
   { name: "Notion", api: "https://boards-api.greenhouse.io/v1/boards/notion/jobs", enabled: true },
   { name: "Anthropic", api: "https://boards-api.greenhouse.io/v1/boards/anthropic/jobs", enabled: true },
+  { name: "Wiz", api: "https://boards-api.greenhouse.io/v1/boards/wizinc/jobs", enabled: true },
+
+  // Ashby posting-api boards
+  { name: "Supabase", api: "https://api.ashbyhq.com/posting-api/job-board/supabase?includeCompensation=true", enabled: true },
+  { name: "Jobber", api: "https://api.ashbyhq.com/posting-api/job-board/jobber?includeCompensation=true", enabled: true },
+  { name: "Linear", api: "https://api.ashbyhq.com/posting-api/job-board/linear?includeCompensation=true", enabled: true },
+
+  // Canadian banks / insurers on Workday (public CXS jobs endpoint)
+  { name: "BMO Financial Group", api: "https://bmo.wd3.myworkdayjobs.com/wday/cxs/bmo/External/jobs", enabled: true },
+  { name: "CIBC", api: "https://cibc.wd3.myworkdayjobs.com/wday/cxs/cibc/search/jobs", enabled: true },
+  { name: "National Bank of Canada", api: "https://absa.wd3.myworkdayjobs.com/wday/cxs/absa/NBC_Careers/jobs", enabled: true },
+  { name: "Sun Life Financial", api: "https://sunlife.wd3.myworkdayjobs.com/wday/cxs/sunlife/Experienced-Jobs/jobs", enabled: true },
 
   // Software for hardware / robotics / AV / industrial IoT (breadth: new verticals)
   { name: "Samsara", api: "https://boards-api.greenhouse.io/v1/boards/samsara/jobs", enabled: true },
