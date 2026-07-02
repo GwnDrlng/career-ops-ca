@@ -12,12 +12,24 @@ export function extractDocxText(docxPath) {
     encoding: "utf8",
     maxBuffer: 10 * 1024 * 1024,
   });
-  return xml
-    .replace(/<w:p[ >]/g, "\n$&")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
+  // Insert paragraph breaks, then strip XML tags. Strip in a loop until stable
+  // so a stray/overlapping tag can't reconstitute another (CodeQL
+  // js/incomplete-multi-character-sanitization).
+  let text = xml.replace(/<w:p[ >]/g, "\n$&");
+  let prev;
+  do {
+    prev = text;
+    text = text.replace(/<[^>]*>/g, "");
+  } while (text !== prev);
+  // Decode XML entities. &amp; MUST be decoded last: decoding it first would
+  // double-unescape sequences like "&amp;lt;" into "<" (CodeQL js/double-escaping).
+  return text
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
     .replace(/\n{2,}/g, "\n")
     .trim();
 }

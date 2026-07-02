@@ -4,10 +4,21 @@ import { hasSeenPosting, markSeenPosting, flushSeenPostings } from "../../../lib
 import { titleFilter, trackedCompanies } from "../../../lib/portals-config.js";
 
 function detectAts(apiUrl: string): "greenhouse" | "ashby" | "lever" | "workday" | null {
-  if (apiUrl.includes("greenhouse.io")) return "greenhouse";
-  if (apiUrl.includes("ashbyhq.com")) return "ashby";
-  if (apiUrl.includes("api.lever.co")) return "lever";
-  if (apiUrl.includes("myworkdayjobs.com")) return "workday";
+  // Match on the parsed hostname (exact host or a subdomain of the ATS domain),
+  // never a raw substring — otherwise a host like "greenhouse.io.attacker.com"
+  // or "evil-greenhouse.io" would be mis-detected (CodeQL
+  // js/incomplete-url-substring-sanitization).
+  let host: string;
+  try {
+    host = new URL(apiUrl).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+  const isHost = (domain: string) => host === domain || host.endsWith(`.${domain}`);
+  if (isHost("greenhouse.io")) return "greenhouse";
+  if (isHost("ashbyhq.com")) return "ashby";
+  if (isHost("lever.co")) return "lever";
+  if (isHost("myworkdayjobs.com")) return "workday";
   return null;
 }
 
