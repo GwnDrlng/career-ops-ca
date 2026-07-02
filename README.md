@@ -1,358 +1,184 @@
 # Career-Ops
 
-[English](README.md) | [Español](README.es.md) | [Français](README.fr.md) | [Português (Brasil)](README.pt-BR.md) | [한국어](README.ko-KR.md) | [日本語](README.ja.md) | [简体中文](README.cn.md) | [繁體中文](README.zh-TW.md) | [Українська](README.ua.md) | [Русский](README.ru.md) | [Polski](README.pl.md) | [العربية](README.ar.md)
+**An agentic job-search pipeline: a cloud agent discovers and grades roles every day, an on-prem pipeline drafts tailored applications, and a human approves every submission from Slack.**
 
-<p align="center">
-  <a href="https://x.com/santifer"><img src="docs/hero-banner.jpg" alt="Career-Ops Multi-Agent Job Search System" width="800"></a>
-</p>
+Job boards use AI to filter candidates. This is the other side of that table — AI that helps a *candidate* choose companies, do it with quality instead of spray-and-pray, and keep a person in control of every decision that matters.
 
-<p align="center">
-  <em>I spent months applying to jobs the hard way. So I engineered the system I wish I had.</em><br>
-  Companies use AI to filter candidates. <strong>I just gave candidates AI to <em>choose</em> companies.</strong><br>
-  <em>Now it's open source.</em>
-</p>
+It is built as a real distributed system: a scheduled **cloud orchestrator** (Vercel `eve`, Claude via the AI Gateway) that scans portals and grades each posting, and an **on-prem pipeline** (Node.js) that turns high-fit reports into tailored CVs and cover letters — every one passing an LLM-as-judge quality gate and a no-fabrication check before a human approves it in Slack. Nothing is ever auto-submitted.
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/25195" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/25195" alt="santifer%2Fcareer-ops | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-</p>
-
-<p align="center">
-  <a href="https://www.producthunt.com/products/santifer-io?utm_source=badge-featured&utm_medium=badge" target="_blank" rel="noopener noreferrer"><img src="docs/press/producthunt.svg" alt="Career-Ops on Claude | Product Hunt" style="width: 206px; height: 54px; vertical-align: middle;" width="206" height="54"/></a>
-</p>
-
-<p align="center"><sub>FEATURED IN</sub></p>
-
-<p align="center">
-  <a href="https://wired.com.gr/article/to-ai-ergaleio-pou-fernei-epanastasi-ston-tropo-pou-psachnoume-douleia/" rel="noopener noreferrer nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/press/wired-dark.svg"><img src="docs/press/wired.svg" alt="WIRED" height="32"></picture></a>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://www.businessinsider.com/how-i-built-tool-filter-job-listings-landed-head-ai-2026-4" rel="noopener noreferrer nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/press/business-insider-dark.svg"><img src="docs/press/business-insider.svg" alt="Business Insider" height="32"></picture></a>
-</p>
+> **This is a filter, not a firehose.** The system exists to surface the few roles worth real effort out of hundreds, and it recommends *against* applying to anything scoring below 4.0/5. Your time and the recruiter's time are both worth protecting.
 
 ---
 
-<p align="center">
-  <img src="docs/demo.gif" alt="Career-Ops Demo" width="800">
-</p>
+## How it works, from a user's point of view
 
-<p align="center"><strong>740+ job listings evaluated · 100+ personalized CVs · 1 dream role landed</strong></p>
+The whole thing is designed around one loop: **discover → grade → draft → *you* approve → learn.** You interact with it mostly through Slack and a paste-a-URL command; the machinery stays out of the way.
 
-<p align="center">
-  <a href="https://warpchart.dev/hq">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://warpchart.dev/api/chart?theme=dark&v=3">
-      <img alt="Live star telemetry of santifer/career-ops" src="https://warpchart.dev/api/chart?theme=light&v=3" loading="lazy">
-    </picture>
-  </a>
-</p>
+| Phase | What happens | You do |
+|---|---|---|
+| **1 · Setup** | Add your CV and a short profile (roles, comp, location, deal-breakers). The system reads these at evaluation time — they are its source of truth, never hard-coded. | ~30 min, once |
+| **2 · Discover** | A cloud agent scans your portals every day at noon (or on demand via `/scan` in Slack). Zero-token discovery — it hits Greenhouse/Ashby/Lever APIs directly. | Nothing |
+| **3 · Grade** | Each new posting is graded A–G (fit, comp, growth, legitimacy…) into a written report and scored `/5`, then routed by score into a lane. | Read the report |
+| **4 · Draft** | High-fit roles get a tailored CV + cover letter, auto-checked for quality and grounded against your real experience. Forms are pre-filled from a secured vault; tricky questions are flagged for you. | Review |
+| **5 · Approve** | The filled application is posted to Slack with a single-use, 12-hour token. **It submits only after you reply to approve** — and even then only if you've turned live-apply on. | One tap |
+| **6 · Learn** | Every decision (apply / skip / outcome) feeds pattern analysis so the next cycle targets better. | Occasionally |
 
-<p align="center">
-  <a href="https://discord.gg/8pRpHETxa4"><img src="https://img.shields.io/badge/Join_the_community-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-</p>
+📊 **The full visual walkthrough is in [`user-journey.html`](user-journey.html)** — open it in a browser for the phase-by-phase experience, feedback loops, and timeline.
 
-<p align="center">
-  <a href="https://github.com/santifer/career-ops/releases/latest"><img src="https://img.shields.io/npm/v/%40santifer%2Fcareer-ops?style=for-the-badge&labelColor=2b3137&color=2ea44f&label=release" alt="Latest release"></a>
-</p>
+Prefer to drive it by hand? Paste any job URL or description and the pipeline evaluates it on the spot.
 
-<p align="center">
-  <sub>Built with</sub><br>
-  <img src="https://img.shields.io/badge/Claude_Code-000?style=flat&logo=anthropic&logoColor=white" alt="Claude Code">
-  <img src="https://img.shields.io/badge/OpenCode-111827?style=flat&logo=terminal&logoColor=white" alt="OpenCode">
-  <img src="https://img.shields.io/badge/Gemini_CLI-4285F4?style=flat&logo=google&logoColor=white" alt="Gemini CLI">
-  <img src="https://img.shields.io/badge/Codex-412991?style=flat&logo=openai&logoColor=white" alt="Codex">
-  <img src="https://img.shields.io/badge/Qwen-615CED?style=flat" alt="Qwen">
-  <img src="https://img.shields.io/badge/GitHub_Copilot-000?style=flat&logo=githubcopilot&logoColor=white" alt="GitHub Copilot">
-  <br>
-  <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" alt="Node.js">
-  <img src="https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white" alt="Go">
-  <img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright">
-  <img src="https://img.shields.io/badge/Bubble_Tea-FF75B5?style=flat&logo=go&logoColor=white" alt="Bubble Tea">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT">
-  <a href="TRADEMARK.md"><img src="https://img.shields.io/badge/Trademark-Policy-blue.svg" alt="Trademark Policy"></a>
-</p>
+---
 
-## What Is This
+## Architecture
 
-Career-Ops ([career-ops.org](https://career-ops.org), also known as **careerops**) turns any AI coding CLI into a full job search command center. Instead of manually tracking applications in a spreadsheet, you get an AI-powered pipeline that:
+Two planes, one contract. The cloud does **discovery + grading** unattended; on-prem does everything that touches your identity, your credentials, and the submit button. The only thing that crosses the boundary is a **report** — delivered over Slack.
 
-- **Evaluates offers** with a structured A-F scoring system (10 weighted dimensions)
-- **Generates tailored PDFs** -- ATS-optimized CVs customized per job description
-- **Scans portals** automatically (Greenhouse, Ashby, Lever, company pages)
-- **Processes in batch** -- evaluate 10+ offers in parallel with sub-agents
-- **Tracks everything** in a single source of truth with integrity checks
+```
+                    ┌──────────────────────── SLACK ────────────────────────┐
+                    │   #job-pipeline: graded reports · flags · approvals    │
+                    └─────▲──────────────────────────────────────▲──────────┘
+         report / flag    │                                      │  fill summary + approve
+                          │                                      │
+   ┌──────────────────────┴──────────────┐   ┌──────────────────┴───────────────────────┐
+   │  CLOUD — Vercel eve (Claude/Gateway) │   │  ON-PREM — watcher + career-ops pipeline  │
+   │                                      │   │                                           │
+   │  daily cron ─► ORCHESTRATOR          │   │  watch.mjs (polls Slack)                  │
+   │                 ├─ Scanner subagent  │   │      │ new graded report                  │
+   │                 │   portal APIs,     │   │      ▼                                     │
+   │                 │   dedup            │   │  route-tier.mjs  (reads score /5)          │
+   │                 └─ Grader subagent   │   │    ├─ ≤2.0   → SKIP (tracked, not applied) │
+   │                     rubric → score,  │   │    ├─ 2.1–3.6 → generic CV → applier       │
+   │                     legitimacy tier, │   │    └─ ≥3.7   → curated CV+CL (Opus)         │
+   │                     writes report    │   │                    │                       │
+   │                                      │   │                    ▼                       │
+   │  (no PII · no submit authority ·     │   │        judge (Opus) ≥90%? ── no ─┐         │
+   │   least-privilege read+format only)  │   │            │ yes                 │ revise  │
+   └──────────────────────────────────────┘   │            ▼              (loop ≤2×)       │
+                                               │   grounding-check (no-fabrication gate)   │
+                                               │            │                              │
+                                               │            ▼                              │
+                                               │   applier fills form → Slack approval ────┤
+                                               │   token-budget · kill-switch · audit log  │
+                                               └───────────────────────────────────────────┘
+```
 
-> **Important: This is NOT a spray-and-pray tool.** Career-ops is a filter -- it helps you find the few offers worth your time out of hundreds. The system strongly recommends against applying to anything scoring below 4.0/5. Your time is valuable, and so is the recruiter's. Always review before submitting.
+**Boundary contract:** the cloud's only durable output is the report (Markdown + a `## Machine Summary` YAML block). On-prem is the system of record for the tracker, documents, credentials, and submissions — all flat files, all local.
 
-Career-ops is agentic: Claude Code navigates career pages with Playwright, evaluates fit by reasoning about your CV vs the job description (not keyword matching), and adapts your resume per listing.
+### Orchestration
+- **Cloud orchestrator + subagents** (Vercel `eve`): a scheduled daily agent owns a per-job state machine and delegates to two specialized subagents — a **Scanner** (Haiku, cheap, tool-only portal fetches) and a **Grader** (Sonnet, applies the scoring rubric). Subagents don't inherit parent tools, so each carries only the least privilege it needs.
+- **On-prem tier router** (`pipeline/route-tier.mjs`): parses the report's machine summary, then dispatches one of three lanes by score. Every lane writes a tracker row through a merge step — it never edits the tracker directly, so concurrent lanes can't corrupt state.
+- **Triggers:** daily Vercel Cron, an on-demand `/scan` Slack slash command, and a terminal `scan-now.mjs` — all hitting the same pipeline.
 
-> **Heads up: the first evaluations won't be great.** The system doesn't know you yet. Feed it context -- your CV, your career story, your proof points, your preferences, what you're good at, what you want to avoid. The more you nurture it, the better it gets. Think of it as onboarding a new recruiter: the first week they need to learn about you, then they become invaluable.
+### Evals & quality gates
+- **LLM-as-judge** (`pipeline/judge.mjs`, Opus 4.8): every generated CV/cover letter is blind-scored 0–100% on JD-keyword coverage, factual grounding, tone, and structure. Below 90% triggers a **revise-and-re-judge loop, up to two retries**; a third failure flags a human instead of shipping something mediocre.
+- **No-fabrication gate** (`pipeline/grounding-check.mjs`): a hard pass/block check that traces every skill, metric, and claim in the generated documents back to your real CV. Ungrounded content is *blocked*, not merely scored down.
+- **Calibration spot-check** (`pipeline/calibrate.mjs`): periodically re-grades a cloud-graded job on-prem with the same rubric and flags drift beyond a threshold — a cheap way to catch the cloud grader silently miscalibrating.
+- **Prompt & rubric versioning** (`pipeline/prompt-version.mjs`): every recorded score is stamped with the exact prompt version + content hash that produced it, and a drift detector fires if a prompt changes without a version bump. Scores stay traceable and comparable over time.
 
-Built by someone who used it to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. [Read the full case study](https://santifer.io/career-ops-system).
+### Guardrails & governance
+Every threshold lives in one auditable config (`config/guardrails.yml`) — changing a cap is a reviewable diff, never a code edit.
+- **Cost governance** (`pipeline/token-budget.mjs`): four ceilings (rolling 5h, weekly, monthly-spend, and a hard per-application cap) gate *before* each Opus call and record *after* it, through a single chokepoint. When a cap trips, the run halts and offers a Slack **override** (bounded, approver-bound) or **defer-to-next-cycle** — a stop, not a dead end.
+- **Volume caps:** ≤8 applications/day, ≤2 per company/week, enforced in the router so a routing bug can't blast forms.
+- **Change control:** a config-change logger, an accepted-risk register ([`RISK_REGISTER.md`](RISK_REGISTER.md)) with explicit revisit triggers, and a full re-architecture design doc ([`RE_ARCHITECTURE.md`](RE_ARCHITECTURE.md)).
+- **Fail-open vs fail-closed, on purpose:** the budget gate and kill switch fail *closed* (unclear state must stop spend/work); the audit log fails *open* (observability must never break the thing it observes).
 
-## Features
+### Security
+- **Least-privilege boundary:** the cloud holds **no PII and no submit credentials.** The grader sees a de-identified candidate digest, never your real CV. Slack tokens, portal logins, and sensitive answers live only in the on-prem **macOS Keychain**.
+- **Untrusted-input handling:** job-posting text is treated as data, not instructions, at every hop. `pipeline/sanitize-jd.mjs` strips invisible/bidi/control characters and neutralizes prompt-injection patterns ("ignore previous instructions", "score 5.0", "submit now") before any model call.
+- **Secured answer vault** (`pipeline/vault.mjs`): work-authorization, salary, and EEO fields are filled *only* from pre-approved Keychain entries — a value is never invented. Any field without a vault entry is flagged for manual entry.
 
-| Feature                  | Description                                                                                                                              |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Auto-Pipeline**        | Paste a URL, get a full evaluation + PDF + tracker entry                                                                                 |
-| **6-Block Evaluation**   | Role summary, CV match, level strategy, comp research, personalization, interview prep (STAR+R) -- plus a Block G posting-legitimacy check that flags scams and ghost jobs |
-| **Interview Story Bank** | Accumulates STAR+Reflection stories across evaluations -- 5-10 master stories that answer any behavioral question                        |
-| **Negotiation Scripts**  | Salary negotiation frameworks, geographic discount pushback, competing offer leverage                                                    |
-| **ATS PDF Generation**   | Keyword-injected CVs with Space Grotesk + DM Sans design                                                                                 |
-| **Cover Letter Generator** | Research-backed cover letters with keyword mirroring, four interactive angle prompts (why/problems/approach/tone), draft-in-chat approval gate, and A4 PDF via ReportLab. Auto-drafts on every evaluation; complete and generate on demand via `/career-ops cover` |
-| **Portal Scanner**       | 45+ companies pre-configured (Anthropic, OpenAI, ElevenLabs, Retool, n8n...) + custom queries across Ashby, Greenhouse, Lever, Wellfound |
-| **Batch Processing**     | Parallel evaluation with `claude -p` workers                                                                                             |
-| **Dashboard TUI**        | Terminal UI to browse, filter, and sort your pipeline                                                                                    |
-| **Human-in-the-Loop**    | AI evaluates and recommends, you decide and act. The system never submits an application -- you always have the final call               |
-| **Pipeline Integrity**   | Automated merge, dedup, status normalization, health checks                                                                              |
+### Human-in-the-loop & observability
+- **Nothing auto-submits.** The applier fills forms, screenshots them, and stops at a Slack approval gate. Submission requires a verified approver replying with a **single-use, 12-hour-expiring token** — and live-apply is **off by default** (shadow mode), so the pipeline is safe to run before you ever flip it on.
+- **Kill switch** (`pipeline/kill-switch.mjs`): `pause`/`resume` from Slack, plus auto-pause after N consecutive failures.
+- **Audit log** (`pipeline/audit.mjs`): one append-only row per accountable event — every route, gate, approval, pause, and budget halt — so "why did nothing get drafted for job 231?" has a one-line answer.
+- **Spend summaries:** each run posts a 🧾 token + notional-cost summary to Slack.
 
-## Quick Start
+> Want the full end-to-end reasoning for one guardrail? [`RE_ARCHITECTURE.md`](RE_ARCHITECTURE.md) walks the Opus budget gate from problem to design to honest limitations, with sequence diagrams.
 
-**Fastest way — one command:**
+---
+
+## Quick start
 
 ```bash
-npx @santifer/career-ops init
+git clone https://github.com/GwnDrlng/career-ops-ca.git
+cd career-ops-ca && npm install
+npx playwright install chromium   # only needed for PDF/form automation
+claude                            # or your AI CLI of choice
 ```
 
-> 💡 `npx` ships with [Node.js](https://nodejs.org) — it runs the installer once,
-> without installing anything globally. No Node yet? Install it first.
-> (Already using a Claude Code / Gemini / Codex CLI? Then you already have it.)
+On first launch the system checks what's set up (`node doctor.mjs --json`) and, if anything's missing, walks you through it by chatting — your CV, a short profile, and your target roles. Nothing to hand-edit.
 
-This clones the latest release into `./career-ops` and installs dependencies. Then:
+The core skill is CLI-agnostic (Claude Code, Gemini, Codex, OpenCode, Qwen). The **cloud agent** and **on-prem pipeline** are the additions that make it a scheduled, human-gated, production-style system rather than a one-off assistant — see [`cloud/`](cloud/), [`pipeline/`](pipeline/), and [`watcher/`](watcher/).
 
-```bash
-cd career-ops
-claude   # or gemini / codex / qwen / opencode — open your AI CLI here
-```
-
-**On first launch, career-ops walks you through setup — your CV, profile and target roles — just by chatting. Nothing to edit by hand.**
-
-<details>
-<summary><b>Prefer to set it up manually? (git clone)</b></summary>
-
-```bash
-git clone https://github.com/santifer/career-ops.git
-cd career-ops && npm install
-npx playwright install chromium   # only needed for PDF generation
-claude   # open your AI CLI — it onboards you on first launch
-```
-
-</details>
-
-> **The system is designed to be customized by Claude itself.** Modes, archetypes, scoring weights, negotiation scripts -- just ask Claude to change them. It reads the same files it uses, so it knows exactly what to edit.
-
-See [docs/SETUP.md](docs/SETUP.md) for the full setup guide.
-
-## Gemini CLI Integration
-
-Career-ops supports [Gemini CLI](https://github.com/google-gemini/gemini-cli) natively, the same way it supports Claude Code and OpenCode. All 15 slash commands are available, using the same `modes/*.md` evaluation logic.
-
-### Option A: Native Gemini CLI (Recommended)
-
-```bash
-# 1. Install Gemini CLI (requires Node.js 20+)
-npm install -g @google/gemini-cli
-# or: npx @google/gemini-cli --version
-
-# 2. Run in the career-ops directory — on first launch, sign in with your
-#    Google account (free) to authenticate
-cd career-ops
-gemini
-
-# 3. Use slash commands just like Claude Code
-/career-ops "Senior AI Engineer at Anthropic..."
-/career-ops-evaluate --file ./jds/openai.txt
-/career-ops-scan
-/career-ops-pdf
-/career-ops-tracker
-```
-
-The `GEMINI.md` file is auto-loaded as context. All 15 commands are defined in `.gemini/commands/*.toml`.
-
-### Option B: Standalone API Script (No CLI install needed)
-
-```bash
-# 1. Get a free API key at https://aistudio.google.com/apikey
-cp .env.example .env
-# Edit .env, set GEMINI_API_KEY=your_key_here
-
-# 2. Install dependencies
-npm install
-
-# 3. Evaluate a job description
-node gemini-eval.mjs "We are looking for a Senior AI Engineer..."
-node gemini-eval.mjs --file ./jds/my-job.txt
-npm run gemini:eval -- "JD text here"
-```
-
-> **Free tier:** Both options work without billing. Native CLI uses Google OAuth; the API script uses `gemini-2.5-flash` (15 RPM, 1M tokens/day free).
-
-## Usage
-
-Career-ops is a single slash command with multiple modes:
+### Everyday use
 
 ```
-/career-ops                → Show all available commands
-/career-ops {paste a JD}   → Full auto-pipeline (evaluate + PDF + tracker)
-/career-ops scan           → Scan portals for new offers
-/career-ops pdf            → Generate ATS-optimized CV
-/career-ops cover          → Cover letter generator (paste JD or /career-ops cover {slug})
-/career-ops batch          → Batch evaluate multiple offers
-/career-ops tracker        → View application status
-/career-ops apply          → Fill application forms with AI
-/career-ops pipeline       → Process pending URLs
-/career-ops contacto       → LinkedIn outreach message
-/career-ops deep           → Deep company research
-/career-ops training       → Evaluate a course/cert
-/career-ops project        → Evaluate a portfolio project
+paste a job URL / JD   → full auto-pipeline (evaluate → report → tracker)
+/career-ops scan       → scan portals for new roles
+/scan  (in Slack)      → trigger a cloud scan on demand
+/career-ops pdf        → generate an ATS-optimized CV
+/career-ops cover      → draft a tailored cover letter
+/career-ops tracker    → application-status overview
+/career-ops apply      → fill an application form (human-gated)
 ```
 
-Or just paste a job URL or description directly -- career-ops auto-detects it and runs the full pipeline.
+---
 
-## How It Works
-
-```
-You paste a job URL or description
-        │
-        ▼
-┌──────────────────┐
-│  Archetype       │  Classifies: LLMOps / Agentic / PM / SA / FDE / Transformation
-│  Detection       │
-└────────┬─────────┘
-         │
-┌────────▼─────────┐
-│  A-F Evaluation  │  Match, gaps, comp research, STAR stories
-│  (reads cv.md)   │
-└────────┬─────────┘
-         │
-    ┌────┼────┐
-    ▼    ▼    ▼
- Report  PDF  Tracker
-  .md   .pdf   .tsv
-```
-
-## Pre-configured Portals
-
-The scanner comes with **45+ companies** ready to scan and **19 search queries** across major job boards. Copy `templates/portals.example.yml` to `portals.yml` and add your own:
-
-**AI Labs:** Anthropic, OpenAI, Mistral, Cohere, LangChain, Pinecone
-**Voice AI:** ElevenLabs, PolyAI, Parloa, Hume AI, Deepgram, Vapi, Bland AI
-**AI Platforms:** Retool, Airtable, Vercel, Temporal, Glean, Arize AI
-**Contact Center:** Ada, LivePerson, Sierra, Decagon, Talkdesk, Genesys
-**Enterprise:** Salesforce, Twilio, Gong, Dialpad
-**LLMOps:** Langfuse, Weights & Biases, Lindy, Cognigy, Speechmatics
-**Automation:** n8n, Zapier, Make.com
-**European:** Factorial, Attio, Tinybird, Clarity AI, Travelperk
-
-**Job boards searched:** Ashby, Greenhouse, Lever, Wellfound, Workable, RemoteFront
-
-By default `node scan.mjs` (a.k.a. `npm run scan`) trusts what each ATS feed returns. Some companies leave stale postings in their public API even after the role is closed, so those expired entries can leak into `pipeline.md`. Pass `--verify` to launch Playwright after the API pass and drop expired postings before they hit the pipeline:
-
-```bash
-node scan.mjs --verify          # zero-token discovery + Playwright liveness check
-```
-
-The verification is sequential and only runs against new offers (after dedup), so the cost stays bounded.
-
-## Dashboard TUI
-
-The built-in terminal dashboard lets you browse your pipeline visually:
-
-```bash
-cd dashboard
-go build -o career-dashboard .
-./career-dashboard --path ..
-```
-
-Features: 6 filter tabs, 4 sort modes, grouped/flat view, lazy-loaded previews, inline status changes.
-
-## Project Structure
+## Project structure
 
 ```
-career-ops/
-├── AGENTS.md                    # Canonical agent instructions (all CLIs)
-├── CLAUDE.md                    # Claude Code wrapper (imports AGENTS.md)
-├── cv.md                        # Your CV (create this)
-├── article-digest.md            # Your proof points (optional)
-├── config/
-│   └── profile.example.yml      # Template for your profile
-├── modes/                       # 15 skill modes
-│   ├── _shared.md               # Shared context (customize this)
-│   ├── oferta.md                # Single evaluation
-│   ├── pdf.md                   # PDF generation
-│   ├── cover.md                 # Cover letter generation
-│   ├── scan.md                  # Portal scanner
-│   ├── batch.md                 # Batch processing
-│   └── ...
-├── templates/
-│   ├── cv-template.html         # ATS-optimized CV template
-│   ├── portals.example.yml      # Scanner config template
-│   └── states.yml               # Canonical statuses
-├── batch/
-│   ├── batch-prompt.md          # Self-contained worker prompt
-│   └── batch-runner.sh          # Orchestrator script
-├── dashboard/                   # Go TUI pipeline viewer
-├── data/                        # Your tracking data (gitignored)
-├── reports/                     # Evaluation reports (gitignored)
-├── output/                      # Generated PDFs (gitignored)
-├── fonts/                       # Space Grotesk + DM Sans
-├── docs/                        # Setup, customization, architecture
-└── examples/                    # Sample CV, report, proof points
+career-ops-ca/
+├── cloud/                  # Vercel eve agent — orchestrator + scanner/grader subagents (TypeScript)
+│   └── agent/
+│       ├── agent.ts        #   root config (Claude via AI Gateway)
+│       ├── schedules/      #   daily-scan cron
+│       ├── subagents/      #   scanner (Haiku) + grader (Sonnet, rubric)
+│       ├── channels/       #   Slack via Vercel Connect (no manual bot token)
+│       └── tools/          #   portal fetches, report formatting, post-to-Slack
+├── watcher/                # on-prem daemons (launchd)
+│   ├── watch.mjs           #   polls Slack for new graded reports
+│   └── approval-consumer.mjs  # handles approve / pause / resume / budget-override
+├── pipeline/               # on-prem lanes, gates, and guardrails (21 modules)
+│   ├── route-tier.mjs      #   score → lane dispatch
+│   ├── applier.mjs         #   Playwright form-fill, stops at approval gate
+│   ├── judge.mjs           #   LLM-as-judge quality gate (Opus)
+│   ├── grounding-check.mjs #   no-fabrication gate
+│   ├── token-budget.mjs    #   four cost/usage ceilings
+│   ├── kill-switch.mjs · approval.mjs · vault.mjs · sanitize-jd.mjs
+│   ├── audit.mjs · calibrate.mjs · config-guard.mjs · prompt-version.mjs · …
+├── config/                 # guardrails.yml, blocklist.yml, prompt-versions.yml, profile.yml
+├── modes/                  # skill "mode" prompts (evaluate, apply, cover, scan, …)
+├── templates/              # ATS CV template, scanner config, canonical states
+├── data/                   # tracker, ledgers, audit log (gitignored)
+├── reports/                # evaluation reports (gitignored)
+├── user-journey.html       # visual, phase-by-phase user experience
+├── RE_ARCHITECTURE.md      # full design doc for the cloud + on-prem re-architecture
+└── RISK_REGISTER.md        # accepted risks with revisit triggers
 ```
 
-## Tech Stack
+## Tech stack
 
-![Claude Code](https://img.shields.io/badge/Claude_Code-000?style=flat&logo=anthropic&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel_eve-000?style=flat&logo=vercel&logoColor=white)
+![Claude](https://img.shields.io/badge/Claude-000?style=flat&logo=anthropic&logoColor=white)
 ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white)
-![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)
-![Bubble Tea](https://img.shields.io/badge/Bubble_Tea-FF75B5?style=flat&logo=go&logoColor=white)
+![Slack](https://img.shields.io/badge/Slack-4A154B?style=flat&logo=slack&logoColor=white)
 
-- **Agent**: Claude Code with custom skills and modes
-- **PDF**: Playwright/Puppeteer + HTML template
-- **Cover letters**: HTML template + Playwright (A4 PDF, same pipeline as CVs)
-- **Scanner**: Playwright + Greenhouse API + WebSearch
-- **Dashboard**: Go + Bubble Tea + Lipgloss (Catppuccin Mocha theme)
-- **Data**: Markdown tables + YAML config + TSV batch files
+- **Cloud:** Vercel `eve` (filesystem-first TS agent framework) · Cron schedules · subagents · Slack via Vercel Connect · Claude routed through the Vercel AI Gateway
+- **On-prem:** Node.js (`.mjs`) pipeline · Opus 4.8 for the highest-stakes judging/drafting · Playwright for form automation · macOS Keychain for secrets · launchd for the daemons
+- **Data:** flat files — Markdown tracker + reports, YAML config, TSV ledgers. No database; state is auditable in `git`/plain text.
 
-## Also Open Source
+---
 
-- **[cv-santiago](https://github.com/santifer/cv-santiago)** -- The portfolio website (santifer.io) with AI chatbot, LLMOps dashboard, and case studies. If you need a portfolio to showcase alongside your job search, fork it and make it yours.
+## Ethics & safety
 
-## About the Author
+- **Quality over quantity.** A well-targeted application to 5 companies beats a generic blast to 50. The system discourages low-fit applications and never spams.
+- **You have the final call.** The AI evaluates, drafts, and fills — it never submits. Always review before approving.
+- **Your data stays yours.** CV, contacts, and credentials never leave your machine; the cloud plane runs on a de-identified digest. See [`LEGAL_DISCLAIMER.md`](LEGAL_DISCLAIMER.md).
 
-I'm Santiago -- Head of Applied AI, former founder (built and sold a business that still runs with my name on it). I built career-ops to manage my own job search. It worked: I used it to land my current role.
+## Credits & license
 
-My portfolio and other open source projects → [santifer.io](https://santifer.io)
+Built on the open-source [`career-ops`](https://github.com/santifer/career-ops) skill by [santifer](https://santifer.io) — the base evaluation modes, scoring rubric, and CLI skill. This fork adds the cloud + on-prem agentic re-architecture (scheduled orchestration, LLM-as-judge quality gates, cost/safety guardrails, Slack human-in-the-loop, and observability) documented in [`RE_ARCHITECTURE.md`](RE_ARCHITECTURE.md).
 
-## Disclaimer
-
-**career-ops is a local, open-source tool, NOT a hosted service.** By using this software, you acknowledge:
-
-1. **You control your data.** Your CV, contact info, and personal data stay on your machine and are sent directly to the AI provider you choose (Anthropic, OpenAI, etc.). We do not collect, store, or have access to any of your data.
-2. **You control the AI.** The default prompts instruct the AI not to auto-submit applications, but AI models can behave unpredictably. If you modify the prompts or use different models, you do so at your own risk. **Always review AI-generated content for accuracy before submitting.**
-3. **You comply with third-party ToS.** You must use this tool in accordance with the Terms of Service of the career portals you interact with (Greenhouse, Lever, Workday, LinkedIn, etc.). Do not use this tool to spam employers or overwhelm ATS systems.
-4. **No guarantees.** Evaluations are recommendations, not truth. AI models may hallucinate skills or experience. The authors are not liable for employment outcomes, rejected applications, account restrictions, or any other consequences.
-
-See [LEGAL_DISCLAIMER.md](LEGAL_DISCLAIMER.md) for full details. This software is provided under the [MIT License](LICENSE) "as is", without warranty of any kind.
-
-## Contributors
-
-<a href="https://github.com/santifer/career-ops/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=santifer/career-ops" />
-</a>
-
-Got hired using career-ops? [Share your story!](https://github.com/santifer/career-ops/issues/new?template=i-got-hired.yml)
-
-## License & Trademark
-
-The code is licensed under [MIT](LICENSE). The "career-ops" name and
-brand are governed by the [Trademark Policy](TRADEMARK.md), permissive
-for community use, reserved for commercial product naming and
-endorsement.
-
-## Let's Connect
-
-[![Website](https://img.shields.io/badge/santifer.io-000?style=for-the-badge&logo=safari&logoColor=white)](https://santifer.io)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/santifer)
-[![X](https://img.shields.io/badge/X-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/santifer)
-[![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/8pRpHETxa4)
-[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hi@santifer.io)
+Code is licensed under [MIT](LICENSE). The "career-ops" name and brand are governed by the upstream [Trademark Policy](TRADEMARK.md).
