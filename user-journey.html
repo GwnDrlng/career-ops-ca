@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Career-Ops — User Journey & Experience Flow</title>
+  <title>Career Ops CA User Journey</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -108,8 +108,8 @@
 
     .phase-content {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
     }
 
     /* Step cards */
@@ -395,9 +395,31 @@
   <div class="container">
     <!-- Header -->
     <header>
-      <h1>Career-Ops User Journey</h1>
-      <p>From profile setup through offer negotiation — your complete experience</p>
+      <h1>Career Ops CA User Journey</h1>
+      <p>Your complete experience, from profile setup through offer negotiation</p>
     </header>
+
+    <!-- Value Props -->
+    <section class="value-props" style="margin-top: 0; margin-bottom: 60px;">
+      <h2>Why This Matters</h2>
+      <div class="props-grid">
+        <div class="prop">
+          <div class="prop-icon">⏱️</div>
+          <div class="prop-title">Save 40+ Hours</div>
+          <div class="prop-text">Stop copy-pasting cover letters and filling forms by hand. Career-ops handles the grind so you focus on what matters, the actual conversations.</div>
+        </div>
+        <div class="prop">
+          <div class="prop-icon">💰</div>
+          <div class="prop-title">Negotiate Better</div>
+          <div class="prop-text">With real market data and proven scripts, you land more money and better terms, easily $50–150K over the course of a career.</div>
+        </div>
+        <div class="prop">
+          <div class="prop-icon">🎯</div>
+          <div class="prop-title">Find the Right Fit</div>
+          <div class="prop-text">Data-driven scoring removes emotion. You apply to roles where there's a genuine match, not just the brand name. Better odds, better outcomes.</div>
+        </div>
+      </div>
+    </section>
 
     <!-- Journey Phases -->
     <div class="phases">
@@ -406,7 +428,7 @@
         <div class="phase-header">
           <div class="phase-icon">🎯</div>
           <div>
-            <div class="phase-title">Phase 1: Setup & Personalization</div>
+            <div class="phase-title">Phase 1 · Setup & Personalization</div>
             <div class="phase-subtitle">Get career-ops to know you</div>
           </div>
         </div>
@@ -414,7 +436,7 @@
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-name">Add Your CV</div>
-            <div class="step-description">Paste your CV, LinkedIn profile, or describe your experience. We convert it to clean markdown — your source of truth for all evaluations.</div>
+            <div class="step-description">Paste your CV, LinkedIn profile, or describe your experience. We convert it to clean markdown, your source of truth for all evaluations.</div>
             <span class="step-action">📄 Upload</span>
           </div>
           <div class="step">
@@ -432,13 +454,13 @@
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-name">Customize Scoring</div>
-            <div class="step-description">Tell us what matters: comp, equity, remote, growth, team size, mission. We weight the evaluation rubric to match your priorities.</div>
+            <div class="step-description">Tell us what matters, whether that's comp, equity, remote, growth, team size, or mission. We weight the evaluation rubric to match your priorities.</div>
             <span class="step-action">⭐ Personalize</span>
           </div>
         </div>
         <div class="feedback-detail">
           <h4>💡 Why this matters</h4>
-          <p>Career-ops learns about you once, then gets smarter with every evaluation. The system will never suggest a role that doesn't fit — it knows your deal-breakers, your superpowers, and what excites you.</p>
+          <p>Career-ops learns about you once, then gets smarter with every evaluation. The system will never suggest a role that doesn't fit. It knows your deal-breakers, your superpowers, and what excites you.</p>
         </div>
       </div>
 
@@ -447,7 +469,7 @@
         <div class="phase-header">
           <div class="phase-icon">🔎</div>
           <div>
-            <div class="phase-title">Phase 2: Discover & Monitor</div>
+            <div class="phase-title">Phase 2 · Discover & Monitor</div>
             <div class="phase-subtitle">Never miss an opportunity</div>
           </div>
         </div>
@@ -455,7 +477,7 @@
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-name">Auto-Scan Portals</div>
-            <div class="step-description">A cloud agent scans your portals automatically every day at noon — or trigger a scan anytime with <code>/scan</code> in Slack or <code>scan-now.mjs</code> from your terminal. Zero-cost scanning hits APIs directly — no LLM overhead, no rate limits.</div>
+            <div class="step-description">A cloud agent scans your portals automatically every day at noon, or trigger a scan anytime with <code>/scan</code> in Slack or <code>scan-now.mjs</code> from your terminal. Zero-cost scanning hits APIs directly, with no LLM overhead and no rate limits.</div>
             <span class="step-action">⚡ Schedule + on-demand</span>
           </div>
           <div class="step">
@@ -467,7 +489,7 @@
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-name">Slack Daily Digest</div>
-            <div class="step-description">At noon every day, graded reports land in Slack for high-fit roles. Details: company, role, score/5, and why it matches you — with a single-use token to approve when you're ready.</div>
+            <div class="step-description">At noon every day, graded reports land in Slack for high-fit roles. Each one shows company, role, score/5, and why it matches you, with a single-use token to approve when you're ready.</div>
             <span class="step-action">📲 Notify</span>
           </div>
           <div class="step">
@@ -479,7 +501,7 @@
         </div>
         <div class="feedback-detail">
           <h4>💡 Why this matters</h4>
-          <p>Discovery is passive and continuous. You're never scrambling to remember which jobs were relevant — the system presents only fit roles, filtered by your criteria. Most candidates spend 80% of time wading through noise. You spend 80% on quality applications.</p>
+          <p>Discovery is passive and continuous. You're never scrambling to remember which jobs were relevant. The system presents only fit roles, filtered by your criteria. Most candidates spend 80% of time wading through noise. You spend 80% on quality applications.</p>
         </div>
       </div>
 
@@ -488,7 +510,7 @@
         <div class="phase-header">
           <div class="phase-icon">📊</div>
           <div>
-            <div class="phase-title">Phase 3: Evaluate & Decide</div>
+            <div class="phase-title">Phase 3 · Evaluate & Decide</div>
             <div class="phase-subtitle">Deep-dive scoring and written reports</div>
           </div>
         </div>
@@ -496,13 +518,13 @@
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-name">Read Full Report</div>
-            <div class="step-description">Each job gets a 6-block report (compensation, role fit, growth, team, mission, company stability) + legitimacy score. Not a summary — real analysis.</div>
+            <div class="step-description">Each job gets a 6-block report (compensation, role fit, growth, team, mission, company stability) + legitimacy score. Not a summary, but real analysis.</div>
             <span class="step-action">📄 Report</span>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-name">See Your Score</div>
-            <div class="step-description">0–5 score based on your rubric: does it fit your priorities? ≥3.7 = consider. &lt;3.0 = probably not a fit. Your gut instinct confirmed by data.</div>
+            <div class="step-description">0–5 score based on your rubric. Does it fit your priorities? ≥3.7 = consider. &lt;3.0 = probably not a fit. Your gut instinct confirmed by data.</div>
             <span class="step-action">⭐ Score</span>
           </div>
           <div class="step">
@@ -514,13 +536,13 @@
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-name">Track Pipeline</div>
-            <div class="step-description">Applications, interviews, offers — one table. Status updates live. Know exactly where you stand with each company.</div>
+            <div class="step-description">Applications, interviews, and offers, all in one table. Status updates live. Know exactly where you stand with each company.</div>
             <span class="step-action">📋 Track</span>
           </div>
         </div>
         <div class="feedback-detail">
           <h4>💡 Why this matters</h4>
-          <p>Job search is emotional. You'll fall in love with a startup or a prestigious company name. Career-ops gives you the data to push back on your instinct — not to ignore it, but to make sure emotion doesn't cost you thousands in comp or a year of burnout.</p>
+          <p>Job search is emotional. You'll fall in love with a startup or a prestigious company name. Career-ops gives you the data to push back on your instinct, not to ignore it, but to make sure emotion doesn't cost you thousands in comp or a year of burnout.</p>
         </div>
       </div>
 
@@ -529,7 +551,7 @@
         <div class="phase-header">
           <div class="phase-icon">✍️</div>
           <div>
-            <div class="phase-title">Phase 4: Apply Strategically</div>
+            <div class="phase-title">Phase 4 · Apply Strategically</div>
             <div class="phase-subtitle">Tailored applications, zero manual work</div>
           </div>
         </div>
@@ -555,13 +577,13 @@
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-name">You Approve & Apply</div>
-            <div class="step-description">Review everything, then approve right from Slack (<code>approve &lt;token&gt;</code>) — a single-use, 12-hour-expiring token that only you can use. Nothing submits until you say so. We track it and note the outcome. Full control, from your phone.</div>
+            <div class="step-description">Review everything, then approve right from Slack (<code>approve &lt;token&gt;</code>), a single-use, 12-hour-expiring token that only you can use. Nothing submits until you say so. We track it and note the outcome. Full control, from your phone.</div>
             <span class="step-action">🚀 Apply</span>
           </div>
         </div>
         <div class="feedback-detail">
           <h4>💡 Why this matters</h4>
-          <p>Tailored applications convert 2–3x better than generic ones. Hiring managers can tell if you care. Career-ops makes it effortless — the system does the legwork, you keep the judgment.</p>
+          <p>Tailored applications convert 2–3x better than generic ones. Hiring managers can tell if you care. Career-ops makes it effortless: the system does the legwork, you keep the judgment.</p>
         </div>
       </div>
 
@@ -570,7 +592,7 @@
         <div class="phase-header">
           <div class="phase-icon">🎤</div>
           <div>
-            <div class="phase-title">Phase 5: Interview & Negotiate</div>
+            <div class="phase-title">Phase 5 · Interview & Negotiate</div>
             <div class="phase-subtitle">Prepared, confident, data-driven</div>
           </div>
         </div>
@@ -578,13 +600,13 @@
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-name">Company Deep-Dive</div>
-            <div class="step-description">Research: funding, team, recent news, tech stack, culture signals. We compile publicly available intel so you walk in prepared.</div>
+            <div class="step-description">We research funding, team, recent news, tech stack, and culture signals. We compile publicly available intel so you walk in prepared.</div>
             <span class="step-action">🔍 Research</span>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-name">Interview Prep</div>
-            <div class="step-description">STAR stories tailored to their role. Practice answers to common questions. Story bank: accumulated lessons from past interviews.</div>
+            <div class="step-description">STAR stories tailored to their role. Practice answers to common questions. A story bank of accumulated lessons from past interviews.</div>
             <span class="step-action">📚 Prep</span>
           </div>
           <div class="step">
@@ -602,7 +624,7 @@
         </div>
         <div class="feedback-detail">
           <h4>💡 Why this matters</h4>
-          <p>Offers are negotiable — almost always. Most candidates don't negotiate out of fear or discomfort. Career-ops gives you the data and the scripts. $50K over 5 years is $250K. It's worth 30 minutes of discomfort.</p>
+          <p>Offers are negotiable, almost always. Most candidates don't negotiate out of fear or discomfort. Career-ops gives you the data and the scripts. $50K over 5 years is $250K. It's worth 30 minutes of discomfort.</p>
         </div>
       </div>
 
@@ -611,7 +633,7 @@
         <div class="phase-header">
           <div class="phase-icon">🎉</div>
           <div>
-            <div class="phase-title">Phase 6: Close & Reflect</div>
+            <div class="phase-title">Phase 6 · Close & Reflect</div>
             <div class="phase-subtitle">Lessons learned, patterns to own</div>
           </div>
         </div>
@@ -631,19 +653,19 @@
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-name">Export & Archive</div>
-            <div class="step-description">Full audit trail: all reports, offers, outcomes. Searchable history. Reference for your next search (could be in 5 years).</div>
+            <div class="step-description">Full audit trail of all reports, offers, and outcomes. Searchable history. Reference for your next search (could be in 5 years).</div>
             <span class="step-action">💾 Archive</span>
           </div>
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-name">Success Story</div>
-            <div class="step-description">You landed the role. Offer accepted. Calendar set. Next phase: onboarding. Career-ops did its job — now go crush it.</div>
+            <div class="step-description">You landed the role. Offer accepted. Calendar set. Next phase is onboarding. Career-ops did its job. Now go crush it.</div>
             <span class="step-action">🚀 Go!</span>
           </div>
         </div>
         <div class="feedback-detail">
           <h4>💡 Why this matters</h4>
-          <p>Job search isn't one-time. You'll do this again — maybe in 2 years, maybe in 10. Career-ops captures everything so you learn from this cycle. And when you do search again, you're 10x faster because the system already knows you.</p>
+          <p>Job search isn't one-time. You'll do this again, maybe in 2 years, maybe in 10. Career-ops captures everything so you learn from this cycle. And when you do search again, you're 10x faster because the system already knows you.</p>
         </div>
       </div>
     </div>
@@ -664,7 +686,7 @@
         <span class="flow-arrow">↻</span>
       </div>
       <div style="margin-top: 16px; font-size: 13px; color: #718096; line-height: 1.6;">
-        Each decision (apply, skip, negotiate, reject) trains the system. You tell us "this score was too high, I wouldn't apply" — we learn. You tell us "I got the offer despite a 3.2 score" — we recalibrate. Over 10 applications, the system knows you better than you know yourself.
+        Each decision (apply, skip, negotiate, reject) trains the system. You tell us "this score was too high, I wouldn't apply," and we learn. You tell us "I got the offer despite a 3.2 score," and we recalibrate. Over 10 applications, the system knows you better than you know yourself.
       </div>
     </section>
 
@@ -695,28 +717,6 @@
         <div class="timeline-item">
           <div class="timeline-item-label">Close</div>
           <div class="timeline-item-time">1–2 mo</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Value Props -->
-    <section class="value-props">
-      <h2>Why This Matters</h2>
-      <div class="props-grid">
-        <div class="prop">
-          <div class="prop-icon">⏱️</div>
-          <div class="prop-title">Save 40+ Hours</div>
-          <div class="prop-text">Stop copy-pasting cover letters and filling forms by hand. Career-ops handles the grind so you focus on what matters — the actual conversations.</div>
-        </div>
-        <div class="prop">
-          <div class="prop-icon">💰</div>
-          <div class="prop-title">Negotiate Better</div>
-          <div class="prop-text">With real market data and proven scripts, you land more money and better terms — easily $50–150K over the course of a career.</div>
-        </div>
-        <div class="prop">
-          <div class="prop-icon">🎯</div>
-          <div class="prop-title">Find the Right Fit</div>
-          <div class="prop-text">Data-driven scoring removes emotion. You apply to roles where there's a genuine match, not just the brand name. Better odds, better outcomes.</div>
         </div>
       </div>
     </section>
