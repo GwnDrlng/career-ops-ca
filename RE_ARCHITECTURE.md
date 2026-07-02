@@ -43,7 +43,7 @@ The goal is to run the *discovery + grading* loop unattended in the cloud once a
 ### Tier routing (score is `/5`)
 | Score | Lane |
 |---|---|
-| **≤ 2.0** | Ignore — log only, no report stored beyond scan-history. |
+| **≤ 2.0** | Ignore — recorded in the tracker as **SKIP** (shows in the WebUI + marks the posting as seen so re-scans dedup instead of re-grading); report is kept and also logged to `data/watcher-ignored.tsv`. Dropped postings (Suspicious/blocklist) are likewise tracked as SKIP so **every scanned posting is visible in the WebUI**. |
 | **2.1 – 3.6** | **Generic CV** (`output/Gwen_DarlingCV2026.PDF`, always PDF) → **Applier** fills the online form. If the form has **curated questions** ("why do you want to work for X?", "tell us about yourself", "describe a past situation/example") → **flag manual** in Slack. Else → post filled form to Slack for **1-click approve** → submit. |
 | **≥ 3.7** | **Doc-gen** curated CV + cover letter (**both `.docx`**, generated with **Opus 4.8**) → **separate Judge agent** (also **Opus 4.8**) scores quality; **< 90% → fix CV and/or CL, retry up to 2×**; if the **3rd** attempt is still < 90% → **flag to user**. Else → **flag for user** to manually advance. Every attempt's score + retry count is recorded to a judge-history memory. |
 

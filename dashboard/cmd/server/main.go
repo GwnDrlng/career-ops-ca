@@ -14,6 +14,10 @@ import (
 func main() {
 	pathFlag := flag.String("path", "..", "Path to career-ops directory")
 	portFlag := flag.Int("port", 8080, "HTTP port to listen on")
+	// Bind to loopback by default: the dashboard serves private job-search data
+	// with no authentication, so it must not be reachable from other machines on
+	// the network. Override to 0.0.0.0 only if you deliberately want LAN access.
+	hostFlag := flag.String("host", "127.0.0.1", "Interface to bind (127.0.0.1 = localhost-only; 0.0.0.0 = all interfaces)")
 	flag.Parse()
 
 	careerOpsPath := *pathFlag
@@ -45,8 +49,8 @@ func main() {
 		})
 	}
 
-	addr := fmt.Sprintf(":%d", port)
-	log.Printf("career-ops web server listening on http://localhost%s", addr)
+	addr := fmt.Sprintf("%s:%d", *hostFlag, port)
+	log.Printf("career-ops web server listening on http://%s (bind host %s)", addr, *hostFlag)
 	log.Printf("career-ops path: %s", careerOpsPath)
 
 	if err := http.ListenAndServe(addr, mux); err != nil {

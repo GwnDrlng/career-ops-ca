@@ -101,7 +101,8 @@ flowchart TB
     WATCH["watcher/watch.mjs — launchd daemon<br/>polls Slack (Keychain token) → writes reports/"] --> GATE{"pipeline/gates.mjs<br/>legitimacy (drop Suspicious)<br/>blocklist · duplicate · volume caps ≤8/day"}
     GATE --> ROUTE{"pipeline/route-tier.mjs<br/>score /5"}
 
-    ROUTE -->|"≤ 2.0"| IGN["Ignore: delete report, log to<br/>data/watcher-ignored.tsv"]
+    ROUTE -->|"≤ 2.0"| IGN["Ignore → SKIP row in tracker (visible in WebUI)<br/>report kept · also logged to data/watcher-ignored.tsv"]
+    IGN --> MERGE
 
     ROUTE -->|"2.1 – 3.6"| GEN["Generic CV<br/>output/Gwen_DarlingCV2026.PDF"]
     GEN --> APP{"pipeline/applier.mjs<br/>ATS allowlist? curated Qs?"}
