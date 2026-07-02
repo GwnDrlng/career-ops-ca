@@ -1,10 +1,10 @@
-# career-ops -- Modes francophones (`modes/fr/`)
+# career-ops -- Modes francophones (`modes/i18n/fr/`)
 
 Ce dossier contient les traductions francaises des principaux modes career-ops pour les candidats qui ciblent le marche francophone (France, Belgique, Suisse romande, Luxembourg, Quebec).
 
 ## Quand utiliser ces modes ?
 
-Utilise `modes/fr/` si au moins une de ces conditions est remplie :
+Utilise `modes/i18n/fr/` si au moins une de ces conditions est remplie :
 
 - Tu postules principalement a des **offres d'emploi en francais** (Welcome to the Jungle, Indeed FR, APEC, Pole emploi / France Travail, LinkedIn FR, sites carrieres)
 - Ton **CV est en francais** ou tu alternes entre FR et EN selon l'offre
@@ -19,7 +19,7 @@ Si la plupart de tes offres sont en anglais, reste sur les modes standard dans `
 
 Dis a Claude en debut de session :
 
-> "Utilise les modes francais sous `modes/fr/`."
+> "Utilise les modes francais sous `modes/i18n/fr/`."
 
 Claude lira alors les fichiers de ce dossier au lieu de `modes/`.
 

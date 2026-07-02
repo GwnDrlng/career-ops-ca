@@ -1,10 +1,10 @@
-# career-ops -- Modos em Português BR (`modes/pt/`)
+# career-ops -- Modos em Português BR (`modes/i18n/pt/`)
 
 Esta pasta contém as traduções em português brasileiro dos principais modos do career-ops para candidatos que buscam vagas no mercado brasileiro ou em empresas que operam em português.
 
 ## Quando usar estes modos?
 
-Use `modes/pt/` se pelo menos uma das condições abaixo for verdadeira:
+Use `modes/i18n/pt/` se pelo menos uma das condições abaixo for verdadeira:
 
 - Você se candidata principalmente a **vagas em português** (Gupy, Greenhouse BR, LinkedIn BR, Vagas.com.br, Catho, InfoJobs)
 - Sua **língua do currículo** é português ou você alterna entre PT-BR e EN conforme a vaga
@@ -21,11 +21,11 @@ O career-ops não tem um "switch de idioma" como flag de código. Em vez disso, 
 
 Diga ao Claude no início da sessão:
 
-> "Use os modos em português de `modes/pt/`."
+> "Use os modos em português de `modes/i18n/pt/`."
 
 ou
 
-> "Avaliar e candidaturas em português -- use `modes/pt/_shared.md` e `modes/pt/oferta.md`."
+> "Avaliar e candidaturas em português -- use `modes/i18n/pt/_shared.md` e `modes/i18n/pt/oferta.md`."
 
 Claude vai ler os arquivos desta pasta em vez de `modes/`.
 

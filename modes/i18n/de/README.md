@@ -1,10 +1,10 @@
-# career-ops — Deutsche Modi (`modes/de/`)
+# career-ops — Deutsche Modi (`modes/i18n/de/`)
 
 Dieser Ordner enthält die deutschen Übersetzungen der wichtigsten career-ops-Modi für Bewerber:innen, die im DACH-Raum (Deutschland, Österreich, Schweiz) suchen oder mit deutschen Stellenanzeigen arbeiten.
 
 ## Wann diese Modi nutzen?
 
-Verwende `modes/de/`, wenn mindestens eine der folgenden Bedingungen zutrifft:
+Verwende `modes/i18n/de/`, wenn mindestens eine der folgenden Bedingungen zutrifft:
 
 - Du bewirbst dich vor allem auf **deutschsprachige Stellenanzeigen** (StepStone, XING, kununu, Bundesagentur für Arbeit, deutsche Karriereseiten)
 - Deine **Lebenslauf-Sprache** ist Deutsch oder du wechselst je nach Stellenanzeige zwischen DE und EN
@@ -21,11 +21,11 @@ career-ops hat keinen "Sprach-Schalter" als Code-Flag. Stattdessen gibt es zwei 
 
 Sag Claude zu Beginn der Session ausdrücklich:
 
-> "Nutze ab jetzt die deutschen Modi unter `modes/de/`."
+> "Nutze ab jetzt die deutschen Modi unter `modes/i18n/de/`."
 
 oder
 
-> "Bewerten und Bewerbungen auf Deutsch — verwende `modes/de/_shared.md` und `modes/de/angebot.md`."
+> "Bewerten und Bewerbungen auf Deutsch — verwende `modes/i18n/de/_shared.md` und `modes/i18n/de/angebot.md`."
 
 Claude liest dann die Dateien aus diesem Ordner statt aus `modes/`.
 

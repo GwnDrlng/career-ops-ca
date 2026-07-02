@@ -23,7 +23,7 @@ The whole thing is designed around one loop: **discover → grade → draft → 
 | **5 · Approve** | The filled application is posted to Slack with a single-use, 12-hour token. **It submits only after you reply to approve**, and even then only if you've turned live-apply on. | One tap |
 | **6 · Learn** | Every decision (apply / skip / outcome) feeds pattern analysis so the next cycle targets better. | Occasionally |
 
-📊 **The full visual walkthrough is in [`user-journey.html`](user-journey.html).** Open it in a browser for the phase-by-phase experience, feedback loops, and timeline.
+📊 **The full visual walkthrough is in [`docs/user-journey.html`](docs/user-journey.html).** Open it in a browser for the phase-by-phase experience, feedback loops, and timeline.
 
 Prefer to drive it by hand? Paste any job URL or description and the pipeline evaluates it on the spot.
 
@@ -162,7 +162,7 @@ The prose below expands each level: **Orchestration** covers A and B, **Evals & 
 Every threshold lives in one auditable config (`config/guardrails.yml`), so changing a cap is a reviewable diff, never a code edit.
 - **Cost governance** (`pipeline/token-budget.mjs`): four ceilings (rolling 5h, weekly, monthly-spend, and a hard per-application cap) gate *before* each Opus call and record *after* it, through a single chokepoint. When a cap trips, the run halts and offers a Slack **override** (bounded, approver-bound) or **defer-to-next-cycle**. It's a stop, not a dead end.
 - **Volume caps:** ≤8 applications/day, ≤2 per company/week, enforced in the router so a routing bug can't blast forms.
-- **Change control:** a config-change logger, an accepted-risk register ([`RISK_REGISTER.md`](RISK_REGISTER.md)) with explicit revisit triggers, and a full re-architecture design doc ([`RE_ARCHITECTURE.md`](RE_ARCHITECTURE.md)).
+- **Change control:** a config-change logger, an accepted-risk register ([`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md)) with explicit revisit triggers, and a full re-architecture design doc ([`docs/RE_ARCHITECTURE.md`](docs/RE_ARCHITECTURE.md)).
 - **Fail-open vs fail-closed, on purpose:** the budget gate and kill switch fail *closed* (unclear state must stop spend/work); the audit log fails *open* (observability must never break the thing it observes).
 
 ### Security
@@ -176,7 +176,7 @@ Every threshold lives in one auditable config (`config/guardrails.yml`), so chan
 - **Audit log** (`pipeline/audit.mjs`): one append-only row per accountable event (every route, gate, approval, pause, and budget halt), so "why did nothing get drafted for job 231?" has a one-line answer.
 - **Spend summaries:** each run posts a 🧾 token + notional-cost summary to Slack.
 
-> Want the full end-to-end reasoning for one guardrail? [`RE_ARCHITECTURE.md`](RE_ARCHITECTURE.md) walks the Opus budget gate from problem to design to honest limitations, with sequence diagrams.
+> Want the full end-to-end reasoning for one guardrail? [`docs/RE_ARCHITECTURE.md`](docs/RE_ARCHITECTURE.md) walks the Opus budget gate from problem to design to honest limitations, with sequence diagrams.
 
 ---
 
@@ -234,9 +234,10 @@ career-ops-ca/
 ├── templates/              # ATS CV template, scanner config, canonical states
 ├── data/                   # tracker, ledgers, audit log (gitignored)
 ├── reports/                # evaluation reports (gitignored)
-├── user-journey.html       # visual, phase-by-phase user experience
-├── RE_ARCHITECTURE.md      # full design doc for the cloud + on-prem re-architecture
-└── RISK_REGISTER.md        # accepted risks with revisit triggers
+└── docs/
+    ├── user-journey.html   # visual, phase-by-phase user experience
+    ├── RE_ARCHITECTURE.md  # full design doc for the cloud + on-prem re-architecture
+    └── RISK_REGISTER.md    # accepted risks with revisit triggers
 ```
 
 ## Tech stack
@@ -262,6 +263,6 @@ career-ops-ca/
 
 ## Credits & license
 
-Built on the open-source [`career-ops`](https://github.com/santifer/career-ops) skill by [santifer](https://santifer.io), which provides the base evaluation modes, scoring rubric, and CLI skill. This fork adds the cloud + on-prem agentic re-architecture (scheduled orchestration, LLM-as-judge quality gates, cost/safety guardrails, Slack human-in-the-loop, and observability) documented in [`RE_ARCHITECTURE.md`](RE_ARCHITECTURE.md).
+Built on the open-source [`career-ops`](https://github.com/santifer/career-ops) skill by [santifer](https://santifer.io), which provides the base evaluation modes, scoring rubric, and CLI skill. This fork adds the cloud + on-prem agentic re-architecture (scheduled orchestration, LLM-as-judge quality gates, cost/safety guardrails, Slack human-in-the-loop, and observability) documented in [`docs/RE_ARCHITECTURE.md`](docs/RE_ARCHITECTURE.md).
 
 Code is licensed under [MIT](LICENSE). The "career-ops" name and brand are governed by the upstream [Trademark Policy](TRADEMARK.md).

@@ -1,10 +1,10 @@
-# career-ops -- Modes français québécois (`modes/fr-ca/`)
+# career-ops -- Modes français québécois (`modes/i18n/fr-ca/`)
 
 Ce dossier contient les traductions québécoises des principaux modes career-ops pour les candidats qui ciblent le **marché du Québec et du Canada français**.
 
 ## Quand utiliser ces modes ?
 
-Utilise `modes/fr-ca/` si au moins une de ces conditions est remplie :
+Utilise `modes/i18n/fr-ca/` si au moins une de ces conditions est remplie :
 
 - Tu postules principalement à des **offres d'emploi au Québec ou au Canada français** (LinkedIn CA, Indeed.ca, Jobboom, Workopolis FR)
 - Ton **CV est en français québécois** ou tu alternes entre FR-QC et EN selon l'offre
@@ -19,7 +19,7 @@ Si la plupart de tes offres sont en anglais, reste sur les modes standard dans `
 
 Dis à Claude en début de session :
 
-> "Utilise les modes français québécois sous `modes/fr-ca/`."
+> "Utilise les modes français québécois sous `modes/i18n/fr-ca/`."
 
 Claude lira alors les fichiers de ce dossier au lieu de `modes/`.
 
@@ -127,4 +127,4 @@ Pour améliorer une traduction ou ajouter un mode :
 
 ## Pour les mainteneurs
 
-Si tu étends `modes/fr/` (France), considère de synchroniser les changements structurels avec `modes/fr-ca/` mais **conserve le lexique québécois intact** -- ne pas forcer la terminologie FR métropolitaine.
+Si tu étends `modes/fr/` (France), considère de synchroniser les changements structurels avec `modes/i18n/fr-ca/` mais **conserve le lexique québécois intact** -- ne pas forcer la terminologie FR métropolitaine.
