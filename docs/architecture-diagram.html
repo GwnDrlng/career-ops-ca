@@ -35,7 +35,6 @@
   .cloud { background: #3b82f6; }
   .onprem { background: #22c55e; }
   .slack { background: #f97316; }
-  .todo { background: #e2e8f0; border: 1px dashed #94a3b8; }
 
   .hilabel { text-align: center; font-size: 13px; font-weight: 650; letter-spacing: .04em;
     text-transform: uppercase; color: #94a3b8; margin: 34px 0 -8px; }
@@ -162,12 +161,11 @@
 <body>
   <header>
     <h1>Career-Ops Cloud Scan + On-Prem Apply Pipeline</h1>
-    <p>Daily <em>+ on-demand</em> cloud scan &amp; grade (Vercel eve, deployed) → Slack → on-prem watcher routes by score → human-approved apply</p>
+    <p>Daily <em>+ on-demand</em> cloud scan &amp; grade (Vercel eve) → Slack → on-prem watcher routes by score → human-approved apply</p>
     <div class="legend">
       <span><i class="dot slack"></i>Slack</span>
-      <span><i class="dot cloud"></i>Cloud (Vercel eve, deployed &amp; live, Claude via AI Gateway)</span>
-      <span><i class="dot onprem"></i>On-prem (launchd daemons + career-ops, Opus 4.8, built &amp; tested)</span>
-      <span><i class="dot todo"></i>External setup pending (Slack /scan command + SLACK_SIGNING_SECRET)</span>
+      <span><i class="dot cloud"></i>Cloud (Vercel eve, Claude via AI Gateway)</span>
+      <span><i class="dot onprem"></i>On-prem (launchd daemons + career-ops, Opus 4.8)</span>
     </div>
   </header>
 
