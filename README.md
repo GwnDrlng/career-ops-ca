@@ -12,14 +12,14 @@ It is built as a real distributed system: a scheduled **cloud orchestrator** (Ve
 
 ## How it works, from a user's point of view
 
-The whole thing is designed around one loop: **discover → grade → draft → *you* approve → learn.** You interact with it mostly through Slack and a paste-a-URL command; the machinery stays out of the way.
+The whole thing is designed around one loop: **discover → grade → draft → *you* approve → learn.** You interact with it mostly through Slack and a paste-a-URL command.
 
 | Phase | What happens | You do |
 |---|---|---|
 | **1 · Setup** | Add your CV and a short profile (roles, comp, location, deal-breakers). The system reads these at evaluation time. They are its source of truth, never hard-coded. | ~30 min, once |
-| **2 · Discover** | A cloud agent scans your portals every day at noon (or on demand via `/scan` in Slack). Zero-token discovery that hits Greenhouse/Ashby/Lever APIs directly. | Nothing |
+| **2 · Discover** | A cloud agent scans your portals every day (or on demand via `/scan` in Slack). Zero-token discovery that hits Greenhouse/Ashby/Lever APIs directly. | Nothing |
 | **3 · Grade** | Each new posting is graded A–G (fit, comp, growth, legitimacy…) into a written report and scored `/5`, then routed by score into a lane. | Read the report |
-| **4 · Draft** | High-fit roles get a tailored CV + cover letter, auto-checked for quality and grounded against your real experience. Forms are pre-filled from a secured vault; tricky questions are flagged for you. | Review |
+| **4 · Draft** | High-fit roles get a tailored CV + cover letter, auto-checked for quality and grounded against your real experience. Forms are pre-filled from a secured vault and tricky questions are flagged for you. | Review |
 | **5 · Approve** | The filled application is posted to Slack with a single-use, 12-hour token. **It submits only after you reply to approve**, and even then only if you've turned live-apply on. | One tap |
 | **6 · Learn** | Every decision (apply / skip / outcome) feeds pattern analysis so the next cycle targets better. | Occasionally |
 
@@ -31,7 +31,7 @@ Prefer to drive it by hand? Paste any job URL or description and the pipeline ev
 
 ## Architecture
 
-Two planes, one contract. The cloud does **discovery + grading** unattended; on-prem does everything that touches your identity, your credentials, and the submit button. The only thing that crosses the boundary is a **report**, delivered over Slack. Read it top-down: **Level 0** is the two-plane boundary, then drill into any stage in **Level 1**.
+Two planes. The cloud does **discovery + grading** unattended, while on-prem does everything that touches your identity, your credentials, and the submit button. The only thing that crosses the boundary is a **report**, delivered over Slack. 
 
 ### Level 0 · The two planes
 
@@ -64,14 +64,14 @@ Two planes, one contract. The cloud does **discovery + grading** unattended; on-
                                               └───────────────────────────────────────────┘
 ```
 
-**Boundary contract:** the cloud's only durable output is the report (Markdown + a `## Machine Summary` YAML block). On-prem is the system of record for the tracker, documents, credentials, and submissions, all flat files, all local.
+**Boundary contract:** the cloud's only durable output is the report (Markdown + a `## Machine Summary` YAML block). On-prem is the system of record for the tracker, documents, credentials, and submissions, all flat files, and local.
 
 ### Level 1 · Drill-downs
 
 **A · Cloud scan & grade** (`cloud/agent/**`, Vercel `eve`)
 
 ```
-daily cron 12:00  /  /scan (Slack)  /  scan-now.mjs
+daily cron  /  /scan (Slack)  /  scan-now.mjs
         │
         ▼
 Orchestrator ........ per-job state machine (Sonnet)
@@ -128,7 +128,7 @@ Human approval  (Slack, single-use 12h token)  → submit
 **D · Budget guardrail** (`opus-call.mjs → callOpus()`, single chokepoint)
 
 ```
-callOpus(prompt, lane, {jobId})    every Opus call; nothing calls claude -p directly
+callOpus(prompt, lane, {jobId})    
         │
         ▼
 Gate BEFORE spend  (token-budget.mjs: sum 4 windows)
@@ -145,16 +145,16 @@ Record AFTER  (append cost to ledger, job-scoped)
 return ok:true + cost
 ```
 
-The prose below expands each level: **Orchestration** covers A and B, **Evals & quality gates** covers C, and **Guardrails & governance** covers D.
+The below expands each level: **Orchestration** covers A and B, **Evals & quality gates** covers C, and **Guardrails & governance** covers D.
 
 ### Orchestration
-- **Cloud orchestrator + subagents** (Vercel `eve`): a scheduled daily agent owns a per-job state machine and delegates to two specialized subagents. A **Scanner** (Haiku, cheap, tool-only portal fetches) handles discovery, and a **Grader** (Sonnet) applies the scoring rubric. Subagents don't inherit parent tools, so each carries only the least privilege it needs.
+- **Cloud orchestrator + subagents** (Vercel `eve`): a scheduled daily agent owns a per-job state machine and delegates to two specialized subagents. A **Scanner** (Haiku) handles discovery, and a **Grader** (Sonnet 4.6) applies the scoring rubric. Subagents don't inherit parent tools, so each carries only least privilege.
 - **On-prem tier router** (`pipeline/route-tier.mjs`): parses the report's machine summary, then dispatches one of three lanes by score. Every lane writes a tracker row through a merge step and never edits the tracker directly, so concurrent lanes can't corrupt state.
 - **Triggers:** daily Vercel Cron, an on-demand `/scan` Slack slash command, and a terminal `scan-now.mjs`, all hitting the same pipeline.
 
 ### Evals & quality gates
 - **LLM-as-judge** (`pipeline/judge.mjs`, Opus 4.8): every generated CV/cover letter is blind-scored 0–100% on JD-keyword coverage, factual grounding, tone, and structure. Below 90% triggers a **revise-and-re-judge loop, up to two retries**; a third failure flags a human instead of shipping something mediocre.
-- **No-fabrication gate** (`pipeline/grounding-check.mjs`): a hard pass/block check that traces every skill, metric, and claim in the generated documents back to your real CV. Ungrounded content is *blocked*, not merely scored down.
+- **No-fabrication gate** (`pipeline/grounding-check.mjs`): a hard pass/block check that traces every skill, metric, and claim in the generated documents back to your real CV. Ungrounded content is *blocked*.
 - **Calibration spot-check** (`pipeline/calibrate.mjs`): periodically re-grades a cloud-graded job on-prem with the same rubric and flags drift beyond a threshold. It's a cheap way to catch the cloud grader silently miscalibrating.
 - **Prompt & rubric versioning** (`pipeline/prompt-version.mjs`): every recorded score is stamped with the exact prompt version + content hash that produced it, and a drift detector fires if a prompt changes without a version bump. Scores stay traceable and comparable over time.
 
