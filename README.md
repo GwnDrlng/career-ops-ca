@@ -37,11 +37,11 @@ Two planes, one contract. The cloud does **discovery + grading** unattended; on-
 
 ```
                     ┌──────────────────────── SLACK ────────────────────────┐
-                    │   #job-pipeline: graded reports · flags · approvals    │
+                    │   #job-pipeline: graded reports · flags · approvals   │
                     └─────▲──────────────────────────────────────▲──────────┘
          report / flag    │                                      │  fill summary + approve
                           │                                      │
-   ┌──────────────────────┴──────────────┐    ┌──────────────────┴────────────────────────┐
+   ┌──────────────────────┴───────────────┐   ┌──────────────────┴────────────────────────┐
    │  CLOUD · Vercel eve (Claude/Gateway) │   │  ON-PREM · watcher + career-ops pipeline  │
    │                                      │   │                                           │
    │  daily cron ─► ORCHESTRATOR          │   │  watch.mjs (polls Slack)                  │
