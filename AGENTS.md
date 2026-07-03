@@ -298,7 +298,7 @@ When spawning headless workers for batch processing, use the appropriate command
 Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slug}.tsv`. Single line, 9 tab-separated columns:
 
 ```
-{num}\t{date}\t{company}\t{role}\t{status}\t{score}/5\t{pdf_emoji}\t[{num}](reports/{num}-{slug}-{date}.md)\t{note}
+{num}\t{date}\t{company}\t{role}\t{status}\t{score}/5\t{cv_emoji}\t[{num}](reports/{num}-{slug}-{date}.md)\t{note}
 ```
 
 **Column order (IMPORTANT -- status BEFORE score):**
@@ -308,7 +308,7 @@ Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slu
 4. `role` -- job title
 5. `status` -- canonical status (e.g., `Evaluated`)
 6. `score` -- format `X.X/5` (e.g., `4.2/5`)
-7. `pdf` -- `✅` or `❌`
+7. `cv` -- `✅` if a tailored CV document was generated for this application (any format — DOCX or PDF), else `❌`. Column header in `applications.md` is `CV`. (Historically this was PDF-only; it now tracks any tailored CV artifact.)
 8. `report` -- markdown link, always written **root-relative**: `[num](reports/...)`
 9. `notes` -- one-line summary
 
