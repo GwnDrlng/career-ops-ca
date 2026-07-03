@@ -23,7 +23,7 @@ The whole thing is designed around one loop: **discover → grade → draft → 
 | **5 · Approve** | The filled application is posted to Slack with a single-use, 12-hour token. **It submits only after you reply to approve**, and even then only if you've turned live-apply on. | One tap |
 | **6 · Learn** | Every decision (apply / skip / outcome) feeds pattern analysis so the next cycle targets better. | Occasionally |
 
-📊 **The full visual walkthrough is in [`docs/user-journey.html`](docs/user-journey.html).** Open it in a browser for the phase-by-phase experience, feedback loops, and timeline.
+📊 **The full visual walkthrough is in [`docs/user-journey.html`](https://gwndrlng.github.io/career-ops-ca/user-journey.html).** Open it in a browser for the phase-by-phase experience, feedback loops, and timeline.
 
 Prefer to drive it by hand? Paste any job URL or description and the pipeline evaluates it on the spot.
 
