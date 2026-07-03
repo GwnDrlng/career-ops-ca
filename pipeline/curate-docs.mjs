@@ -50,6 +50,40 @@ function slugify(s) {
   return (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+// Flip the CV column (tracker col 7) of an existing applications.md row to ✅
+// after the tailored .docx CV+CL have actually rendered. route-tier.mjs writes
+// the row with ❌ at routing time (nothing rendered yet); this is the confirmed-
+// render flip, so the tracker only ever claims a CV that exists on disk.
+// Idempotent, best-effort: never throws (a tracker-format surprise must not fail
+// doc-gen), and a no-op if the row is missing (e.g. curate-docs ran before the
+// route-tier merge) or already ✅.
+function markTrackerCvGenerated(id) {
+  try {
+    if (!id) return { updated: false, reason: "no jobId" };
+    const trackerPath = path.join(PROJECT_ROOT, "data/applications.md");
+    if (!fs.existsSync(trackerPath)) return { updated: false, reason: "tracker not found" };
+    const lines = fs.readFileSync(trackerPath, "utf8").split("\n");
+    let updated = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line.trim().startsWith("|")) continue;
+      // Split a markdown row into its cells (drop the empty edges from leading/trailing "|").
+      const cells = line.split("|");
+      if (cells.length < 10) continue; // need at least 9 columns + 2 edges
+      if (cells[1].trim() !== String(id)) continue; // col 1 = num
+      if (cells[7].trim() === "✅") return { updated: false, reason: "already ✅" };
+      cells[7] = " ✅ "; // col 7 = CV
+      lines[i] = cells.join("|");
+      updated = true;
+      break;
+    }
+    if (updated) fs.writeFileSync(trackerPath, lines.join("\n"));
+    return { updated, reason: updated ? "flipped to ✅" : "row not found" };
+  } catch (e) {
+    return { updated: false, reason: `error: ${e.message}` };
+  }
+}
+
 const reportPath = arg("report", true);
 const abs = path.isAbsolute(reportPath) ? reportPath : path.join(PROJECT_ROOT, reportPath);
 if (!fs.existsSync(abs)) {
@@ -200,8 +234,13 @@ if (!resumeRender.ok || !coverRender.ok) {
   });
 }
 
+// Both docs rendered on disk — now (and only now) flip the tracker's CV column
+// to ✅ for this job. route-tier.mjs left it ❌ at routing time.
+const cvFlag = markTrackerCvGenerated(jobId);
+
 stop({
   ok: true,
   resumePath: path.relative(PROJECT_ROOT, resumeDocx),
   coverLetterPath: path.relative(PROJECT_ROOT, coverDocx),
+  trackerCvFlag: cvFlag,
 });

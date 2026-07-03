@@ -113,6 +113,13 @@ if (trackerStatus) {
       : decision.lane === "ignore"
         ? `Score ${parsed.score}/5 <= ${guardrails.tiers.ignore_max} ignore threshold — seen, not applying`
         : (decision.reason || `Routed to ${decision.lane} lane`);
+  // CV column (tracker col 7): "a tailored CV document was generated" (any format
+  // — DOCX or PDF), not literally "a PDF exists". Header is "CV" in
+  // data/applications.md. Written ❌ here at routing time because no document has
+  // been rendered yet; the curated-docgen lane's curate-docs.mjs flips this row to
+  // ✅ only after it confirms the .docx CV+CL actually rendered (see
+  // markTrackerCvGenerated there). Keeping the flag conservative until render means
+  // the tracker never claims a CV that a budget halt or LLM failure prevented.
   const row = [
     jobId, date, parsed.company, parsed.role || "", trackerStatus,
     `${parsed.score.toFixed(1)}/5`, "❌", `[${jobId}](reports/${reportPath.split("/").pop()})`,

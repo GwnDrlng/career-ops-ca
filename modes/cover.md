@@ -46,7 +46,16 @@ This mode is interactive by design — it asks the user for the angle (why this 
    ```
    Use the same `{candidate}` kebab-case normalization as `modes/pdf.md` (name from `config/profile.yml`, lowercased, hyphenated).
 
-10. **Report.** Give the user the output path and file size. If the job is already in `data/applications.md`, this does not change the PDF column (that tracks the CV, not the cover letter) — just confirm the file was written.
+10. **Quality gate — LLM judge (ALWAYS run).** Interactive cover letters go through the **same blind Opus judge** as the automated ≥3.7 curated-docgen lane, not just docs from the Slack `/scan` or the daily cloud run. After the `.docx` is written, run:
+    ```bash
+    node pipeline/judge.mjs \
+      --cl output/cl-{candidate}-{company}-{YYYY-MM-DD}.docx \
+      [--cv output/cv-{candidate}-{company}-{YYYY-MM-DD}.docx] \
+      --jd jds/{slug}.md --company "{Company}" --role "{Role}" --job-id {report-num}
+    ```
+    Include `--cv` when a tailored `.docx` CV also exists for this role, so the pair is judged together (the rubric weighs JD-keyword coverage and factual grounding across both). `judge.mjs` reads `.docx` text only. Handle the result per `config/guardrails.yml` → `judge.pass_threshold_pct` (default 90%): pass (exit 0) → report the score; fail (exit 2) → apply the judge's `feedback`, regenerate, and re-judge up to `judge.max_retries` (default 2), then flag the best attempt to the user if still failing. Every attempt is logged to `data/judge-history.tsv`. This uses Opus (real usage on the Pro plan) and posts a `🧾` Slack spend summary, so run it once on the finalized letter, not on drafts.
+
+11. **Report.** Give the user the output path, file size, and the judge score. If the job is already in `data/applications.md`, this does not change the CV column (that tracks the CV, not the cover letter) — just confirm the file was written.
 
 ## Notes
 

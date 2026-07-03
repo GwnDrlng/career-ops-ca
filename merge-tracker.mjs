@@ -3,9 +3,13 @@
  * merge-tracker.mjs — Merge batch tracker additions into applications.md
  *
  * Handles multiple TSV formats:
- * - 9-col: num\tdate\tcompany\trole\tstatus\tscore\tpdf\treport\tnotes
- * - 8-col: num\tdate\tcompany\trole\tstatus\tscore\tpdf\treport (no notes)
+ * - 9-col: num\tdate\tcompany\trole\tstatus\tscore\tcv\treport\tnotes
+ * - 8-col: num\tdate\tcompany\trole\tstatus\tscore\tcv\treport (no notes)
  * - Pipe-delimited (markdown table row): | col | col | ... |
+ *
+ * Column 7 (internally still named `pdf` for back-compat) is the "CV" column in
+ * data/applications.md: ✅ = a tailored CV document was generated for this
+ * application, in any format (DOCX or PDF); ❌ = none. It is NOT limited to PDFs.
  *
  * Dedup: company normalized + role fuzzy match + report number match
  * If duplicate with higher score → update in-place, update report link

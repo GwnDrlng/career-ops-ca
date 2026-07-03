@@ -60,7 +60,11 @@ async function reply(text, thread_ts) {
 }
 
 async function handleControl(message) {
-  const text = (message.text || "").trim();
+  // Strip wrapping backticks/code fences: the bot's own halt + approval prompts
+  // present commands inside backticks (e.g. `budget-override <token>`), so
+  // approvers who copy-paste what they see would otherwise fail the anchored
+  // matchers below. Peel any leading/trailing backticks before matching.
+  const text = (message.text || "").trim().replace(/^`+|`+$/g, "").trim();
   const user = message.user;
 
   // Leading slash is OPTIONAL: Slack intercepts a real "/pause" as a slash

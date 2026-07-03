@@ -198,6 +198,30 @@ If the user says yes, run the full cover letter flow from `modes/cover.md` in sl
 
 Do not auto-generate the cover letter PDF without going through the interactive steps above.
 
+## Quality gate — LLM judge (ALWAYS run on generated docs)
+
+Interactive CV/CL creations go through the **same blind Opus judge** as the automated ≥3.7 curated-docgen lane. Do not skip this just because the run is interactive — it is the only quality gate on documents produced by hand.
+
+`pipeline/judge.mjs` reads `.docx` text (via `docx-text.mjs`), so it can score any `.docx` CV/CL. It cannot parse a PDF. Therefore:
+
+- If you produced the CV as **`.docx`** (via `node generate-docx.mjs`), judge it directly.
+- If you produced a **PDF-only** CV (HTML→PDF or Canva flow), also emit a `.docx` twin via `generate-docx.mjs` from the same tailored content and judge that, so the judged text matches what the recruiter reads. If a `.docx` twin is genuinely not available, tell the user the CV could not be auto-judged and why.
+
+Run (pass whichever docs exist; `--jd` is the JD text or a file):
+
+```bash
+node pipeline/judge.mjs \
+  --cv output/cv-{candidate}-{company}-{YYYY-MM-DD}.docx \
+  --cl output/cl-{candidate}-{company}-{YYYY-MM-DD}.docx \
+  --jd jds/{slug}.md --company "{Company}" --role "{Role}" --job-id {report-num}
+```
+
+Handle the result exactly like the automated lane (`config/guardrails.yml` → `judge.pass_threshold_pct`, default 90%):
+- **Pass (exit 0):** report the score to the user; docs are good to send.
+- **Fail (exit 2):** apply the judge's `feedback` to the flagged document(s), regenerate, and re-judge — up to `judge.max_retries` (default 2). If still failing after the cap, surface the best attempt plus the feedback and let the user decide. Do not silently ship a sub-threshold doc.
+
+Every attempt is logged to `data/judge-history.tsv` automatically. This call uses Opus (real usage on the Pro plan) and posts a `🧾` spend summary to Slack, so run it once per finalized doc set, not on every intermediate draft.
+
 ## Post-generation
 
-Update tracker if the job is already registered: change PDF from ❌ to ✅.
+Update tracker if the job is already registered: change the **CV** column from ❌ to ✅ (a tailored CV document was generated — this is true whether the artifact is a `.docx` or a PDF).
