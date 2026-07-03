@@ -7,12 +7,12 @@ Part 7F of the governance layer (see `RE_ARCHITECTURE.md`). This is the honest l
 | ID | Risk | Severity | Likelihood | Posture |
 |----|------|----------|------------|---------|
 | R1 | Cost caps account **post-hoc** — block the *next* call, not the overshooting one | Low–Med | Med | Accepted |
-| R2 | Applier `--submit` path built but **never exercised live**; shadow mode is the default | Med | Low | Mitigated |
-| R3 | Cloud cross-run **dedup is in-memory** — resets on cold start / redeploy | Low | Med | Deferred |
+| R2 | Applier `--submit` path built but **never exercised live**; live apply is now on (`apply_enabled: true`) | Med | Low | Mitigated |
+| R3 | Cloud cross-run **dedup** — now Vercel Blob-backed (persists across redeploys); residual: single-store dependency | Low | Low | Mitigated |
 | R4 | `sanitize-jd` is **heuristic**, not an exhaustive prompt-injection defense | Med | Low | Mitigated |
-| R5 | Cloud `post_to_slack` via Connect is **unverified against a live destination** | Med | Med | Deferred |
+| R5 | Cloud `post_to_slack` via Connect — verified live (2026-07-02); residual: split-token (Connect message + `SLACK_BOT_TOKEN` file upload) | Low | Low | Mitigated |
 | R6 | Slack actions are **text commands**, authorized by Slack user id (no request-signature check) | Med | Low | Accepted |
-| R7 | Token/cost ceilings are **null by default** — no enforcement until the operator sets real numbers | Med | Med | Accepted |
+| R7 | Token/cost ceilings now **set to estimates** for this deploy — still unverified against the real plan allowance | Med | Med | Mitigated |
 | R8 | Prompt/rubric versioning pins **our artifacts**, not the **upstream model** | Low | Med | Accepted |
 | R9 | Defer auto-resume is **poll-driven** — resumes at-or-after the cron time, not exactly on it | Low | Low | Accepted |
 | R10 | Form extraction / liveness use **generic selectors**, not per-ATS tuning | Low | Med | Deferred |
@@ -26,16 +26,16 @@ Part 7F of the governance layer (see `RE_ARCHITECTURE.md`). This is the honest l
 - **Revisit if:** a single Opus call can cost enough that one overshoot matters → add a pre-call token-count estimate to block proactively.
 
 ## R2 — Applier submit path unexercised
-`applier.mjs --submit` (re-verify token → re-run gates → re-fill → click submit) is implemented but has never run against a real form, and `apply_enabled` defaults to `false` (full shadow mode — no browser launch).
-- **Why tolerable:** nothing can submit live until the operator explicitly flips `apply_enabled` after a dry run; the ethical rule (human reviews before submit) holds by construction.
-- **Mitigation:** shadow-mode default; single-use/expiring/verified-approver gate in front of every submit; liveness + all gates re-checked at submit time.
-- **Revisit before:** flipping `apply_enabled: true` — do a supervised, headed dry run against one real posting first.
+`applier.mjs --submit` (re-verify token → re-run gates → re-fill → click submit) is implemented but has **never run against a real form**. As of 2026-07-02 `apply_enabled: true` (shadow mode off) — the applier now fills real forms and posts approval requests — but no live *submit* has been driven yet.
+- **Why tolerable:** even with `apply_enabled: true`, a submit is impossible without a Slack `approve <token>` from a verified approver, so the ethical rule (human reviews before submit) still holds by construction; the fill phase never clicks submit.
+- **Mitigation:** single-use/expiring/verified-approver gate in front of every submit; liveness + all gates re-checked at submit time; `apply_enabled` can be flipped back to `false` to re-enter full shadow mode.
+- **Revisit before:** first live submit — do a supervised, headed run against one real posting and confirm the confirmation/tracker write.
 
-## R3 — Cloud dedup is in-memory
-`cloud/agent/lib/dedup.ts` is an in-memory placeholder; it resets on every cold start / redeploy, so the same posting can be re-graded and re-posted after a deploy.
-- **Why tolerable:** the on-prem side has its own duplicate guard (`gates.mjs` `duplicateGuard` against `data/applications.md`), so a re-graded job won't produce a duplicate application.
-- **Mitigation:** on-prem duplicate guard is the real backstop; scan-history TSV persists on-prem.
-- **Revisit if:** duplicate Slack reports become noisy → back dedup with Vercel KV / Upstash / Postgres (decision still open).
+## R3 — Cloud dedup persistence
+`cloud/agent/lib/dedup.ts` is now **Vercel Blob-backed** (2026-07-02), so cross-run dedup survives cold starts and redeploys — the earlier in-memory placeholder (which reset on every redeploy and could re-grade/re-post a posting) is gone. Residual risk: dedup now depends on a single external store (Blob) being reachable and consistent.
+- **Why tolerable:** the on-prem side still has its own duplicate guard (`gates.mjs` `duplicateGuard` against `data/applications.md`), so even a Blob miss won't produce a duplicate *application*; SKIP rows recorded on-prem also let re-scans dedup after any cloud store gap.
+- **Mitigation:** Blob persistence is the primary dedup; on-prem duplicate guard + SKIP-tracking is the backstop; scan-history TSV persists on-prem.
+- **Revisit if:** Blob latency/consistency causes duplicate Slack reports → consider KV/Postgres or a read-through cache.
 
 ## R4 — sanitize-jd is heuristic
 `sanitize-jd.mjs` strips invisible/bidi chars, defuses code fences, and neutralizes known injection phrases by regex. It is defense-in-depth, not a proof.
@@ -43,11 +43,11 @@ Part 7F of the governance layer (see `RE_ARCHITECTURE.md`). This is the honest l
 - **Mitigation:** layered — code filter + prompt framing + least-privilege tools; a successful injection into the grader still can't submit or exfiltrate.
 - **Revisit if:** a novel injection pattern lands → extend patterns and/or add a model-based classifier pass.
 
-## R5 — Cloud Slack post via Connect unverified
-`post_to_slack.ts` calls `connectSlackCredentials(...)` from a plain tool to post the report verbatim; the docs only demonstrate this inside a channel file, so it's untested against a live Connect destination.
-- **Why tolerable:** the cloud is not deployed yet; this is on the critical path for the first real deploy, not for the built-and-tested local state.
-- **Mitigation:** documented explicitly in `channels/slack.ts`; the on-prem watcher tolerates missing/duplicate posts (checkpointed, idempotent report handling).
-- **Revisit before:** first production deploy — verify one real round-trip.
+## R5 — Cloud Slack post via Connect
+`post_to_slack.ts` calls `connectSlackCredentials(...)` from a plain tool. This is now **verified live** (2026-07-02 scans): the compact header posts via the Connect-brokered bot token, and the full-report `.md` file uploads via `SLACK_BOT_TOKEN` (the `career-ops-ca` bot) because the managed Connect connector's scopes lack `files:write`. A `botToken` resolve bug found during that verification was fixed. Residual risk: the split-token arrangement depends on `SLACK_BOT_TOKEN` staying provisioned and scoped for `files:write` in Vercel env.
+- **Why tolerable:** the round-trip is exercised and the on-prem watcher tolerates missing/duplicate posts (checkpointed, idempotent report handling); a missing file token degrades to the header-only message, which the watcher can still act on.
+- **Mitigation:** documented in `channels/slack.ts` + `post_to_slack.ts`; idempotent watcher ingestion; split-token fallback path.
+- **Revisit if:** `files:write` becomes available on the managed connector → collapse back to a single Connect token.
 
 ## R6 — Slack authorization is by user id, not signature
 On-prem consumers **poll** Slack with a bot token and authorize control commands (`approve`, `budget-override`, `budget-defer`, `/pause`) by matching `message.user` against `approval.verified_approver_ids`. There is no request-signature verification (there's no inbound webhook to sign).
@@ -55,11 +55,11 @@ On-prem consumers **poll** Slack with a bot token and authorize control commands
 - **Mitigation:** private `#job-approvals` channel; single-use, expiring, approver-bound tokens; every action audited; shadow mode gates real submission regardless.
 - **Revisit if:** moving to true interactive buttons → verify Slack request signatures on the interactivity endpoint.
 
-## R7 — Ceilings null by default
-`token_budget.*_limit_tokens`, `cost.monthly_cap_usd`, and `cost.per_application_cap_usd` all default to `null`. Until set, those gates report "not configured" and never halt.
-- **Why tolerable:** the real allowances depend on the operator's specific Claude plan (not API-discoverable) and their budget; a wrong hard-coded default would be worse than an explicit opt-in.
-- **Mitigation:** clearly commented in `guardrails.yml`; `check`/`gate` surface "not configured"; the manual override + defer exist for when they *are* set.
-- **Revisit:** set real numbers before running the ≥3.7 lane at volume.
+## R7 — Ceilings set to estimates
+The ceilings ship as `null` in the template (report "not configured", never halt), but **this deployment now sets working values** (2026-07-02): `rolling_5h_block_limit_tokens: 400000`, `weekly_limit_tokens: 1000000`, `cost.monthly_cap_usd: 50`, `cost.per_application_cap_usd: 2`. Residual risk: the two token limits are **estimates** for Claude Pro's windows (not API-discoverable), so they may not match the real plan allowance until tuned from usage data.
+- **Why tolerable:** enforcement is now active on all four ceilings rather than off; an estimate that's slightly wrong still halts far short of runaway spend, and the monthly/per-application USD caps are notional (Pro subscription, usage-proxy) rather than a real bill.
+- **Mitigation:** all four ceilings set + commented in `guardrails.yml`; `data/token-usage.tsv` accumulates real usage to tune from; manual override + defer exist for a genuine halt.
+- **Revisit:** tune `*_limit_tokens` from `data/token-usage.tsv` after the ≥3.7 lane runs at volume; the *real* spend to watch is the Vercel AI Gateway bill (capped in Vercel's dashboard), not these notional caps.
 
 ## R8 — Versioning pins our artifacts, not the model
 `prompt-version.mjs` pins the rubric/prompt bytes (`<version>+<hash>`), but an upstream change to `claude-opus-4-8` / the gateway model could shift scores with no local diff.

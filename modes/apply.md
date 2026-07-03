@@ -79,9 +79,19 @@ For each field, preserve the application form contract:
 - `required`: `yes`, `no`, or `unknown`
 - `limit`: exact character/word limit if visible; otherwise `unknown`
 - `options`: visible options for select/radio/checkbox fields
-- `needs_candidate_confirmation`: `yes` for legal, demographic, work authorization, visa, relocation, salary, disability, veteran, sponsorship, background-check, or self-identification questions unless the answer is explicitly present in `config/profile.yml`
+- `needs_candidate_confirmation`: `yes` for legal, demographic, work authorization, visa, relocation, salary, disability, veteran, sponsorship, background-check, or self-identification questions unless the answer is explicitly present in a pre-approved source (see below)
 
-Never invent answers for legal, demographic, work-authorization, visa/sponsorship, salary, disability, veteran, background-check, relocation, or self-identification fields. If the answer is not present in `config/profile.yml` or visible context, mark it as needing candidate confirmation and provide the safest question to ask the candidate.
+Never invent answers for legal, demographic, work-authorization, visa/sponsorship, salary, disability, veteran, background-check, relocation, or self-identification fields. If the answer is not present in a pre-approved source or visible context, mark it as needing candidate confirmation and provide the safest question to ask the candidate.
+
+### Pre-approved answer sources (governance)
+
+The automated applier (`pipeline/applier.mjs`, the sub-3.7 generic lane) and this interactive mode both resolve fields deterministically before ever asking the candidate, in this precedence:
+
+1. **Keychain vault (`pipeline/vault.mjs`)** — legally sensitive answers, stored ONLY in the macOS Keychain, never in a file: work authorization, sponsorship, visa, salary expectation, relocation, EEO/self-identification, `background_check`, `referral_source` (how did you hear), `onsite_commitment` (in-office a few days/week), `interview_travel` (able to attend an in-person interview). The applier fills these ONLY from a matching vault entry; a sensitive field with no vault entry is flagged for manual entry, never guessed. Manage with `node pipeline/vault.mjs set|get|list`.
+2. **Identity (`config/profile.yml` → `form_autofill`, `pipeline/identity.mjs`)** — non-sensitive identity basics: full name, preferred name, phone, location. This file is gitignored (user layer, never committed), so PII lives here rather than in any system-layer file. These are filled deterministically and are NEVER sent to an Opus draft call.
+3. **Opus draft** — only free-text/essay fields that match neither of the above.
+
+**Resume autofill:** on the generic lane the applier uploads the generic CV (`config/profile.yml` → `cv.generic_pdf`) to resume/CV/"autofill from resume" file inputs. ATSes like Ashby parse it to pre-populate contact fields; the deterministic identity fill above then confirms/overrides those values.
 
 
 ## Step 7 — Generate responses

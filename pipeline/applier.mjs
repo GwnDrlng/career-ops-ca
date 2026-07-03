@@ -30,6 +30,7 @@ import { chromium } from "playwright";
 import { parseReport } from "./report-parse.mjs";
 import { legitimacyGate, blocklistGate, duplicateGuard, volumeCapStatus, atsFromUrl } from "./gates.mjs";
 import { matchVaultKey, getVaultEntry } from "./vault.mjs";
+import { matchIdentityField, getIdentityValue } from "./identity.mjs";
 import { callOpus, postSpendSummary } from "./opus-call.mjs";
 import { channels, postMessage } from "./slack-client.mjs";
 import { newLivenessPage, checkUrlLivenessWithFallback } from "../liveness-browser.mjs";
@@ -149,7 +150,9 @@ async function submitFlow({ token, approver }) {
       return stop({ ok: false, stage: "submit-guard", reason: "Curated question(s) present at submit time — refusing to auto-submit; complete manually." });
     }
     const draft = await draftAnswers(submitReportPath, { parsed: { ...parsed, company, role }, questions: fields });
-    await fillForm(page, fields, draft, { salaryExpectation: resolveSalaryExpectation(parsed.body) });
+    const submitFillOpts = { salaryExpectation: resolveSalaryExpectation(parsed.body), resumePath: resolveGenericCvPath() };
+    await fillForm(page, fields, draft, submitFillOpts);
+    await fillCustomWidgets(page, draft, { ...submitFillOpts, company });
 
     const submitBtn = await findSubmitButton(page);
     if (!submitBtn) {
@@ -274,7 +277,13 @@ async function main() {
     }
 
     const draft = await draftAnswers(reportPath, { parsed, questions: fields });
-    const fillResult = await fillForm(page, fields, draft, { salaryExpectation: resolveSalaryExpectation(parsed.body) });
+    const fillOpts = { salaryExpectation: resolveSalaryExpectation(parsed.body), resumePath: resolveGenericCvPath() };
+    const fillResult = await fillForm(page, fields, draft, fillOpts);
+    // Native inputs are done; now the ATS custom widgets (yes/no button groups,
+    // combobox typeaheads) that the DOM scan can't fill.
+    const widgetResult = await fillCustomWidgets(page, draft, { ...fillOpts, company: parsed.company });
+    fillResult.filled.push(...widgetResult.filled);
+    fillResult.manual.push(...widgetResult.manual);
 
     const screenshotPath = path.join("output", `applier-${parsed.company.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}.png`);
     fs.mkdirSync("output", { recursive: true });
@@ -389,9 +398,52 @@ async function extractFormFields(page) {
       return el.getAttribute("placeholder") || el.name || "";
     }
 
+    // Group question text for radio/checkbox options, whose own label is just
+    // "Yes"/"No". Prefer the enclosing fieldset's <legend>, then a labelled
+    // group container (role=group/radiogroup with aria-label/labelledby), then
+    // the nearest preceding heading. Lets a yes/no question resolve by its
+    // question text rather than the option word.
+    function groupLabelFor(el) {
+      const fs = el.closest("fieldset");
+      const legend = fs?.querySelector("legend");
+      if (legend?.textContent?.trim()) return legend.textContent.trim();
+      const grp = el.closest('[role="group"], [role="radiogroup"]');
+      if (grp) {
+        const aria = grp.getAttribute("aria-label");
+        if (aria?.trim()) return aria.trim();
+        const lb = grp.getAttribute("aria-labelledby");
+        if (lb) {
+          const node = document.getElementById(lb);
+          if (node?.textContent?.trim()) return node.textContent.trim();
+        }
+      }
+      let node = el;
+      for (let hops = 0; node && hops < 6; hops++) {
+        let sib = node.previousElementSibling;
+        while (sib) {
+          if (/^(h[1-6]|legend|label|p|div|span)$/i.test(sib.tagName)) {
+            const t = sib.textContent?.trim();
+            if (t && t.length < 200 && /\?|:$|select|choose|are you|do you|can you|willing|able/i.test(t)) return t;
+          }
+          sib = sib.previousElementSibling;
+        }
+        node = node.parentElement;
+      }
+      return "";
+    }
+
+    // Include file inputs even when visually hidden (styled dropzones, e.g.
+    // Ashby, hide the real <input type=file> behind CSS) — Playwright can still
+    // set files on a hidden input, and we need those for resume upload.
     const els = Array.from(document.querySelectorAll("input, textarea, select")).filter((el) => {
+      if (el.type === "hidden") return false;
+      // Custom combobox typeaheads (role=combobox) are handled by the live
+      // fillCustomWidgets pass, not by native fill — skip them here so they
+      // aren't double-reported as unfillable "Start typing..." fields.
+      if (el.getAttribute("role") === "combobox") return false;
+      if (el.type === "file") return true;
       const style = window.getComputedStyle(el);
-      return style.display !== "none" && style.visibility !== "hidden" && el.type !== "hidden";
+      return style.display !== "none" && style.visibility !== "hidden";
     });
 
     return els.map((el, i) => ({
@@ -401,11 +453,14 @@ async function extractFormFields(page) {
       name: el.name || "",
       id: el.id || "",
       label: labelFor(el),
+      groupLabel: groupLabelFor(el),
+      accept: el.getAttribute("accept") || "",
       required: el.required || el.getAttribute("aria-required") === "true",
       options: el.tagName === "SELECT" ? Array.from(el.options).map((o) => o.textContent.trim()) : undefined,
     }));
   });
 }
+
 
 // --- Draft free-text answers via a separate Opus call (never invents
 // sensitive-field content — those are vault-only, handled in fillForm). ---
@@ -416,8 +471,11 @@ async function draftAnswers(reportPathArg, { parsed, questions }) {
   const reportBody = reportPathArg && fs.existsSync(reportPathArg)
     ? sanitizeJd(fs.readFileSync(reportPathArg, "utf8")).text
     : "";
+  // Exclude sensitive (vault) AND identity (name/phone/location) fields from the
+  // Opus prompt: those are filled deterministically from the vault / profile, so
+  // no PII ever reaches an LLM and no identity value can be hallucinated.
   const questionList = (questions || [])
-    .filter((f) => !matchVaultKey(f.label))
+    .filter((f) => !matchVaultKey(f.label) && !matchIdentityField(f.label, f.groupLabel))
     .map((f) => `- [${f.type}] ${f.label}`)
     .join("\n") || "(draft-only mode: no live form, generate general application talking points)";
 
@@ -486,44 +544,183 @@ export function resolveSalaryExpectation(body) {
 // expectation is the one sensitive field the caller may supply a computed
 // fallback for (opts.salaryExpectation), since it's derived from the posting's
 // own disclosed band rather than invented. ---
+// --- Generic CV to attach on resume/CV file-upload fields (the sub-3.7
+// generic-apply lane). The path comes from config/profile.yml's `cv.generic_pdf`
+// (user layer, gitignored) so no personal filename is baked into the repo.
+// Returns the path only when it's configured AND the file exists; otherwise null,
+// and the caller flags the upload field for manual handling. ---
+function resolveGenericCvPath() {
+  try {
+    const profile = fs.existsSync("config/profile.yml")
+      ? (yaml.load(fs.readFileSync("config/profile.yml", "utf8")) || {})
+      : {};
+    const p = profile?.cv?.generic_pdf;
+    if (p && fs.existsSync(p)) return p;
+  } catch { /* fall through to null */ }
+  return null;
+}
+
+// --- Value resolution precedence for a single form field: Keychain vault
+// (sensitive answers) -> identity (config/profile.yml form_autofill) -> Opus
+// draft. A field's question text can live either on the field itself or on its
+// group legend (radio/select yes-no), so both are checked. Returns a
+// { value, source, key } descriptor, or null when nothing resolves (the caller
+// then flags the field for manual entry). Never invents a value. ---
+function resolveFieldValue(field, draft, opts) {
+  // matchVaultKey/matchIdentityField test each candidate label independently so
+  // anchored patterns (e.g. /^gender$/i, /^name$/i) aren't broken by joining.
+  const labels = [field.label, field.groupLabel].filter(Boolean);
+  const vaultKey = labels.map((l) => matchVaultKey(l)).find(Boolean) || null;
+  if (vaultKey) {
+    // Salary expectation: posting-derived midpoint wins when disclosed, else the
+    // personal default in the local Keychain vault. No comp number is committed.
+    const value = (vaultKey === "salary_expectation" && opts.salaryExpectation != null)
+      ? String(opts.salaryExpectation)
+      : getVaultEntry(vaultKey);
+    return { value, source: "vault", key: vaultKey };
+  }
+  const idKey = matchIdentityField(...labels);
+  if (idKey) {
+    return { value: getIdentityValue(idKey), source: "identity", key: idKey };
+  }
+  if (draft && typeof draft === "object" && !draft.error) {
+    return { value: draft[field.label] ?? null, source: "draft", key: field.label };
+  }
+  return { value: null, source: "none", key: field.label };
+}
+
+const truthyYes = (v) => /^\s*(yes|y|true|1)\s*$/i.test(String(v ?? ""));
+
+// Closest visible <option>/radio label for a desired value. Exact
+// (case-insensitive) first, then substring either direction, then best token
+// overlap. Lets "Company website" land on "Company Website / Careers Page" and
+// "Yes" land on "Yes, I can". Returns null if nothing plausibly matches. ---
+export function closestOption(options, value) {
+  if (!Array.isArray(options) || !options.length || value == null) return null;
+  const want = String(value).trim().toLowerCase();
+  if (!want) return null;
+  const norm = (s) => String(s).trim().toLowerCase();
+  let exact = options.find((o) => norm(o) === want);
+  if (exact) return exact;
+  let sub = options.find((o) => norm(o).includes(want) || want.includes(norm(o)));
+  if (sub) return sub;
+  const wantToks = new Set(want.split(/\W+/).filter(Boolean));
+  let best = null, bestScore = 0;
+  for (const o of options) {
+    const toks = norm(o).split(/\W+/).filter(Boolean);
+    const score = toks.filter((t) => wantToks.has(t)).length;
+    if (score > bestScore) { bestScore = score; best = o; }
+  }
+  return bestScore > 0 ? best : null;
+}
+
+// "How did you hear about this job?" option picker. ATS referral dropdowns
+// phrase "the company's own site" many ways ("Company Website", "Careers Page",
+// "{Company} Careers Site"), so a literal "Company website" answer rarely
+// string-matches. When the answer names the company's site, prefer an option
+// that (a) contains the company name and a site word, else (b) any careers/
+// website option, else (c) an option containing "company". Falls back to the
+// generic closest-option match otherwise. ---
+export function pickReferralOption(options, desired, company) {
+  if (!Array.isArray(options) || !options.length) return null;
+  const norm = (s) => String(s).toLowerCase();
+  const want = norm(desired);
+  const wantsSite = /(company|career|careers|website|web site|\bsite\b|our site)/.test(want);
+  if (wantsSite) {
+    const compTok = company ? norm(company).split(/\W+/).filter((t) => t.length > 2) : [];
+    const siteWord = /(career|careers|website|web ?site|\bsite\b)/;
+    let best = options.find((o) => compTok.some((t) => norm(o).includes(t)) && siteWord.test(norm(o)));
+    if (best) return best;
+    best = options.find((o) => siteWord.test(norm(o)));
+    if (best) return best;
+    best = options.find((o) => norm(o).includes("company"));
+    if (best) return best;
+  }
+  return closestOption(options, desired);
+}
+
 async function fillForm(page, fields, draft, opts = {}) {
   const filled = [];
   const manual = [];
 
-  for (const field of fields) {
-    const vaultKey = matchVaultKey(field.label);
-    let value = null;
+  // Attribute-safe selector (`[id="…"]` / `[name="…"]`) — the `#id` shorthand is
+  // invalid CSS when the id starts with a digit or is a UUID (common on Ashby)
+  // and throws SyntaxError. Hoisted so every branch shares one definition.
+  const attrSel = (attr, v) => `[${attr}="${String(v).replace(/(["\\])/g, "\\$1")}"]`;
+  const selectorFor = (f) => f.id ? attrSel("id", f.id) : (f.name ? attrSel("name", f.name) : null);
+  const fileFieldCount = fields.filter((f) => f.type === "file").length;
 
-    if (vaultKey) {
-      // Salary expectation: the posting-derived midpoint wins when the posting
-      // disclosed a band; otherwise fall back to the personal default in the
-      // local Keychain vault. No comp number is baked into this committed file.
-      if (vaultKey === "salary_expectation" && opts.salaryExpectation != null) {
-        value = String(opts.salaryExpectation);
-      } else {
-        value = getVaultEntry(vaultKey);
-      }
-      if (value == null) {
-        manual.push({ label: field.label, reason: `sensitive field, no vault entry for "${vaultKey}"` });
+  // Radio options render as one field per option; group them so a yes-no
+  // question resolves once (by its legend) and we click the matching option.
+  // Group by shared `name`, falling back to the group legend when radios carry
+  // no name (common on custom Ashby widgets).
+  const radios = fields.filter((f) => f.type === "radio");
+  const radioGroups = new Map();
+  for (const r of radios) {
+    const gk = r.name || `legend:${r.groupLabel}`;
+    if (!radioGroups.has(gk)) radioGroups.set(gk, []);
+    radioGroups.get(gk).push(r);
+  }
+
+  for (const field of fields) {
+    if (field.type === "radio") continue; // handled as groups below
+
+    // File-upload fields (resume/CV): the generic-apply lane attaches the
+    // pre-generated generic CV PDF (path from config, never a repo-baked name).
+    // Cover-letter/portfolio and other file inputs are left for manual handling;
+    // a file is never invented.
+    if (field.type === "file") {
+      const looksResume = /resum|résum|\bcv\b|curriculum/i.test(`${field.label} ${field.name} ${field.id}`);
+      if (!(looksResume || fileFieldCount === 1)) {
+        manual.push({ label: field.label || "(file upload)", reason: "non-resume file field — attach manually" });
         continue;
       }
-    } else if (draft && typeof draft === "object" && !draft.error) {
-      value = draft[field.label];
-    }
-
-    if (value == null) {
-      manual.push({ label: field.label, reason: "no drafted answer available" });
+      if (!opts.resumePath) {
+        manual.push({ label: field.label || "(resume upload)", reason: "no generic CV configured — set cv.generic_pdf in config/profile.yml" });
+        continue;
+      }
+      const fileSel = selectorFor(field);
+      if (!fileSel) {
+        manual.push({ label: field.label || "(resume upload)", reason: "no id/name attribute to target upload field" });
+        continue;
+      }
+      try {
+        await page.locator(fileSel).first().setInputFiles(opts.resumePath);
+        filled.push({ label: field.label || "(resume upload)", value: path.basename(opts.resumePath) });
+      } catch (err) {
+        manual.push({ label: field.label || "(resume upload)", reason: `resume upload failed: ${err.message}` });
+      }
       continue;
     }
 
-    // Build a selector via attribute matching (`[id="…"]` / `[name="…"]`) rather
-    // than the `#id` shorthand, which is invalid CSS when the id starts with a
-    // digit or is a UUID (common on Ashby) and throws SyntaxError. Fields with
-    // neither a usable id nor name can't be targeted — flag them for manual entry
-    // instead of falling back to `[name=""]`, which matches nothing and hangs
-    // until the fill timeout.
-    const attrSel = (attr, v) => `[${attr}="${String(v).replace(/(["\\])/g, "\\$1")}"]`;
-    const selector = field.id ? attrSel("id", field.id) : (field.name ? attrSel("name", field.name) : null);
+    const resolved = resolveFieldValue(field, draft, opts);
+    const value = resolved.value;
+    if (value == null) {
+      const reason = resolved.source === "vault"
+        ? `sensitive field, no vault entry for "${resolved.key}"`
+        : (resolved.source === "identity" ? `no identity value configured for "${resolved.key}"` : "no drafted answer available");
+      manual.push({ label: field.label, reason });
+      continue;
+    }
+
+    // Single yes/no consent checkbox (e.g. background-check consent): check it
+    // only when the resolved answer is affirmative; never auto-check otherwise.
+    if (field.type === "checkbox") {
+      const sel = selectorFor(field);
+      if (!sel) { manual.push({ label: field.label, reason: "no id/name attribute to target field" }); continue; }
+      try {
+        if (truthyYes(value)) { await page.locator(sel).first().check(); filled.push({ label: field.label, value: "checked" }); }
+        else { manual.push({ label: field.label, reason: `resolved answer "${value}" is not affirmative — left unchecked for review` }); }
+      } catch (err) {
+        manual.push({ label: field.label, reason: `checkbox failed: ${err.message}` });
+      }
+      continue;
+    }
+
+    // Fields with neither a usable id nor name can't be targeted — flag them for
+    // manual entry instead of falling back to `[name=""]`, which matches nothing
+    // and hangs until the fill timeout.
+    const selector = selectorFor(field);
     if (!selector) {
       manual.push({ label: field.label, reason: "no id/name attribute to target field" });
       continue;
@@ -532,13 +729,141 @@ async function fillForm(page, fields, draft, opts = {}) {
     try {
       const locator = page.locator(selector).first();
       if (field.tag === "select") {
-        await locator.selectOption({ label: value }).catch(() => locator.selectOption(value));
+        // Try exact label/value, then fall back to the closest visible option so
+        // "Company website" resolves to whatever the dropdown actually offers.
+        const ok = await locator.selectOption({ label: value })
+          .then(() => true)
+          .catch(() => locator.selectOption(value).then(() => true).catch(() => false));
+        if (!ok) {
+          const opt = closestOption(field.options, value);
+          if (opt) { await locator.selectOption({ label: opt }); filled.push({ label: field.label, value: opt }); continue; }
+          manual.push({ label: field.label, reason: `no option matched "${value}" (options: ${(field.options || []).join(", ")})` });
+          continue;
+        }
       } else {
         await locator.fill(String(value));
       }
       filled.push({ label: field.label, value });
     } catch (err) {
       manual.push({ label: field.label, reason: `fill failed: ${err.message}` });
+    }
+  }
+
+  // Radio groups: resolve the desired answer once from the legend, then click
+  // the option whose label matches (e.g. legend "Are you able to be in-office a
+  // few days a week?" -> vault onsite_commitment "Yes" -> click the "Yes" radio).
+  for (const [, group] of radioGroups) {
+    const legend = group.find((r) => r.groupLabel)?.groupLabel || group[0].label;
+    const probe = { label: legend, groupLabel: legend, type: "radio", options: group.map((r) => r.label) };
+    const resolved = resolveFieldValue(probe, draft, opts);
+    if (resolved.value == null) {
+      manual.push({ label: legend, reason: resolved.source === "vault" ? `sensitive radio, no vault entry for "${resolved.key}"` : "no answer available for radio group" });
+      continue;
+    }
+    const wantLabel = closestOption(group.map((r) => r.label), resolved.value);
+    const target = group.find((r) => r.label === wantLabel);
+    const sel = target ? selectorFor(target) : null;
+    if (!sel) {
+      manual.push({ label: legend, reason: `no radio option matched "${resolved.value}" (options: ${group.map((r) => r.label).join(", ")})` });
+      continue;
+    }
+    try {
+      await page.locator(sel).first().check();
+      filled.push({ label: legend, value: target.label });
+    } catch (err) {
+      manual.push({ label: legend, reason: `radio select failed: ${err.message}` });
+    }
+  }
+
+  return { filled, manual };
+}
+
+// --- Custom (non-native) ATS widgets that extractFormFields can't see or fill:
+// Ashby renders yes/no questions as bare <button>Yes</button>/<button>No</button>
+// groups (backed by a hidden checkbox) and renders location / "how did you hear"
+// as role=combobox typeaheads. This pass walks each field-entry live, resolves
+// the answer through the SAME precedence as fillForm (vault -> identity ->
+// draft), and clicks the matching control. Sensitive answers still come ONLY
+// from the vault; nothing is invented. ---
+async function fillCustomWidgets(page, draft, opts = {}) {
+  const filled = [];
+  const manual = [];
+
+  // Both button-group and combobox entries carry an Ashby field-entry class.
+  const entries = page.locator("[class*='fieldEntry'], .ashby-application-form-field-entry");
+  const count = await entries.count().catch(() => 0);
+  const seen = new Set();
+
+  for (let i = 0; i < count; i++) {
+    const entry = entries.nth(i);
+    const label = ((await entry.locator("label, legend").first().textContent().catch(() => "")) || "")
+      .replace(/\s+/g, " ").replace(/\*+$/, "").trim();
+    if (!label || seen.has(label)) continue;
+
+    const comboCount = await entry.locator("[role='combobox']").count().catch(() => 0);
+    const yesNo = entry.locator("button", { hasText: /^\s*(Yes|No)\s*$/ });
+    const btnCount = await yesNo.count().catch(() => 0);
+
+    // --- Yes/No button group ---
+    if (comboCount === 0 && btnCount >= 1) {
+      seen.add(label);
+      const resolved = resolveFieldValue({ label, groupLabel: label, type: "buttongroup", options: ["Yes", "No"] }, draft, opts);
+      if (resolved.value == null) {
+        manual.push({ label, reason: resolved.source === "vault" ? `sensitive yes/no, no vault entry for "${resolved.key}"` : "no answer available for yes/no question" });
+        continue;
+      }
+      const want = truthyYes(resolved.value) ? "Yes" : (/^\s*(no|false|0)\s*$/i.test(String(resolved.value)) ? "No" : null);
+      if (!want) { manual.push({ label, reason: `answer "${resolved.value}" is not yes/no — review manually` }); continue; }
+      try {
+        await entry.locator("button", { hasText: new RegExp(`^\\s*${want}\\s*$`) }).first().click({ timeout: 5000 });
+        filled.push({ label, value: want });
+      } catch (err) {
+        manual.push({ label, reason: `yes/no click failed: ${err.message}` });
+      }
+      continue;
+    }
+
+    // --- Combobox typeahead (location, how did you hear) ---
+    if (comboCount >= 1) {
+      seen.add(label);
+      const resolved = resolveFieldValue({ label, groupLabel: label, type: "combobox" }, draft, opts);
+      if (resolved.value == null) {
+        manual.push({ label, reason: resolved.source === "vault" ? `sensitive dropdown, no vault entry for "${resolved.key}"` : "no answer available for dropdown" });
+        continue;
+      }
+      const input = entry.locator("[role='combobox']").first();
+      const readOptions = () => page.locator("[role='option']").allTextContents()
+        .then((a) => a.map((s) => s.trim()).filter(Boolean)).catch(() => []);
+      try {
+        await input.click({ timeout: 5000 });
+        await page.waitForTimeout(300);
+        // Ashby opens the listbox on ArrowDown, not on click. Read the static
+        // option list FIRST (before typing — typing filters a fixed list down to
+        // nothing when no option literally contains the answer, e.g. "Company
+        // website" vs "Jobber Careers Site").
+        await input.press("ArrowDown").catch(() => {});
+        await page.waitForTimeout(500);
+        let opts2 = await readOptions();
+        // Pure typeahead (location places lookup): no static list — type to load.
+        if (!opts2.length) {
+          await input.type(String(resolved.value), { delay: 20 });
+          await page.waitForTimeout(900);
+          opts2 = await readOptions();
+        }
+        const want = resolved.key === "referral_source"
+          ? pickReferralOption(opts2, resolved.value, opts.company)
+          : closestOption(opts2, resolved.value);
+        if (!want) {
+          manual.push({ label, reason: `no dropdown option matched "${resolved.value}"${opts2.length ? ` (options: ${opts2.join(", ")})` : " (no options loaded)"}` });
+          await page.keyboard.press("Escape").catch(() => {});
+          continue;
+        }
+        await page.locator("[role='option']", { hasText: new RegExp(`^\\s*${want.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`) }).first().click({ timeout: 5000 });
+        filled.push({ label, value: want });
+      } catch (err) {
+        manual.push({ label, reason: `dropdown select failed: ${err.message}` });
+        await page.keyboard.press("Escape").catch(() => {});
+      }
     }
   }
 

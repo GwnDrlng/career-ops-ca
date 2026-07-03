@@ -12,6 +12,19 @@ candidate:
   github: "github.com/janesmith"
   twitter: "https://x.com/janesmith"
 
+# form_autofill — deterministic identity values the applier types into
+# application forms (pipeline/identity.mjs). This file is gitignored (user
+# layer), so identity PII lives here rather than in any committed system file.
+# These are filled directly and NEVER sent to an LLM. Legally sensitive answers
+# (background check, onsite commitment, interview travel, work authorization,
+# EEO, referral source, salary) live ONLY in the macOS Keychain vault
+# (node pipeline/vault.mjs set --key <k> --value <v>), never in this file.
+form_autofill:
+  full_name: "Jane Smith"          # legal full name (first/last derive from this)
+  preferred_name: "Jane"           # goes-by / nickname
+  phone: "+1-555-0123"
+  location: "San Francisco, CA, USA"
+
 target_roles:
   # Your North Star roles — what you're optimizing for
   primary:
@@ -68,6 +81,11 @@ location:
 
 cv:
   output_format: "html" # "html" (default) or "latex"
+  # Path to your pre-generated generic CV PDF. This is the resume the applier
+  # attaches on the sub-3.7 "generic-apply" lane (file-upload fields on ATS
+  # forms). Generate it once with /career-ops pdf, then point this at it.
+  # If unset, the applier flags any resume-upload field for manual handling.
+  generic_pdf: "output/YourNameCV-2026.pdf"
   # (Optional) Canva resume design ID for visual CV generation via /career-ops pdf.
   # Find it in your Canva design URL: https://www.canva.com/design/DAxxxxxxx/...
   # The ID starts with "D" and is 11 characters long.

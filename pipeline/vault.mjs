@@ -21,7 +21,7 @@ const SERVICE_PREFIX = "career-ops-vault";
 // categories exactly, so the applier and the interactive apply mode agree on
 // what counts as sensitive.
 export const VAULT_FIELDS = {
-  work_authorization: [/legally authorized to work/i, /work authorization/i, /eligible to work/i],
+  work_authorization: [/legally authorized to work/i, /legally entitled to work/i, /work authorization/i, /eligible to work/i, /authori[sz]ed to work/i, /entitled to work/i],
   sponsorship: [/require.*sponsorship/i, /visa sponsorship/i, /now or in the future.*sponsorship/i],
   visa_status: [/visa status/i, /current visa/i],
   salary_expectation: [/salary expectation/i, /desired salary/i, /compensation expectation/i, /expected (base )?salary/i],
@@ -30,8 +30,14 @@ export const VAULT_FIELDS = {
   veteran_status: [/veteran status/i, /protected veteran/i],
   race_ethnicity: [/race\/ethnicity/i, /race or ethnicity/i],
   gender_identity: [/gender identity/i, /^gender$/i],
-  referral_source: [/how did you hear about/i, /referred by/i],
-  background_check: [/background check/i, /consent to a background/i],
+  referral_source: [/how did you hear about/i, /how did you find/i, /referral source/i, /referred by/i, /source of application/i],
+  background_check: [/background check/i, /consent to a background/i, /criminal record check/i, /pre.?employment (screening|check)/i],
+  // Onsite / hybrid commitment. We only apply to Remote or Kitchener-Waterloo /
+  // Toronto-area roles, so a "can you be in the office N days a week" question
+  // is a pre-approved Yes held in the vault, never inferred.
+  onsite_commitment: [/in.?office/i, /on.?site/i, /days? (a|per) week/i, /come in ?to the office/i, /hybrid/i, /commute to (the|our) office/i, /work from (the|our) office/i],
+  // Ability to attend an in-person interview at the employer's office.
+  interview_travel: [/travel.*interview/i, /able to (come|travel|make it).*(in.?person )?interview/i, /attend.*(in.?person|on.?site).*interview/i, /interview.*in ?person/i, /come to (the|our) office.*interview/i],
 };
 
 function keychainService(key) {
