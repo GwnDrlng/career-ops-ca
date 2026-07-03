@@ -41,27 +41,27 @@ Two planes, one contract. The cloud does **discovery + grading** unattended; on-
                     └─────▲──────────────────────────────────────▲──────────┘
          report / flag    │                                      │  fill summary + approve
                           │                                      │
-   ┌──────────────────────┴──────────────┐   ┌──────────────────┴───────────────────────┐
+   ┌──────────────────────┴──────────────┐    ┌──────────────────┴────────────────────────┐
    │  CLOUD · Vercel eve (Claude/Gateway) │   │  ON-PREM · watcher + career-ops pipeline  │
    │                                      │   │                                           │
    │  daily cron ─► ORCHESTRATOR          │   │  watch.mjs (polls Slack)                  │
    │                 ├─ Scanner subagent  │   │      │ new graded report                  │
-   │                 │   portal APIs,     │   │      ▼                                     │
-   │                 │   dedup            │   │  route-tier.mjs  (reads score /5)          │
-   │                 └─ Grader subagent   │   │    ├─ ≤2.0   → SKIP (tracked, not applied) │
-   │                     rubric → score,  │   │    ├─ 2.1–3.6 → generic CV → applier       │
-   │                     legitimacy tier, │   │    └─ ≥3.7   → curated CV+CL (Opus)         │
-   │                     writes report    │   │                    │                       │
-   │                                      │   │                    ▼                       │
-   │  (no PII · no submit authority ·     │   │        judge (Opus) ≥90%? ── no ─┐         │
-   │   least-privilege read+format only)  │   │            │ yes                 │ revise  │
-   └──────────────────────────────────────┘   │            ▼              (loop ≤2×)       │
-                                               │   grounding-check (no-fabrication gate)   │
-                                               │            │                              │
-                                               │            ▼                              │
-                                               │   applier fills form → Slack approval ────┤
-                                               │   token-budget · kill-switch · audit log  │
-                                               └───────────────────────────────────────────┘
+   │                 │   portal APIs,     │   │      ▼                                    │
+   │                 │   dedup            │   │  route-tier.mjs  (reads score /5)         │
+   │                 └─ Grader subagent   │   │    ├─ ≤2.0   → SKIP (tracked, not applied)│
+   │                     rubric → score,  │   │    ├─ 2.1–3.6 → generic CV → applier      │
+   │                     legitimacy tier, │   │    └─ ≥3.7   → curated CV+CL (Opus)       │
+   │                     writes report    │   │                    │                      │
+   │                                      │   │                    ▼                      │
+   │  (no PII · no submit authority ·     │   │        judge (Opus) ≥90%? ── no ─┐        │
+   │   least-privilege read+format only)  │   │            │ yes                 │ revise │
+   └──────────────────────────────────────┘   │            ▼              (loop ≤2×)      │
+                                              │   grounding-check (no-fabrication gate)   │
+                                              │            │                              │
+                                              │            ▼                              │
+                                              │   applier fills form → Slack approval ────┤
+                                              │   token-budget · kill-switch · audit log  │
+                                              └───────────────────────────────────────────┘
 ```
 
 **Boundary contract:** the cloud's only durable output is the report (Markdown + a `## Machine Summary` YAML block). On-prem is the system of record for the tracker, documents, credentials, and submissions, all flat files, all local.
